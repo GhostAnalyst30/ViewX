@@ -1,4 +1,3 @@
-# dashboard_v2_fixed.py
 import pandas as pd
 import subprocess
 import sys
