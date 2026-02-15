@@ -113,6 +113,8 @@ HTML(
 
 ```
 
+![DashBoardIris](https://github.com/GhostAnalyst30/ViewX/blob/main/images_for_git/DashBoard%20Iris.png)
+
 ### Crear un DashBoard
 ```python
 from viewx import DashBoard
@@ -155,6 +157,8 @@ db.add_expander("Detalles técnicos", [
 
 db.run(open_browser=True)   
 ```
+
+![DashBoard Streamlit](https://github.com/GhostAnalyst30/ViewX/blob/main/images_for_git/DashBoard_Streamlit_1.png)
 
 ### Crear un Reporte
 
@@ -299,6 +303,7 @@ r.build("reporte_demo")
 
 ```
 
+![Report PDF](https://github.com/GhostAnalyst30/ViewX/blob/main/images_for_git/Report_pdf_1.png)
 
 ## 🤝 Contribuciones
 
