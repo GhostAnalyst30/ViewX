@@ -1,10 +1,8 @@
 dist/
 build/
-output/
 *.egg-info
 *.toml
 *.html
-*.png
 venv/
 __pycache__/
 *.pyc

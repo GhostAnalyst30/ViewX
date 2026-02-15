@@ -24,21 +24,7 @@ class HTML:
         self.data = data
         self.title = title
         self.colors = self._resolve_colors(template_color)
-        self.num_divs = num_divs
-        self.num_cols = num_cols
-        self.num_rows = num_rows
-
-        # CSS dinámico del grid
-        self.grid_css = []
-
-        # Contenido por slot
-        self.slots = {f"div{i}": [] for i in range(1, num_divs + 1)}
-
-        print("¡Bienvenido a ViewX!")
-        print("Encendiendo Motores...")
-
-    def _resolve_colors(self, template_color):
-        templates = {
+        self.templates = {
 
         # 0 — Deep Space (oscuro moderno)
         0: ("#0B1020", "#121A33", "#7C3AED", "#E6E9F2"),
@@ -71,17 +57,29 @@ class HTML:
         9: ("#F4F9FF", "#FFFFFF", "#3A86FF", "#1C2A3A"),
 
         }
+        self.num_divs = num_divs
+        self.num_cols = num_cols
+        self.num_rows = num_rows
 
+        # CSS dinámico del grid
+        self.grid_css = []
 
+        # Contenido por slot
+        self.slots = {f"div{i}": [] for i in range(1, num_divs + 1)}
+
+        print("¡Bienvenido a ViewX!")
+        print("Encendiendo Motores...")
+
+    def _resolve_colors(self, template_color):
         if isinstance(template_color, int):
-            return templates.get(template_color, templates[0])
+            return self.templates.get(template_color, self.templates[0])
 
         if isinstance(template_color, tuple):
             if len(template_color) != 4:    
                 raise ValueError("La tupla debe tener 4 colores")
             return template_color
 
-        return templates[0]
+        return self.templates[0]
 
     # ========================================================
     #               REGISTRO DE BLOQUES
