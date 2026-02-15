@@ -1,10 +1,10 @@
 """
 ViewX - Librería de Visualizacion para Python
 Autor: Emmanuel Ascendra
-Versión: 0.1.3
+Versión: 0.1.5
 """
 
-__version__ = "0.1.3"
+__version__ = "0.1.5"
 __author__ = "Emmanuel Ascendra"
 
 # Importar las clases principales
