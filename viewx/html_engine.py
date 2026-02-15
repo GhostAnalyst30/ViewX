@@ -39,10 +39,39 @@ class HTML:
 
     def _resolve_colors(self, template_color):
         templates = {
-            0: ("#0F172A","#1E293B","#3B82F6","#E5E7EB"),
-            1: ("#F8FAFC","#FFFFFF","#10B981","#1F2937"),
-            2: ("#FFF7ED","#FFFFFF","#F97316","#1C1917"),
+
+        # 0 — Deep Space (oscuro moderno)
+        0: ("#0B1020", "#121A33", "#7C3AED", "#E6E9F2"),
+
+        # 1 — Mint Tech (claro fresco)
+        1: ("#F1FAF7", "#FFFFFF", "#00B894", "#1B4332"),
+
+        # 2 — Sunset Warm (cálido suave)
+        2: ("#FFF4E6", "#FFFFFF", "#E76F51", "#3A2E2A"),
+
+        # 3 — Cyberpunk (alto contraste)
+        3: ("#050508", "#111118", "#00F5D4", "#F1F1F1"),
+
+        # 4 — Royal Gold (elegante oscuro)
+        4: ("#111111", "#1C1C1C", "#D4AF37", "#F5F5F5"),
+
+        # 5 — Ocean Breeze (azules claros)
+        5: ("#EDF6F9", "#FFFFFF", "#118AB2", "#073B4C"),
+
+        # 6 — Forest Calm (verde natural)
+        6: ("#EEF7F0", "#FFFFFF", "#2D6A4F", "#1B4332"),
+
+        # 7 — Rose Soft (pastel moderno)
+        7: ("#FFF0F3", "#FFFFFF", "#FF4D6D", "#3A0F1B"),
+
+        # 8 — Amber Dark (industrial cálido)
+        8: ("#1A1410", "#2A1F1B", "#FF9F1C", "#F2E9E4"),
+
+        # 9 — Ice Glass (minimalista frío)
+        9: ("#F4F9FF", "#FFFFFF", "#3A86FF", "#1C2A3A"),
+
         }
+
 
         if isinstance(template_color, int):
             return templates.get(template_color, templates[0])
@@ -309,7 +338,7 @@ class HTML:
 
         /* encabezado */
         .{cls} thead th {{
-            background:{primary};
+            background:{secondary};
             color:white;
             padding:9px;
             text-align:left;
@@ -374,8 +403,8 @@ class HTML:
         fig = px.line(self.data, x=x, y=y)
 
         fig.update_layout(
-            paper_bgcolor="transparent",
-            plot_bgcolor="transparent",
+            paper_bgcolor=bg,
+            plot_bgcolor=secondary,
             margin=dict(l=0, r=0, t=20, b=0),
             height=120,
             showlegend=False,
