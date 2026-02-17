@@ -23,7 +23,6 @@ class HTML:
     ):
         self.data = data
         self.title = title
-        self.colors = self._resolve_colors(template_color)
         self.templates = {
 
         # 0 — Deep Space (oscuro moderno)
@@ -57,6 +56,7 @@ class HTML:
         9: ("#F4F9FF", "#FFFFFF", "#3A86FF", "#1C2A3A"),
 
         }
+        self.colors = self._resolve_colors(template_color)
         self.num_divs = num_divs
         self.num_cols = num_cols
         self.num_rows = num_rows
@@ -69,6 +69,7 @@ class HTML:
 
         print("¡Bienvenido a ViewX!")
         print("Encendiendo Motores...")
+        time.sleep(3)
 
     def _resolve_colors(self, template_color):
         if isinstance(template_color, int):
@@ -172,7 +173,8 @@ class HTML:
         y=None,
         z=None,
         title="",
-        slot_grid=("div1", 1, 1, 1, 1)
+        slot_grid=("div1", 1, 1, 1, 1),
+        **kwargs
     ):
         if self.data is None:
             raise ValueError("No hay datos cargados")
@@ -188,25 +190,25 @@ class HTML:
         # =========================
         match kind:
             case "scatter":
-                fig = px.scatter(self.data, x=x, y=y, title=title)
+                fig = px.scatter(self.data, x=x, y=y, title=title, **kwargs)
 
             case "line":
-                fig = px.line(self.data, x=x, y=y, title=title)
+                fig = px.line(self.data, x=x, y=y, title=title, **kwargs)
 
             case "bar":
-                fig = px.bar(self.data, x=x, y=y, title=title)
+                fig = px.bar(self.data, x=x, y=y, title=title, **kwargs)
 
             case "hist":
-                fig = px.histogram(self.data, x=x, title=title)
+                fig = px.histogram(self.data, x=x, title=title, **kwargs)
 
             case "box":
-                fig = px.box(self.data, x=x, y=y, title=title)
+                fig = px.box(self.data, x=x, y=y, title=title, **kwargs)
 
             case "pie":
-                fig = px.pie(self.data, names=x, values=y, title=title)
+                fig = px.pie(self.data, names=x, values=y, title=title, **kwargs)
 
             case "scatter_3d":
-                fig = px.scatter_3d(self.data, x=x, y=y, z=z, title=title)
+                fig = px.scatter_3d(self.data, x=x, y=y, z=z, title=title, **kwargs)
 
             case _:
                 raise ValueError(f"Tipo '{kind}' no soportado")
@@ -223,8 +225,7 @@ class HTML:
             font=dict(color=text),
             title_font=dict(color=text),
             legend=dict(font=dict(color=text)),
-            margin=dict(l=40, r=40, t=60, b=40),
-            autosize=True
+            margin=dict(l=40, r=40, t=60, b=40)
         )
 
         # ejes
@@ -281,12 +282,19 @@ class HTML:
         # =========================
         config = {"responsive": True}
         
-        html_plot = fig.to_html(full_html=False, include_plotlyjs="cdn", config=config)
+        html_plot = fig.to_html(
+            full_html=False,
+            include_plotlyjs="cdn",
+            config=config,
+            default_height=f"{height*100}%",
+        )
         
         box = f"""
         <div style="
             width:100%;
             height:100%;
+            flex:1;
+            min-height:0;
         ">
             {html_plot}
         </div>
@@ -484,7 +492,7 @@ class HTML:
         .parent {{
             display:grid;
             grid-template-columns: repeat({self.num_cols}, 1fr);
-            grid-template-rows: repeat({self.num_rows}, 1fr);
+            grid-template-rows: repeat({self.num_rows}, minmax(0, 1fr));
             width:100vw;
             height:100vh;
             box-sizing:border-box;
@@ -505,9 +513,10 @@ class HTML:
 <meta charset="UTF-8">
 <title>{self.title}</title>
 <style>
-html {{
+html, body {{
     height:100%;
 }}
+
 
 body {{
     margin:0;
@@ -523,10 +532,12 @@ body {{
 .viewx-slot {{
     background: {self.colors[1]};
     border-radius: 14px;
-    padding: 14px;
+    padding: 0;
     box-sizing: border-box;
     overflow: hidden;
     transition: 0.2s ease;
+    display:flex;
+    flex-direction:column;
 
     width: 100%;
     height: 100%;
@@ -565,30 +576,50 @@ th, td { ... }
 <div class="parent">
 {''.join(f'<div class="div{i} viewx-slot">{"".join(self.slots[f"div{i}"])}</div>' for i in range(1, self.num_divs + 1))}
 </div>
+
 <script>
-function viewx_attach_resize(){{
+function resizePlot(plot){{
+    const parent = plot.parentElement;
+    const rect = parent.getBoundingClientRect();
+
+    // 1) Forzar altura real en el div plotly
+    plot.style.height = rect.height + "px";
+    plot.style.width  = rect.width + "px";
+
+    // 2) Ahora sí Plotly recalcula correctamente
+    Plotly.Plots.resize(plot);
+}}
+
+function viewx_resize_all(){{
+    document.querySelectorAll(".plotly-graph-div").forEach(resizePlot);
+}}
+
+function attach(){{
     const plots = document.querySelectorAll(".plotly-graph-div");
 
-    if(plots.length === 0){{
-        setTimeout(viewx_attach_resize, 200);
+    if(!plots.length){{
+        requestAnimationFrame(attach);
         return;
     }}
 
-    plots.forEach(plot => {{
-        const parent = plot.parentElement;
-
-        const ro = new ResizeObserver(() => {{
-            Plotly.Plots.resize(plot);
-        }});
-
-        ro.observe(parent);
+    const ro = new ResizeObserver(entries => {{
+        for (const entry of entries) {{
+            const plots = entry.target.querySelectorAll(".plotly-graph-div");
+            plots.forEach(resizePlot);
+        }}
     }});
+
+    document.querySelectorAll(".viewx-slot").forEach(el => ro.observe(el));
+
+    // primera ejecución (MUY importante)
+    setTimeout(viewx_resize_all, 50);
 }}
 
-window.addEventListener("DOMContentLoaded", () => {{
-    setTimeout(viewx_attach_resize, 300);
-}});
+window.addEventListener("DOMContentLoaded", attach);
+window.addEventListener("resize", viewx_resize_all);
 </script>
+
+
 
 </body>
 </html>
