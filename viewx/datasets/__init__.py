@@ -121,7 +121,7 @@ def load_dataset(
 
     # 1️⃣ Intentar cargar desde el paquete
     try:
-        data_bytes = pkgutil.get_data("statslibx.datasets", resource_name)
+        data_bytes = pkgutil.get_data("viewx.datasets", resource_name)
 
         if data_bytes is not None:
             buffer = io.BytesIO(data_bytes)
@@ -134,7 +134,7 @@ def load_dataset(
         if not path.exists():
             raise FileNotFoundError(
                 f"Dataset '{name}' no encontrado "
-                f"ni en statslibx.datasets ni en la ruta local."
+                f"ni en viewx.datasets ni en la ruta local."
             )
         df = _read_file(path, ext, backend, sep)
 

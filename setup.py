@@ -9,7 +9,7 @@ except FileNotFoundError:
 
 setup(
     name="viewx",
-    version="0.1.8",
+    version="0.1.9",
     author="Emmanuel Ascendra Perez",
     author_email="ascendraemmanuel@gmail.com",
     description="Librería de visualización adaptable para HTML, Dashboards y PDFs en Python",
@@ -48,7 +48,8 @@ setup(
         "pylatex>=1.4.2",  # Para PDFs
         "seaborn>=0.12.2",
         "plotly>=6.0.0",
-        "streamlit>=1.32.0"
+        "streamlit>=1.32.0",
+        "statslibx >= 0.2.2"
     ],
 
     # Dependencias opcionales
