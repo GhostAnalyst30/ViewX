@@ -224,8 +224,7 @@ class HTML:
             plot_bgcolor=bg,
             font=dict(color=text),
             title_font=dict(color=text),
-            legend=dict(font=dict(color=text)),
-            margin=dict(l=40, r=40, t=60, b=40)
+            legend=dict(font=dict(color=text))
         )
 
         # ejes
@@ -241,6 +240,28 @@ class HTML:
             gridcolor="rgba(128,128,128,0.25)",
             zeroline=False,
             color=text
+        )
+
+        
+        fig.update_layout(
+            autosize=True,
+            margin=dict(l=50, r=50, t=50, b=50),  # Márgenes en píxeles
+            width=None,  # Importante: None permite que Plotly calcule el ancho
+            height=None  # Importante: None permite que Plotly calcule el alto
+        )
+
+        # O puedes usar porcentajes en los márgenes
+        fig.update_layout(
+            autosize=True,
+            margin=dict(
+                l=5,  # % del ancho total
+                r=5,  # % del ancho total
+                t=5,  # % del alto total
+                b=5,  # % del alto total
+                pad=4
+            ),
+            width=None,
+            height=None
         )
 
         # =========================
