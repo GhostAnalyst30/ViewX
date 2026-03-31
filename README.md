@@ -27,57 +27,75 @@ pip install viewx
 
 ### Crear una página HTML
 ```python
-from viewx.datasets import load_dataset
+from viewx.datasets import load_iris
 from viewx import HTML
 
-# -----------------------------
-# DATASET
-# -----------------------------
-df = load_dataset("iris.csv")
+df = load_iris()
 
-# -----------------------------
-# DASHBOARD
-# -----------------------------
-(
-HTML(
+page = HTML(
     data=df,
-    title="Reporte Iris — ViewX",
-    template_color=1,
+    title="ViewX",
+    template_color=0,
     num_divs=8,
     num_cols=4,
-    num_rows=5
+    num_rows=5,
+    gap=8,
+    padding=8,
+    navbar={
+        "title": "ViewX v2.0",
+        "items": [
+            {"label": "Inicio",    "link": "#"},
+            {"label": "Ventas",    "link": "#"},
+            {"label": "Análisis",  "link": "#"},
+            {"label": "Acerca",    "link": "#"},
+        ],
+        "height": 64,
+        "title_font_size": 20,
+        "items_font_size": 14,
+    }
 )
+# Atributos
+print("Colores: ", page.templates)
+print("Altura Barra de Navegacion (px):", page.navbar_height)
+print("Tamaño de fuente del titulo (px):", page.title_font_size)
+print("Tamaño de fuente de los items (px):", page.items_font_size)
 
-# ===== VALUE BOXES =====
-.add_valuebox(
-    title="Filas",
-    value=len(df),
-    icon="📄",
-    slot_grid=("div1", 1, 1, 1, 1)
+page.add_valuebox(
+    title="Registros",
+    value=f"{df['species'].count()}",
+    icon="🌸",
+    slot_grid=("div1", 1, 1, 1, 1),
+    subtitle=f"{df['species'].unique().shape[0]} especies",
 )
 # slot_grid = ("div#", fila_inicial, columna_inicial, alto, ancho)
 
-.add_valuebox(
-    title="Prom Sepal Length",
-    value=round(df["sepal_length"].mean(), 2),
-    icon="📏",
+page.add_valuebox(
+    title="Promedio Sepal Length",
+    value=f"{round(df['sepal_length'].mean(), 2)}",
+    icon="🌸",
     slot_grid=("div2", 1, 2, 1, 1)
 )
 
-.add_valuebox(
-    title="Prom Petal Width",
+page.add_valuebox(
+    title="Promedio Petal Width",
     value=round(df["petal_width"].mean(), 2),
     icon="🌸",
     slot_grid=("div3", 1, 3, 1, 1)
 )
 
-.add_text(
-    "<h2>Iris Dataset Dashboard</h2><p>Este DashBoard fue desarrollado por Emmanuel Ascendra con Viewx</p>",
-    slot_grid=("div4", 1, 4, 1, 1)
+page.add_text(
+    """
+    <h2>ViewX v2.0</h2>
+    <p>Iris Dataset Dashboard</p>
+    <p>Este DashBoard fue desarrollado por Emmanuel Ascendra con ViewX</p>
+    """,
+    slot_grid=("div4", 1, 4, 1, 1),
+    align="center",
+    glass=False,
+    border_accent=True
 )
 
-# ===== PLOTS =====
-.add_plot(
+page.add_plot(
     kind="scatter",
     x="sepal_length",
     y="sepal_width",
@@ -85,31 +103,30 @@ HTML(
     slot_grid=("div5", 2, 1, 2, 2)
 )
 
+page.add_table(
+    columns="all",
+    searchable=True,
+    striped=True,
+    slot_grid=("div6", 2, 3, 2, 2)
+)   
 
-.add_plot(
+page.add_plot(
     kind="box",
     x="species",
     y="petal_width",
     title="Petal Width por especie",
-    slot_grid=("div6", 4, 1, 2, 2)
+    slot_grid=("div7", 4, 1, 2, 2)
 )
 
-.add_plot(
+page.add_plot(
     kind="bar",
     x="species",
     y="sepal_length",
     title="Promedio Sepal Length",
-    slot_grid=("div7", 4, 3, 2, 2)
+    slot_grid=("div8", 4, 3, 2, 2)
 )
 
-# ===== TABLE =====
-.add_table(
-    columns="all",
-    slot_grid=("div8", 2, 3, 2, 2)
-)
-
-.show("demo_viewx.html", port=8001)
-)
+page.show("demo_iris.html", port=8000)
 
 ```
 

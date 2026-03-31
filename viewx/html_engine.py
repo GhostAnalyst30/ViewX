@@ -68,6 +68,31 @@ class HTML:
         print("║          ViewX v2.0          ║")
         print("╚══════════════════════════════╝")
 
+        if title:
+            print(f"Title: {title}")
+
+        if template_color:
+            print(f"Template color: {template_color}")
+
+        if num_divs and num_cols and num_rows:
+            print(f"Number of divs: {num_divs}, Number of cols: {num_cols}, Number of rows: {num_rows}")
+
+        if isinstance(self.navbar, dict):
+            print("Navbar:")
+            for key, value in self.navbar.items():
+                if key == "items":
+                    print(f"- {key}:")
+                    for item in value:
+                        print(f"  - {item.get('label')}: {item.get('link')}")
+                else:
+                    print(f"- {key}: {value}")
+
+        if gap:
+            print(f"Gap: {gap}")
+
+        if padding:
+            print(f"Padding: {padding}")
+
     # ────────────────────────────────────────────────────────
     #  Helpers internos
     # ────────────────────────────────────────────────────────
@@ -328,6 +353,28 @@ class HTML:
 """
         self._add_to_slot(html, slot)
         print(f"  ✔ ValueBox añadido → {slot}")
+        print("╔══════════════════════════════╗")
+        print("║            ValueBox          ║")
+        print("╚══════════════════════════════╝")
+
+        if title:
+            print(f"Title: {title}")
+
+        if value:
+            print(f"Value: {value}")
+
+        if subtitle:
+            print(f"Subtitle: {subtitle}")
+
+        if icon:
+            print(f"Icon: {icon}")
+
+        if color:
+            print(f"Color: {color}")
+
+        if slot_grid:
+            print(f"Slot: {slot}, Row: {row}, Col: {col}, Height: {height}, Width: {width}")
+
         return self
 
     # ────────────────────────────────────────────────────────
@@ -491,6 +538,31 @@ class HTML:
     """
         self._add_to_slot(html, slot)
         print(f"  ✔ Plot ({kind}) añadido → {slot}")
+        print("╔══════════════════════════════╗")
+        print("║          Plot (Plotly)       ║")
+        print("╚══════════════════════════════╝")
+        """kind="scatter", x=None, y=None, z=None,
+                color=None, alpha: float = 0.8, size=None, title="",
+                slot_grid=("div1",1,1,1,1), padding=6, show_grid=True, **kwargs"""
+        if kind:
+            print(f"Type: {kind}")
+        if x and y:
+            print("Data okay!")
+        if color:
+            print(f"Color: {color}")
+        if size:
+            print(f"Size: {size}")
+        if title:
+            print(f"Title: {title}")
+        if slot_grid:
+            print(f"Slot: {slot_grid}, Row: {row}, Col: {col}, Height: {height}, Width: {width}")
+        if padding:
+            print(f"Padding: {padding}")
+        if show_grid:
+            print(f"Show grid: {show_grid}")
+        if kwargs:
+            print(f"Kwargs: {kwargs}")
+
         return self
 
     # ────────────────────────────────────────────────────────
@@ -590,6 +662,31 @@ function vxSearch(uid, q){{
 """
         self._add_to_slot(html, slot)
         print(f"  ✔ Tabla añadida → {slot}")
+        print("╔══════════════════════════════╗")
+        print("║             Table            ║")
+        print("╚══════════════════════════════╝")
+        """        columns=None,
+        slot_grid: tuple = ("div1", 1, 1, 1, 1),
+        max_rows: Optional[int] = None,
+        searchable: bool = False,   # añade barra de búsqueda JS
+        striped: bool = True,"""
+
+        if columns in (None, "all"):
+            print(f"Columns: {list(self.data.columns)}")
+        else:
+            print(f"Columns: {columns}")
+        
+        if max_rows:
+            print(f"Max rows: {max_rows}")
+        if searchable:
+            print(f"Searchable: {searchable}")
+        if striped:
+            print(f"Striped: {striped}")
+
+        if slot_grid:
+            print(f"Slot: {slot}, Row: {row}, Col: {col}, Height: {height}, Width: {width}")
+        
+        
         return self
 
     # ────────────────────────────────────────────────────────
@@ -671,6 +768,26 @@ function vxSearch(uid, q){{
 """
         self._add_to_slot(html, slot)
         print(f"  ✔ Texto añadido → {slot}")
+
+        print("╔══════════════════════════════╗")
+        print("║             Text             ║")
+        print("╚══════════════════════════════╝")
+
+        if content:
+            print(f"Content: ", content[:100])
+
+        if align:
+            print(f"Align: {align}")
+
+        if glass:
+            print(f"Glass: {glass}")
+
+        if border_accent:
+            print(f"Border Accent: {border_accent}")
+
+        if slot_grid:
+            print(f"Slot: {slot}, Row: {row}, Col: {col}, Height: {height}, Width: {width}")
+
         return self
 
     # ────────────────────────────────────────────────────────
@@ -733,6 +850,28 @@ function vxSearch(uid, q){{
 """
         self._add_to_slot(html, slot)
         print(f"  ✔ Progress añadido → {slot}")
+        print("╔══════════════════════════════╗")
+        print("║           Progress           ║")
+        print("╚══════════════════════════════╝")
+        if title:
+            print(f"Title: {title}")
+
+        if isinstance(items, dict):
+            print(f"Items: ", items)
+
+        if isinstance(items, list):
+            for item in items:
+                print(f"  - {item['label']}: {item['value']}%")
+
+
+        if slot_grid:
+            print(f"Slot: {slot}, Row: {row}, Col: {col}, Height: {height}, Width: {width}")
+
+        return self
+
+    # ────────────────────────────────────────────────────────
+    #  TEXT
+    # ────────────────────────────────────────────────────────
         return self
 
     # ────────────────────────────────────────────────────────
@@ -778,6 +917,18 @@ function vxSearch(uid, q){{
 """
         self._add_to_slot(html, slot)
         print(f"  ✔ Badges añadidos → {slot}")
+        print("╔══════════════════════════════╗")
+        print("║            Badges            ║")
+        print("╚══════════════════════════════╝")
+        if title:
+            print(f"Title: {title}")
+
+        if items:
+            print(f"Items: ", items)
+
+        if slot_grid:
+            print(f"Slot: {slot}, Row: {row}, Col: {col}, Height: {height}, Width: {width}")
+
         return self
 
     # ────────────────────────────────────────────────────────
