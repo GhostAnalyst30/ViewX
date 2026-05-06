@@ -11,6 +11,8 @@ __author__ = "Emmanuel Ascendra"
 from .HTML import HTML
 from .DashBoard import DashBoard
 from .Report import Report
+from .Slides import Presentation, Slide
+from .DataMatrix import DataMatrix
 from .datasets import load_dataset
 
 # Definir qué se expone cuando se hace: from statslib import *
@@ -19,6 +21,9 @@ __all__ = [
     'HTML',
     'DashBoard',
     'Report',
+    'Presentation',
+    'Slide',
+    'DataMatrix',
     # Funciones
     'load_dataset'
 ]

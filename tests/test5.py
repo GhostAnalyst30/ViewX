@@ -40,4 +40,4 @@ with Slide(title="Gráficos", index=3):
     PiePlot(["Python", "HTML", "CSS"], [55, 30, 15], title="PiePlot", hole=0.35).pos(left=54, top=25).size(width="38%", height="52%")
 
 path = pres.export("viewx_slides_demo.html")
-print(path)
+print(path) 
