@@ -8,9 +8,9 @@ __version__ = "0.2.0"
 __author__ = "Emmanuel Ascendra"
 
 # Importar las clases principales
-from .html_engine import HTML
-from .dashboard_engine import DashBoard
-from .report_engine import Report
+from .HTML import HTML
+from .DashBoard import DashBoard
+from .Report import Report
 from .datasets import load_dataset
 
 # Definir qué se expone cuando se hace: from statslib import *

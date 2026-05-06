@@ -2,10 +2,8 @@ dist/
 build/
 *.egg-info
 *.toml
-*.html
 venv/
 __pycache__/
 *.pyc
 .env
-tests/
 .vscode/
