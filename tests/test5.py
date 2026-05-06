@@ -1,120 +1,43 @@
-from viewx.Slides import *
+from viewx.Slides import (
+    Presentation, Slide, Grid,
+    Title, Subtitle, Text, BulletList,
+    BarPlot, PiePlot, IconStat, RotatingIcon, MovingFigure,
+    Button, Link
+)
 
-Presentation.reset()
+pres = Presentation("Demo Viewx.Slides", theme="dark")
+pres.font("Inter").meta(author="Viewx", date="2026")
 
-Presentation.theme("neon") \
-    .transition("zoom") \
-    .meta(title="Demo Brutal 🚀", author="Emmanuel", date="2026") \
-    .auto_advance(0)
+with Slide(title="Bienvenida al Motor", index=1, notes="Slide de portada del motor Viewx.Slides."):
+    Title("Slides Engine v1.0").center("x").pos(top=10).zoom_in(duration=1.2)
+    Subtitle("Framework de presentaciones dinámicas en Python").center("x").pos(top=26).slide_in("right")
+    Text(
+        "Este motor permite crear presentaciones HTML interactivas de forma programática, con posicionamiento, dimensiones, animaciones y componentes reutilizables.",
+        color="#ffffff",
+    ).center("x").pos(top=42).size(width="68%").align("center").fade_in(delay=0.3)
+    RotatingIcon("gear", size=64, color="#00f2ff").pos(right=6, top=8)
+    MovingFigure("circle", color="rgba(0,242,255,.22)", size=180, path="drift").pos(left=8, bottom=10).z(1)
+    Button("Ver GitHub", href="https://github.com/").center("x").pos(top=68).fade_in(delay=0.55)
 
-# ─────────────────────────────
-# SLIDE 1 — PORTADA
-# ─────────────────────────────
-with GradientSlide("Inicio", 1, ["#0f2027", "#203a43", "#2c5364"]):
-    Title("Slides Framework").center().slide_in("down")
-    Subtitle("Demo completo de componentes").center().pos(top=60).fade_in(0.5)
-
-    GlowText("🔥 Animaciones 🔥").center().pos(top=75)
-
-    Shape("circle", 120, 120, "#00ff88").pos(left=10, top=20).float_loop()
-    Shape("rect", 80, 80, "#ff006e").pos(right=10, bottom=20).rotate_loop()
-
-# ─────────────────────────────
-# SLIDE 2 — TEXTO + LISTA
-# ─────────────────────────────
-with Slide("Texto", 2):
-    Title("Componentes de Texto").center().pos(top=10)
-
-    Text("Este framework es absurdamente flexible 😎", 22).center().pos(top=30)
-
+with Slide(title="Componentes", index=2, bg="linear-gradient(135deg,#111827,#312e81)"):
+    Title("Componentes incluidos").pos(left=6, top=8).slide_in("left")
     BulletList([
-        "Animaciones CSS",
-        "Layouts dinámicos",
-        "Componentes reutilizables",
-        "Exportación HTML"
-    ]).center().pos(top=45).slide_in("left")
+        "Textos, títulos, subtítulos y listas.",
+        "Imágenes, vídeos, hipervínculos y botones.",
+        "Estadísticas con iconos y figuras animadas.",
+        "Gráficos interactivos basados en Plotly.",
+    ]).pos(left=8, top=30).size(width="48%")
+    with Grid(columns=3, gap=18).pos(left=58, top=26).size(width="36%"):
+        IconStat("check", "12+", "Componentes")
+        IconStat("chart", "4", "Gráficos")
+        IconStat("bolt", "CSS", "Animaciones")
+    Link("Ir a la portada", href="#").pos(left=8, bottom=12).link_to_slide(1)
 
-# ─────────────────────────────
-# SLIDE 3 — CARDS
-# ─────────────────────────────
-with Slide("Cards", 3):
-    Title("Cards").center().pos(top=10)
+with Slide(title="Gráficos", index=3):
+    Title("Plotly integrado").pos(left=6, top=7).zoom_in()
+    Text("Los gráficos se exportan como HTML interactivo usando Plotly por CDN.").pos(left=7, top=22).size(width="42%")
+    BarPlot(["A", "B", "C", "D"], [24, 38, 31, 45], title="BarPlot").pos(left=7, top=38).size(width="40%", height="42%")
+    PiePlot(["Python", "HTML", "CSS"], [55, 30, 15], title="PiePlot", hole=0.35).pos(left=54, top=25).size(width="38%", height="52%")
 
-    Columns(
-        [Card("Rápido", "Genera slides en segundos", "⚡")],
-        [Card("Flexible", "Customizable total", "🎨")],
-        [Card("Potente", "Animaciones incluidas", "🚀")]
-    ).center().pos(top=35)
-
-# ─────────────────────────────
-# SLIDE 4 — CÓDIGO
-# ─────────────────────────────
-with Slide("Código", 4):
-    Title("Código").center().pos(top=10)
-
-    Code("""
-for i in range(5):
-    print("🔥 Python + Slides")
-""", line_numbers=True).center().pos(top=35)
-
-# ─────────────────────────────
-# SLIDE 5 — STATS
-# ─────────────────────────────
-with Slide("Stats", 5):
-    Title("Estadísticas").center().pos(top=10)
-
-    IconStat("🚀", "100%", "Velocidad").pos(left=20, top=40)
-    IconStat("🔥", "999", "Energía").pos(left=40, top=40)
-    IconStat("💡", "∞", "Ideas").pos(left=60, top=40)
-
-# ─────────────────────────────
-# SLIDE 6 — BAR CHART
-# ─────────────────────────────
-with Slide("BarChart", 6):
-    Title("Gráfico de Barras").center().pos(top=10)
-
-    BarChart([
-        {"label": "Python", "value": 90},
-        {"label": "JS", "value": 75},
-        {"label": "C++", "value": 60}
-    ]).center().pos(top=35).animate_bars()
-
-# ─────────────────────────────
-# SLIDE 7 — TIMELINE
-# ─────────────────────────────
-with Slide("Timeline", 7):
-    Title("Timeline").center().pos(top=10)
-
-    Timeline([
-        {"year": "2024", "title": "Inicio", "desc": "Aprendiendo"},
-        {"year": "2025", "title": "Progreso", "desc": "Proyectos"},
-        {"year": "2026", "title": "Dominio", "desc": "Modo dios 😎"}
-    ]).center().pos(top=30)
-
-# ─────────────────────────────
-# SLIDE 8 — EFECTOS LOCOS
-# ─────────────────────────────
-with ParticleSlide("Animaciones", 8):
-    Title("Animaciones").center().pos(top=10)
-
-    MovingFigure("circle", 60).pos(left=20, top=40).move_path("orbit", 4)
-    MovingFigure("rect", 60).pos(left=60, top=50).bounce_continuous()
-
-    RotatingIcon("⚙️", 60).pos(left=45, top=70)
-
-# ─────────────────────────────
-# SLIDE 9 — PROGRESS
-# ─────────────────────────────
-with Slide("Progress", 9):
-    Title("Progreso").center().pos(top=10)
-
-    ProgressCircle(85, "Proyecto").pos(left=30, top=40)
-    ProgressCircle(60, "IA").pos(left=55, top=40)
-
-# ─────────────────────────────
-# SLIDE FINAL
-# ─────────────────────────────
-with Slide("Final", 10):
-    Title("FIN 🚀").center().pos(top=40).pulse_loop()
-
-Presentation.show()
+path = pres.export("viewx_slides_demo.html")
+print(path)

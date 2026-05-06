@@ -1,118 +1,54 @@
-"""
-Slides - Presentaciones HTML con animaciones
+"""API pública de `viewx.Slides`.
+
+Uso típico:
+
+```python
+from viewx.Slides import Presentation, Slide, Title, BarPlot
+```
 """
 
-# Clases principales del motor
-from .slides_engine import (
-    Presentation,
-    Slide,
+from .slides_engine import ContextStack, Grid, Presentation, Slide, THEMES
+from .components import (
+    Button,
+    BulletList,
     Component,
-    GradientSlide,
-    ParticleSlide,
-    SplitSlide,
-)
-
-# Componentes animados
-from .slides_engine import (
+    Hyperlink,
+    IconStat,
+    Image,
+    Link,
     MovingFigure,
     RotatingIcon,
-    OrbitingObject,
-    GlowText,
-    ParticleSystem,
-)
-
-from .charts import (
-    BarChart,
-    ScatterPlot,
-    PieChart,
-    LineChart,
-    Histogram,
-    BoxPlot,
-)
-
-# Componentes de texto
-from .slides_engine import (
-    Title,
     Subtitle,
     Text,
-    Quote,
-    Shape,
-    Code,
-    BulletList,
-    Button,
-    Badge,
+    Title,
+    Video,
 )
-
-# Componentes visuales
-from .slides_engine import (
-    Divider,
-    Image,
-    Card,
-    IconStat,
-    Timeline,
-    Table,
-    Columns,
-    QRCode,
-    Tooltip,
-    ProgressCircle,
-    CountUp,
-)
-
-# Constantes
-from .slides_engine import (
-    THEMES,
-    TRANSITION_CSS,
-    KEYFRAMES,
-)
+from .charts import AreaPlot, BarPlot, DonutPlot, LinePlot, PiePlot, PlotlyChart, ScatterPlot
 
 __all__ = [
-    # Clases principales
     "Presentation",
     "Slide",
+    "Grid",
+    "ContextStack",
+    "THEMES",
     "Component",
-    "GradientSlide",
-    "ParticleSlide",
-    "SplitSlide",
-    
-    # Componentes animados
-    "MovingFigure",
-    "RotatingIcon",
-    "OrbitingObject",
-    "GlowText",
-    "ParticleSystem",
-    
-    # Componentes de texto
     "Title",
     "Subtitle",
     "Text",
-    "Quote",
-    "Shape",
-    "Code",
     "BulletList",
-    "Button",
-    "Badge",
-    
-    # Componentes visuales
-    "Divider",
     "Image",
-    "Card",
-    "BarChart",
-    "ScatterPlot",
-    "PieChart",
-    "LineChart",
-    "Histogram",
-    "BoxPlot",
+    "Video",
+    "Hyperlink",
+    "Link",
+    "Button",
     "IconStat",
-    "Timeline",
-    "Table",
-    "Columns",
-    "QRCode",
-    "Tooltip",
-    "ProgressCircle",
-    "CountUp",
-    
-    # Constantes
-    "THEMES",
-    "TRANSITION_CSS",
-    "KEYFRAMES",
+    "RotatingIcon",
+    "MovingFigure",
+    "PlotlyChart",
+    "BarPlot",
+    "PiePlot",
+    "DonutPlot",
+    "LinePlot",
+    "ScatterPlot",
+    "AreaPlot",
 ]
