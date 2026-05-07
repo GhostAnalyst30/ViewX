@@ -38,4 +38,6 @@ def welcome():
     print(f" - HTML")
     print(f" - DashBoard")
     print(f" - Report")
+    print(f" - Slides")
+    print(f" - DataMatrix")
     print(f"\nPara más información: help(statslibx)")

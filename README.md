@@ -27,110 +27,75 @@ pip install viewx
 
 ### Crear una página HTML
 ```python
-from viewx.datasets import load_iris
+import pandas as pd
+import numpy as np
+import plotly.express as px
 from viewx.HTML import HTML
 
-df = load_iris()
+# 1. Datos de ejemplo (Ventas por Categoría y Región)
+df_ventas = pd.DataFrame({
+    'Categoría': ['Electrónica', 'Hogar', 'Moda', 'Deportes', 'Juguetes'],
+    'Ventas': [12500, 8400, 15200, 6700, 4300],
+    'Margen': [0.15, 0.22, 0.18, 0.12, 0.25]
+})
 
-page = HTML(
-    data=df,
-    title="ViewX",
-    template_color=0,
-    num_divs=8,
-    num_cols=4,
-    num_rows=5,
-    gap=8,
-    padding=8,
+df_mensual = pd.DataFrame({
+    'Mes': ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+    'Ingresos': [45000, 48000, 52000, 49000, 55000, 61000]
+})
+
+# 2. Gráficos estilo Power BI
+fig_bar = px.bar(df_ventas, x='Categoría', y='Ventas', color='Categoría', 
+                 title="Ventas por Categoría", template="plotly_white")
+fig_line = px.line(df_mensual, x='Mes', y='Ingresos', markers=True, 
+                  title="Evolución de Ingresos", template="plotly_white")
+fig_pie = px.pie(df_ventas, values='Ventas', names='Categoría', hole=0.4,
+                title="Distribución de Ventas")
+
+# 3. Inicializar Dashboard con Estética Power BI
+# Temas: corporate_blue, dark_enterprise, modern_green, void_indigo, glass_ocean, cyberpunk_neon
+dash = HTML(
+    title="Dashboard de Rendimiento Corporativo",
+    theme="corporate_blue", 
     navbar={
-        "title": "ViewX v2.0",
+        "title": "BI Analytics",
         "items": [
-            {"label": "Inicio",    "link": "#"},
-            {"label": "Ventas",    "link": "#"},
-            {"label": "Análisis",  "link": "#"},
-            {"label": "Acerca",    "link": "#"},
-        ],
-        "height": 64,
-        "title_font_size": 20,
-        "items_font_size": 14,
+            {"label": "Global", "link": "#"},
+            {"label": "Ventas", "link": "#"},
+            {"label": "Reportes", "link": "#"}
+        ]
     }
 )
-# Atributos
-print("Colores: ", page.templates)
-print("Altura Barra de Navegacion (px):", page.navbar_height)
-print("Tamaño de fuente del titulo (px):", page.title_font_size)
-print("Tamaño de fuente de los items (px):", page.items_font_size)
 
-page.add_valuebox(
-    title="Registros",
-    value=f"{df['species'].count()}",
-    icon="🌸",
-    slot_grid=("div1", 1, 1, 1, 1),
-    subtitle=f"{df['species'].unique().shape[0]} especies",
-)
-# slot_grid = ("div#", fila_inicial, columna_inicial, alto, ancho)
+# 4. Añadir Componentes usando el sistema de slot_grid original
+# slot_grid = (fila_inicio, columna_inicio, filas_que_ocupa, columnas_que_ocupa)
 
-page.add_valuebox(
-    title="Promedio Sepal Length",
-    value=f"{round(df['sepal_length'].mean(), 2)}",
-    icon="🌸",
-    slot_grid=("div2", 1, 2, 1, 1)
-)
+# Fila superior: KPIs
+dash.add_valuebox("Ingresos Totales", "$310K", icon="💰", slot_grid=(1, 1, 2, 3))
+dash.add_valuebox("Crecimiento", "+12.5%", icon="📈", color="#107C10", slot_grid=(1, 4, 2, 3))
+dash.add_valuebox("Clientes Activos", "1,452", icon="👥", color="#0078D4", slot_grid=(1, 7, 2, 3))
+dash.add_valuebox("Tasa de Conversión", "4.2%", icon="🎯", color="#E63946", slot_grid=(1, 10, 2, 3))
 
-page.add_valuebox(
-    title="Promedio Petal Width",
-    value=round(df["petal_width"].mean(), 2),
-    icon="🌸",
-    slot_grid=("div3", 1, 3, 1, 1)
-)
+# Fila central: Gráficos principales
+dash.add_plot(fig_line, title="Tendencia Mensual", slot_grid=(3, 1, 5, 8))
+dash.add_plot(fig_pie, title="Mix de Productos", slot_grid=(3, 9, 5, 4))
 
-page.add_text(
-    """
-    <h2>ViewX v2.0</h2>
-    <p>Iris Dataset Dashboard</p>
-    <p>Este DashBoard fue desarrollado por Emmanuel Ascendra con ViewX</p>
-    """,
-    slot_grid=("div4", 1, 4, 1, 1),
-    align="center",
-    glass=False,
-    border_accent=True
-)
+# Fila inferior: Tabla y Texto
+dash.add_table(df_ventas, title="Detalle de Categorías", slot_grid=(8, 1, 5, 7))
+dash.add_text("""
+    <h3>Resumen de Insights</h3>
+    <p>El segmento de <b>Moda</b> lidera las ventas con un margen saludable del 18%.</p>
+    <p>Se observa un crecimiento sostenido en los ingresos mensuales, alcanzando un pico en <b>Junio</b>.</p>
+    <p><i>Recomendación:</i> Aumentar stock en la categoría 'Hogar' debido al incremento de demanda previsto.</p>
+""", slot_grid=(8, 8, 5, 5))
 
-page.add_plot(
-    kind="scatter",
-    x="sepal_length",
-    y="sepal_width",
-    title="Sepal Length vs Width",
-    slot_grid=("div5", 2, 1, 2, 2)
-)
-
-page.add_table(
-    columns="all",
-    searchable=True,
-    striped=True,
-    slot_grid=("div6", 2, 3, 2, 2)
-)   
-
-page.add_plot(
-    kind="box",
-    x="species",
-    y="petal_width",
-    title="Petal Width por especie",
-    slot_grid=("div7", 4, 1, 2, 2)
-)
-
-page.add_plot(
-    kind="bar",
-    x="species",
-    y="sepal_length",
-    title="Promedio Sepal Length",
-    slot_grid=("div8", 4, 3, 2, 2)
-)
-
-page.show("demo_iris.html", port=8000)
+# 5. Generar Dashboard
+output = dash.generate("powerbi_dashboard_pro.html")
+print(f"Dashboard profesional generado: {output}")
 
 ```
 
-![DashBoardIris](https://raw.githubusercontent.com/GhostAnalyst30/ViewX/main/images_for_git/DashBoard%20Iris.png
+![DashBoardIris](https://raw.githubusercontent.com/GhostAnalyst30/ViewX/main/images_for_git/DashBoard_Example.png
 )
 
 ### Crear un DashBoard
@@ -181,137 +146,49 @@ db.run(open_browser=True)
 ### Crear una Presentacion
 
 ```python
-# demo_plotly.py
-from viewx.Slides import *
-import pandas as pd
-import numpy as np
-
-# Configurar tema oscuro/neón
-Presentation.theme("neon").transition("slide").meta(
-    title="Gráficos Plotly",
-    author="Data Science",
-    date="2024"
+from viewx.Slides import (
+    Presentation, Slide, Grid,
+    Title, Subtitle, Text, BulletList,
+    BarPlot, PiePlot, IconStat, RotatingIcon, MovingFigure,
+    Button, Link
 )
 
-# DataFrame para scatter
-df_scatter = pd.DataFrame({
-    'x': np.random.randn(100) * 10 + 50,
-    'y': np.random.randn(100) * 5 + 30,
-    'categoria': np.random.choice(['A', 'B', 'C'], 100)
-})
+pres = Presentation("Demo Viewx.Slides", theme="dark")
+pres.font("Inter").meta(author="Viewx", date="2026")
 
-# Datos para pie chart
-ventas_por_producto = {
-    'Electrónica': 35000,
-    'Ropa': 28000,
-    'Hogar': 22000,
-    'Deportes': 18000
-}
+with Slide(title="Bienvenida al Motor", index=1, notes="Slide de portada del motor Viewx.Slides."):
+    Title("Slides Engine v1.0").center("x").pos(top=10).zoom_in(duration=1.2)
+    Subtitle("Framework de presentaciones dinámicas en Python").center("x").pos(top=26).slide_in("right")
+    Text(
+        "Este motor permite crear presentaciones HTML interactivas de forma programática, con posicionamiento, dimensiones, animaciones y componentes reutilizables.",
+        color="#ffffff",
+    ).center("x").pos(top=42).size(width="68%").align("center").fade_in(delay=0.3)
+    RotatingIcon("gear", size=64, color="#00f2ff").pos(right=6, top=8)
+    MovingFigure("circle", color="rgba(0,242,255,.22)", size=180, path="drift").pos(left=8, bottom=10).z(1)
+    Button("Ver GitHub", href="https://github.com/").center("x").pos(top=68).fade_in(delay=0.55)
 
-# Datos para barras (múltiples series)
-ventas_mensuales = {
-    'Producto A': [10, 20, 15, 30, 25, 40],
-    'Producto B': [15, 25, 20, 35, 30, 45],
-    'Producto C': [5, 10, 8, 15, 12, 20]
-}
-meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun']
+with Slide(title="Componentes", index=2, bg="linear-gradient(135deg,#111827,#312e81)"):
+    Title("Componentes incluidos").pos(left=6, top=8).slide_in("left")
+    BulletList([
+        "Textos, títulos, subtítulos y listas.",
+        "Imágenes, vídeos, hipervínculos y botones.",
+        "Estadísticas con iconos y figuras animadas.",
+        "Gráficos interactivos basados en Plotly.",
+    ]).pos(left=8, top=30).size(width="48%")
+    with Grid(columns=3, gap=18).pos(left=58, top=26).size(width="36%"):
+        IconStat("check", "12+", "Componentes")
+        IconStat("chart", "4", "Gráficos")
+        IconStat("bolt", "CSS", "Animaciones")
+    Link("Ir a la portada", href="#").pos(left=8, bottom=12).link_to_slide(1)
 
-# Datos para boxplot
-df_boxplot = pd.DataFrame({
-    'Grupo 1': np.random.normal(50, 10, 100),
-    'Grupo 2': np.random.normal(60, 15, 100),
-    'Grupo 3': np.random.normal(45, 8, 100)
-})
+with Slide(title="Gráficos", index=3):
+    Title("Plotly integrado").pos(left=6, top=7).zoom_in()
+    Text("Los gráficos se exportan como HTML interactivo usando Plotly por CDN.").pos(left=7, top=22).size(width="42%")
+    BarPlot(["A", "B", "C", "D"], [24, 38, 31, 45], title="BarPlot").pos(left=7, top=38).size(width="40%", height="42%")
+    PiePlot(["Python", "HTML", "CSS"], [55, 30, 15], title="PiePlot", hole=0.35).pos(left=54, top=25).size(width="38%", height="52%")
 
-# Datos para línea
-df_line = pd.DataFrame({
-    'fecha': pd.date_range('2024-01-01', periods=12, freq='M'),
-    'ventas': np.cumsum(np.random.randint(100, 500, 12)),
-    'costos': np.cumsum(np.random.randint(50, 300, 12))
-})
-
-# ============================================================
-# SLIDES
-# ============================================================
-
-with Slide("Scatter Plot", index=1):
-    Title("📈 Scatter Plot Interactivo").center("x").pos(top=10)
-    
-    # Gráfico con tamaño personalizado
-    ScatterPlot(
-        df_scatter, x_col="x", y_col="y", color_col="categoria",
-        title="Distribución de Datos", x_label="Eje X", y_label="Eje Y"
-    ).size(width="80%", height="400px").center("x").pos(top=25).zoom_in()
-
-with Slide("Pie Chart", index=2):
-    Title("🥧 Gráfico de Pastel").center("x").pos(top=10)
-    
-    PieChart(
-        ventas_por_producto,
-        title="Ventas por Categoría",
-        hole=0.3  # Donut chart
-    ).size(width="500px", height="450px").center().zoom_in().pos(top=60)
-
-with Slide("Barras Múltiples", index=3):
-    Title("📊 Barras Agrupadas").center("x").pos(top=10)
-    
-    BarChart(
-        ventas_mensuales, x_labels=meses,
-        title="Ventas Mensuales por Producto",
-        x_label="Mes", y_label="Ventas (k$)",
-        barmode='group'
-    ).size(width="80%", height="420px").center("x").pos(top=25).slide_in("left")
-
-with Slide("Boxplot", index=4):
-    Title("📦 Diagrama de Caja").center("x").pos(top=10)
-    
-    BoxPlot(
-        df_boxplot,
-        title="Comparación de Grupos",
-        y_label="Valores"
-    ).size(width="85%", height="450px").center("x").pos(top=25).fade_in()
-
-with Slide("Histograma", index=5):
-    Title("📊 Histograma").center("x").pos(top=10)
-    
-    Histogram(
-        df_scatter, column="x", bins=20,
-        title="Distribución de frecuencia",
-        x_label="Valor", y_label="Frecuencia"
-    ).size(width="75%", height="420px").center("x").pos(top=25).zoom_in()
-
-with Slide("Líneas", index=6):
-    Title("📈 Series Temporales").center("x").pos(top=10)
-    
-    LineChart(
-        df_line, x_col="fecha", y_cols=["ventas", "costos"],
-        title="Evolución mensual", x_label="Fecha", y_label="Monto (k$)"
-    ).size(width="85%", height="450px").center("x").pos(top=25).slide_in("right")
-
-# ============================================================
-# EJEMPLO CON pos() Y size() PERSONALIZADOS
-# ============================================================
-
-with Slide("Personalizado", index=7):
-    Title("🎨 Gráficos a Medida").center("x").pos(top=10)
-    
-    # Gráfico pequeño en esquina superior derecha
-    PieChart(ventas_por_producto, hole=0).size(width="30%", height="350px").center("x").pos(top=20, right=20)
-    
-    # Gráfico grande centrado
-    BarChart(
-        {"A": [10, 20, 30, 40], "B": [15, 25, 35, 45]}, 
-        x_labels=["Q1", "Q2", "Q3", "Q4"]
-    ).size(width="30%", height="350px").center("x").pos(top=20, left=20)
-    
-    Text("Gráficos respetan pos() y size()", size=12).center("y").pos(top=20).fade_in(delay=0.5)
-
-# ============================================================
-# EJECUTAR
-# ================ ============================================
-if __name__ == "__main__":
-    Presentation.show("plotly_demo.html")
-    print("\n✅ Demo Plotly generada! Los gráficos respetan el tema y las dimensiones.")
+path = pres.export("viewx_slides_demo.html")
+print(path) 
 ```
 
 ### Crear un Reporte
@@ -458,6 +335,56 @@ r.build("reporte_demo")
 ```
 
 ![Report PDF](https://raw.githubusercontent.com/GhostAnalyst30/ViewX/main/images_for_git/Report_pdf_1.png)
+
+### Analizar Datos en DataMatrix
+
+```python
+import pandas as pd
+import numpy as np
+from viewx.DataMatrix import DataMatrix
+
+# 1. Crear un Dataset sintético que simule datos bibliométricos
+data = {
+    'Authors': [
+        'Aria, M; Cuccurullo, C', 'Aria, M; Smith, J', 'Cuccurullo, C', 
+        'Doe, J', 'Smith, J; Doe, J', 'Aria, M', 'Brown, A', 'Brown, A; Smith, J',
+        'Gomez, P', 'Gomez, P; Aria, M', 'Doe, J', 'White, S', 'White, S; Brown, A',
+        'Black, R', 'Black, R; Gomez, P', 'Green, T', 'Green, T; Aria, M',
+        'Doe, J', 'Smith, J', 'Cuccurullo, C'
+    ],
+    'Year': [2017, 2017, 2018, 2018, 2019, 2019, 2020, 2020, 2021, 2021, 2022, 2022, 2023, 2023, 2024, 2024, 2025, 2025, 2026, 2026],
+    'Journal': [
+        'Journal of Informetrics', 'Journal of Informetrics', 'Scientometrics', 
+        'Scientometrics', 'Nature', 'Nature', 'Science', 'Science',
+        'Journal of Informetrics', 'Scientometrics', 'Nature', 'Science',
+        'Journal of Informetrics', 'Scientometrics', 'Nature', 'Science',
+        'Journal of Informetrics', 'Scientometrics', 'Nature', 'Science'
+    ],
+    'Citations': np.random.randint(0, 100, size=20),
+    'Abstract': ['Resumen de prueba ' + str(i) for i in range(20)],
+    'Keywords': ['bibliometrics; R', 'python; data science', 'metrics; science', 'analysis', 'data', 'python', 'r', 'metrics', 'science', 'mapping', 'analysis', 'data', 'python', 'r', 'metrics', 'science', 'mapping', 'analysis', 'data', 'python'],
+    'Duplicate_Col': [1] * 20, # Columna constante para alerta
+    'Missing_Col': [np.nan] * 15 + [1, 2, 3, 4, 5] # Columna con muchos nulos
+}
+
+df = pd.DataFrame(data)
+
+# Añadir filas duplicadas para probar limpieza
+df = pd.concat([df, df.iloc[:2]], ignore_index=True)
+
+print("Dataset creado con", len(df), "filas.")
+
+# 2. Usar DataMatrix
+dm = DataMatrix(df)
+
+# Limpiar datos
+dm.clean_data(drop_duplicates=True, fill_na=True)
+
+# Generar reporte
+report_path = dm.generate_report("demo_datamatrix_report.html", title="Análisis Bibliométrico de Prueba")
+
+print(f"Reporte generado exitosamente en: {report_path}")
+```
 
 ## 🤝 Contribuciones
 
