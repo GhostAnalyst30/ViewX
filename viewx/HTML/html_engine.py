@@ -6,7 +6,8 @@ import uuid
 from typing import Optional, Tuple, Union, List, Dict
 
 # ============================================================
-#                      ViewX Dashboard PRO v4.0
+#          ViewX Dashboard PRO v5.0 - Estática e Interactiva
+#                Sin scrollbars - Grid fijo
 # ============================================================
 
 class ThemeManager:
@@ -82,25 +83,54 @@ class ThemeManager:
             --vx-shadow: {shadow};
             --vx-transition: all 0.3s cubic-bezier(.16,1,.3,1);
         }}
-        * {{ box-sizing: border-box; }}
+        * {{
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }}
         body {{
             background: var(--vx-bg-page);
             color: var(--vx-text-primary);
             font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
-            margin: 0; padding: 0;
-            overflow-x: hidden;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
         }}
         .vx-card {{
             background: var(--vx-bg-card);
             border-radius: var(--vx-card-radius);
             box-shadow: var(--vx-shadow);
             transition: var(--vx-transition);
-            overflow: hidden;
+            overflow: auto;
             border: 1px solid rgba(0,0,0,0.05);
         }}
         .vx-card:hover {{
-            transform: translateY(-4px);
+            transform: translateY(-2px);
             box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }}
+        
+        /* Asegurar que los gráficos Plotly sean 100% responsivos */
+        .plotly-graph-div {{
+            width: 100% !important;
+            height: 100% !important;
+        }}
+        
+        .js-plotly-plot, .plot-container {{
+            width: 100% !important;
+            height: 100% !important;
+        }}
+        
+        /* Scroll interno elegante */
+        .vx-card::-webkit-scrollbar {{
+            width: 6px;
+            height: 6px;
+        }}
+        .vx-card::-webkit-scrollbar-track {{
+            background: transparent;
+        }}
+        .vx-card::-webkit-scrollbar-thumb {{
+            background: {accent}55;
+            border-radius: 3px;
         }}
         """
         
@@ -123,39 +153,41 @@ class ThemeManager:
             
         return css
 
+
 class HTML:
     def __init__(
         self,
-        data=None,
         title: str = "ViewX Dashboard",
         theme: Union[int, str] = "corporate_blue",
-        num_cols: int = 12,
-        num_rows: int = 12,
+        cols: int = 12,
+        rows: int = 12,
         gap: int = 16,
         padding: int = 24,
         navbar: dict = None
     ):
-        self.data = data
         self.title = title
         self.theme_manager = ThemeManager(theme)
-        self.num_cols = num_cols
-        self.num_rows = num_rows
+        self.cols = cols
+        self.rows = rows
         self.gap = gap
         self.padding = padding
         self.navbar = navbar
         
         self.grid_css = []
         self.components_html = []
+        self._component_counter = 0
         
-    def _register_block(self, slot_id: str, row: int, col: int, height: int, width: int):
-        css = f".{slot_id} {{ grid-area: {row} / {col} / {row + height} / {col + width}; }}"
+    def _register_block(self, component_id: str, row: int, col: int, height: int, width: int):
+        css = f".{component_id} {{ grid-area: {row} / {col} / {row + height} / {col + width}; }}"
         self.grid_css.append(css)
 
     def _uid(self) -> str:
-        return f"comp_{uuid.uuid4().hex[:8]}"
+        self._component_counter += 1
+        return f"comp_{self._component_counter}_{uuid.uuid4().hex[:6]}"
 
-    def add_valuebox(self, title: str, value, icon: str = "📊", color: str = None, slot_grid: tuple = (1, 1, 2, 3)):
-        row, col, height, width = slot_grid
+    def add_valuebox(self, title: str, value, icon: str = "📊", color: str = None, 
+                     row: int = 1, col: int = 1, height: int = 2, width: int = 3):
+        """Añade una tarjeta con valor destacado (KPI)"""
         uid = self._uid()
         self._register_block(uid, row, col, height, width)
         
@@ -165,24 +197,25 @@ class HTML:
         html = f"""
         <style>
             .vb-{uid} {{
-                padding: 24px;
+                padding: 20px;
                 display: flex;
                 align-items: center;
-                gap: 20px;
+                gap: 16px;
                 border-left: 6px solid {box_color};
+                height: 100%;
             }}
             .vb-icon-{uid} {{ 
-                font-size: 2.8rem; 
+                font-size: 2.5rem; 
                 color: {box_color}; 
                 opacity: 0.9;
                 background: {box_color}15;
-                width: 64px; height: 64px;
+                width: 56px; height: 56px;
                 display: flex; align-items: center; justify-content: center;
                 border-radius: 12px;
             }}
             .vb-content-{uid} {{ flex: 1; }}
             .vb-title-{uid} {{ 
-                font-size: 0.85rem; 
+                font-size: 0.8rem; 
                 color: var(--vx-text-secondary); 
                 text-transform: uppercase; 
                 font-weight: 700;
@@ -190,10 +223,15 @@ class HTML:
                 margin-bottom: 4px;
             }}
             .vb-val-{uid} {{ 
-                font-size: 2rem; 
+                font-size: 1.8rem; 
                 font-weight: 800; 
                 color: var(--vx-text-primary); 
                 line-height: 1;
+            }}
+            @media (max-height: 700px) {{
+                .vb-{uid} {{ padding: 12px; }}
+                .vb-icon-{uid} {{ font-size: 1.8rem; width: 44px; height: 44px; }}
+                .vb-val-{uid} {{ font-size: 1.4rem; }}
             }}
         </style>
         <div class="vx-card vb-{uid} {uid}">
@@ -206,95 +244,232 @@ class HTML:
         """
         self.components_html.append(html)
         return self
+    
+    def _hex_to_rgba(self, hex_color: str, alpha: float = 0.13) -> str:
+        """Convierte hex a rgba para Plotly"""
+        hex_color = hex_color.lstrip('#')
+        r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+        return f"rgba({r}, {g}, {b}, {alpha})"
 
-    def add_plot(self, fig, slot_grid: tuple = (1, 1, 6, 6), title: str = ""):
-        row, col, height, width = slot_grid
+    def add_chart(self, data=None, fig=None, chart_type="line", x=None, y=None, z=None,
+                    title: str = "", row: int = 1, col: int = 1, height: int = 6, width: int = 6):
+            """
+            Añade un gráfico interactivo que se autoajusta al zoom/redimensionamiento.
+            
+            Modos de uso:
+            1. Pasar fig (figura Plotly ya creada)
+            2. Pasar data + x + y (+ opcional chart_type)
+            """
+            uid = self._uid()
+            self._register_block(uid, row, col, height, width)
+            
+            bg_page, bg_card, accent, text = self.theme_manager.get_colors()
+            
+            # Si se pasa una figura, usarla directamente
+            if fig is not None:
+                chart_fig = fig
+            elif data is not None and x is not None and y is not None:
+                # Crear figura automática
+                if chart_type == "line":
+                    chart_fig = px.line(data, x=x, y=y, title=title)
+                elif chart_type == "bar":
+                    chart_fig = px.bar(data, x=x, y=y, title=title)
+                elif chart_type == "scatter":
+                    chart_fig = px.scatter(data, x=x, y=y, title=title, color=z if z else None)
+                elif chart_type == "area":
+                    chart_fig = px.area(data, x=x, y=y, title=title)
+                else:
+                    chart_fig = px.line(data, x=x, y=y, title=title)
+            else:
+                raise ValueError("Debes proporcionar fig o (data + x + y)")
+            
+            # Configurar el estilo - CLAVE PARA AUTO-REDIMENSIÓN
+            chart_fig.update_layout(
+                autosize=True,  # Permite redimensionamiento automático
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                font_color=text,
+                title_font_color=accent,
+                title_font_size=14,
+                margin=dict(l=40, r=20, t=40, b=30),
+                font_family="'Segoe UI', sans-serif",
+                hovermode='closest',
+                height=None,  # Sin altura fija
+                width=None    # Sin ancho fijo
+            )
+            
+            # Configurar ejes
+            grid_color = self._hex_to_rgba(text, 0.13)
+            chart_fig.update_xaxes(
+                gridcolor=grid_color,
+                zerolinecolor=grid_color,
+                showgrid=True
+            )
+            chart_fig.update_yaxes(
+                gridcolor=grid_color,
+                zerolinecolor=grid_color,
+                showgrid=True
+            )
+            
+            # Configuración responsive mejorada
+            plot_html = chart_fig.to_html(
+                full_html=False, 
+                include_plotlyjs='cdn', 
+                config={
+                    'displaylogo': False, 
+                    'responsive': True,
+                    'autosizable': True,
+                    'frameMargins': 0
+                }
+            )
+            
+            html = f"""
+                    <style>
+                        .plot-card-{uid} {{
+                            padding: 12px;
+                            display: grid;
+                            grid-template-rows: auto 1fr;
+                            height: 100%;
+                            width: 100%;
+                            overflow: hidden;
+                            gap: 8px;
+                        }}
+                        .plot-card-{uid} h4 {{ 
+                            margin: 0; 
+                            color: var(--vx-text-primary); 
+                            font-weight: 600;
+                            font-size: 0.95rem;
+                            border-bottom: 2px solid {accent}33;
+                            padding-bottom: 6px;
+                        }}
+                        .plot-container-{uid} {{ 
+                            position: relative;
+                            width: 100%;
+                            height: 100%;
+                            min-height: 0;
+                            overflow: hidden;
+                        }}
+                        /* Quitar position: absolute del graph-div */
+                        .plot-container-{uid} .plotly-graph-div {{
+                            width: 100% !important;
+                            height: 100% !important;
+                            /* sin position: absolute */
+                        }}
+                        .plot-container-{uid} .js-plotly-plot {{
+                            width: 100% !important;
+                            height: 100% !important;
+                        }}
+                    </style>
+
+                    <div class="vx-card plot-card-{uid} {uid}">
+                        {f'<h4>{title}</h4>' if title else ""}
+                        <div class="plot-container-{uid}">{plot_html}</div>
+                    </div>
+
+                    <!-- Script DESPUÉS del div para que container no sea null -->
+                    <script>
+                    (function() {{
+                        var container = document.querySelector('.plot-container-{uid}');
+                        var resizeTimeout;
+
+                        function forceResize_{uid}() {{
+                            if (!container) return;
+                            var plotDiv = container.querySelector('.plotly-graph-div');
+                            if (plotDiv && window.Plotly) {{
+                                // Subir al padre para leer dimensiones reales
+                                var card = container.closest('.plot-card-{uid}');
+                                var ref = card || container;
+                                var w = ref.clientWidth;
+                                var h = container.clientHeight;   // altura sigue viniendo del container
+                                if (w > 0 && h > 0) {{
+                                    Plotly.relayout(plotDiv, {{ width: w, height: h }});
+                                }}
+                            }}
+                        }}
+
+                        // Reintentar hasta que Plotly esté listo
+                        function waitAndResize_{uid}(attempts) {{
+                            var plotDiv = container ? container.querySelector('.plotly-graph-div') : null;
+                            if (plotDiv && window.Plotly) {{
+                                forceResize_{uid}();
+                            }} else if (attempts > 0) {{
+                                setTimeout(function() {{ waitAndResize_{uid}(attempts - 1); }}, 100);
+                            }}
+                        }}
+
+                        if (window.ResizeObserver && container) {{
+                            new ResizeObserver(function() {{
+                                clearTimeout(resizeTimeout);
+                                resizeTimeout = setTimeout(forceResize_{uid}, 50);
+                            }}).observe(container);
+                        }}
+
+                        window.addEventListener('resize', function() {{
+                            clearTimeout(resizeTimeout);
+                            resizeTimeout = setTimeout(forceResize_{uid}, 100);
+                        }});
+
+                        document.addEventListener('keydown', function(e) {{
+                            if ((e.ctrlKey || e.metaKey) && ['+','-','0','='].includes(e.key)) {{
+                                clearTimeout(resizeTimeout);
+                                resizeTimeout = setTimeout(forceResize_{uid}, 150);
+                            }}
+                        }});
+
+                        // Esperar hasta 20 intentos × 100ms = 2 segundos
+                        waitAndResize_{uid}(20);
+                    }})();
+                    </script>
+                    """
+            self.components_html.append(html)
+            return self
+
+
+    def add_table(self, df: pd.DataFrame, row: int = 1, col: int = 1, 
+                  height: int = 4, width: int = 6, title: str = ""):
+        """Añade una tabla interactiva con scroll interno"""
         uid = self._uid()
         self._register_block(uid, row, col, height, width)
         
         bg_page, bg_card, accent, text = self.theme_manager.get_colors()
-        
-        fig.update_layout(
-            paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='rgba(0,0,0,0)',
-            font_color=text,
-            title_font_color=accent,
-            margin=dict(l=10, r=10, t=40, b=10),
-            font_family="'Segoe UI', sans-serif"
-        )
-        
-        plot_html = fig.to_html(full_html=False, include_plotlyjs='cdn', config={'displaylogo': False})
-        
-        html = f"""
-        <style>
-            .plot-card-{uid} {{
-                padding: 16px;
-                display: flex;
-                flex-direction: column;
-                height: 100%;
-            }}
-            .plot-card-{uid} h4 {{ 
-                margin: 0 0 12px 4px; 
-                color: var(--vx-text-primary); 
-                font-weight: 600;
-                font-size: 1.1rem;
-                border-bottom: 2px solid {accent}22;
-                padding-bottom: 8px;
-            }}
-            .plot-container-{uid} {{ flex: 1; min-height: 0; }}
-        </style>
-        <div class="vx-card plot-card-{uid} {uid}">
-            {f"<h4>{title}</h4>" if title else ""}
-            <div class="plot-container-{uid}">{plot_html}</div>
-        </div>
-        """
-        self.components_html.append(html)
-        return self
-
-    def add_table(self, df: pd.DataFrame, slot_grid: tuple = (1, 1, 4, 6), title: str = "", searchable: bool = True):
-        row, col, height, width = slot_grid
-        uid = self._uid()
-        self._register_block(uid, row, col, height, width)
-        
-        bg_page, bg_card, accent, text = self.theme_manager.get_colors()
-        table_html = df.to_html(classes=f"vxt-{uid}", border=0, index=False)
+        table_html = df.to_html(classes=f"vxt-{uid}", border=0, index=False, max_rows=100)
         
         html = f"""
         <style>
             .table-card-{uid} {{
-                padding: 20px;
+                padding: 16px;
                 display: flex;
                 flex-direction: column;
                 height: 100%;
             }}
             .table-card-{uid} h4 {{ 
                 color: var(--vx-text-primary); 
-                margin: 0 0 16px 0; 
+                margin: 0 0 12px 0; 
                 font-weight: 600;
-                font-size: 1.1rem;
+                font-size: 0.95rem;
+                flex-shrink: 0;
             }}
             .table-container-{uid} {{ 
                 overflow: auto; 
                 flex: 1; 
                 scrollbar-width: thin;
-                scrollbar-color: {accent}44 transparent;
             }}
             .vxt-{uid} {{
                 width: 100%;
                 border-collapse: collapse;
-                font-size: 0.9rem;
+                font-size: 0.8rem;
             }}
             .vxt-{uid} th {{
                 background: {accent}11;
                 color: {accent};
-                padding: 14px 12px;
+                padding: 10px 8px;
                 text-align: left;
                 font-weight: 700;
                 position: sticky; top: 0;
                 border-bottom: 2px solid {accent}44;
             }}
             .vxt-{uid} td {{
-                padding: 12px;
+                padding: 8px;
                 border-bottom: 1px solid var(--vx-text-secondary)22;
                 color: var(--vx-text-primary);
             }}
@@ -308,19 +483,20 @@ class HTML:
         self.components_html.append(html)
         return self
 
-    def add_text(self, content: str, slot_grid: tuple = (1, 1, 2, 6)):
-        row, col, height, width = slot_grid
+    def add_text(self, content: str, row: int = 1, col: int = 1, height: int = 2, width: int = 6):
+        """Añade una tarjeta de texto"""
         uid = self._uid()
         self._register_block(uid, row, col, height, width)
         
         html = f"""
         <style>
             .text-card-{uid} {{
-                padding: 24px;
-                line-height: 1.6;
+                padding: 20px;
+                line-height: 1.5;
                 color: var(--vx-text-primary);
                 height: 100%;
                 overflow: auto;
+                font-size: 0.9rem;
             }}
             .text-card-{uid} h2, .text-card-{uid} h3 {{ 
                 color: var(--vx-accent); 
@@ -344,27 +520,27 @@ class HTML:
         return f"""
         <style>
             .vx-navbar {{
-                position: fixed; top: 0; left: 0; right: 0; height: 64px;
+                position: fixed; top: 0; left: 0; right: 0; height: 56px;
                 background: {bg_card};
                 display: flex; align-items: center; justify-content: space-between;
-                padding: 0 32px; z-index: 1000; 
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                border-bottom: 3px solid {accent};
+                padding: 0 24px; z-index: 1000; 
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                border-bottom: 2px solid {accent};
             }}
             .nav-brand {{ 
-                font-weight: 800; font-size: 1.5rem; 
+                font-weight: 800; font-size: 1.3rem; 
                 color: {accent}; text-decoration: none; 
                 letter-spacing: -0.5px;
             }}
-            .nav-links {{ display:flex; gap: 24px; }}
+            .nav-links {{ display:flex; gap: 20px; }}
             .nav-link {{ 
                 color: var(--vx-text-primary); 
                 text-decoration: none; 
                 font-weight: 600; 
-                font-size: 0.95rem;
+                font-size: 0.85rem;
                 opacity: 0.8; transition: var(--vx-transition); 
             }}
-            .nav-link:hover {{ opacity: 1; color: {accent}; transform: translateY(-1px); }}
+            .nav-link:hover {{ opacity: 1; color: {accent}; }}
         </style>
         <nav class="vx-navbar">
             <a href="#" class="nav-brand">{self.navbar.get("title", self.title)}</a>
@@ -373,6 +549,7 @@ class HTML:
         """
 
     def generate(self, filename: str = "dashboard.html"):
+        """Genera el dashboard estático sin scrollbar global"""
         bg_page, bg_card, accent, text = self.theme_manager.get_colors()
         
         full_html = f"""
@@ -381,53 +558,57 @@ class HTML:
         <head>
             <title>{self.title}</title>
             <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+            <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
             <style>
                 {self.theme_manager.get_global_css()}
                 
                 .dashboard-container {{
                     padding: {self.padding}px;
-                    padding-top: {84 if self.navbar else self.padding}px;
-                    min-height: 100vh;
+                    padding-top: {self.padding + 56 if self.navbar else self.padding}px;
+                    height: 100vh;
+                    width: 100vw;
                     display: flex;
                     flex-direction: column;
-                    max-width: 1600px;
-                    margin: 0 auto;
                 }}
                 
                 .vx-grid {{
                     display: grid;
-                    grid-template-columns: repeat({self.num_cols}, 1fr);
-                    grid-template-rows: repeat({self.num_rows}, 1fr);
+                    grid-template-columns: repeat({self.cols}, 1fr);
+                    grid-template-rows: repeat({self.rows}, 1fr);
                     gap: {self.gap}px;
                     flex: 1;
-                    min-height: 800px;
+                    min-height: 0;  /* Importante para evitar overflow */
                 }}
                 
                 {chr(10).join(self.grid_css)}
                 
                 .vx-card {{
-                    animation: fadeInUp 0.6s cubic-bezier(.16,1,.3,1) both;
+                    animation: fadeInUp 0.4s ease-out both;
                 }}
                 
                 @keyframes fadeInUp {{
-                    from {{ opacity: 0; transform: translateY(20px); }}
+                    from {{ opacity: 0; transform: translateY(10px); }}
                     to {{ opacity: 1; transform: translateY(0); }}
                 }}
                 
-                /* Secuencial para cada componente */
-                {chr(10).join([f".vx-card:nth-child({i+1}) {{ animation-delay: {i*0.1}s; }}" for i in range(len(self.components_html))])}
-
-                @media (max-width: 1024px) {{
+                /* Animación secuencial */
+                {chr(10).join([f".vx-card:nth-child({i+1}) {{ animation-delay: {i*0.05}s; }}" for i in range(len(self.components_html))])}
+                
+                /* Responsive: en pantallas pequeñas se apilan */
+                @media (max-width: 768px) {{
                     .vx-grid {{
                         display: flex;
                         flex-direction: column;
+                        gap: {self.gap}px;
+                        overflow-y: auto;
                     }}
                     .vx-card {{
-                        height: auto !important;
-                        width: 100% !important;
-                        min-height: 300px;
+                        min-height: 250px;
+                        flex-shrink: 0;
+                    }}
+                    body {{
+                        overflow-y: auto;
                     }}
                 }}
             </style>
@@ -445,4 +626,8 @@ class HTML:
         
         with open(filename, "w", encoding="utf-8") as f:
             f.write(full_html)
+        print(f"✅ Dashboard generado: {os.path.abspath(filename)}")
+
+        import webbrowser
+        webbrowser.open(filename)
         return filename

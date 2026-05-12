@@ -1,150 +1,72 @@
-from viewx.datasets import load_iris
-from viewx import HTML
+import pandas as pd
+from viewx.HTML import HTML
 
-df = load_iris()
+# 1. Crear datos de ejemplo
+df_ventas = pd.DataFrame({
+    'Mes': ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+    'Ventas': [120, 135, 148, 170, 195, 210, 245, 268, 290, 310, 335, 400],
+    'Beneficio': [30, 35, 42, 51, 58, 63, 73, 80, 87, 93, 100, 120],
+    'Clientes': [45, 48, 52, 58, 65, 72, 80, 88, 95, 102, 110, 125]
+})
 
+# Datos para gráfico de barras
+df_productos = pd.DataFrame({
+    'Producto': ['Producto A', 'Producto B', 'Producto C', 'Producto D', 'Producto E'],
+    'Ventas': [450, 320, 280, 190, 150]
+})
 
-# ── Dashboard ───────────────────────────────────────────
-page = HTML(
-    data=df,
-    title="ViewX PRO — Demo Completo",
-    template_color=0,          # Deep Space (oscuro)
-    num_divs=14,
-    num_cols=4,
-    num_rows=6,
-    gap=8,
-    padding=8,
+# Datos para scatter
+df_clientes = pd.DataFrame({
+    'Edad': [25, 32, 28, 45, 38, 29, 51, 42, 35, 30],
+    'Gasto': [120, 200, 150, 300, 250, 180, 400, 320, 220, 160],
+    'Segmento': ['Joven', 'Adulto', 'Joven', 'Senior', 'Adulto', 'Joven', 'Senior', 'Adulto', 'Adulto', 'Joven']
+})
+
+# 2. Configurar el dashboard
+dashboard = HTML(
+    title="📊 Dashboard Ejecutivo - Demo",
+    theme="corporate_blue",  # Temas: corporate_blue, dark_enterprise, modern_green, void_indigo, glass_ocean, cyberpunk_neon
+    cols=12,  # Grid de 12 columnas
+    rows=12,  # 12 filas de altura
+    gap=16,
+    padding=20,
     navbar={
-        "title": "ViewX PRO 🚀",
+        "title": "📈 ViewX PRO",
         "items": [
-            {"label": "Inicio",    "link": "#"},
-            {"label": "Ventas",    "link": "#"},
-            {"label": "Análisis",  "link": "#"},
-            {"label": "Acerca",    "link": "#"},
-        ],
-        "height": 64,
-        "title_font_size": 20,
-        "items_font_size": 14,
+            {"label": "Inicio", "link": "#"},
+            {"label": "Ventas", "link": "#"},
+            {"label": "Clientes", "link": "#"},
+            {"label": "Reportes", "link": "#"}
+        ]
     }
 )
 
-# ── Fila 1: Value Boxes ─────────────────────────────────
-page.add_valuebox(
-    title="Total Ventas",
-    value=f"${df['ventas'].sum():,}",
-    icon="💰",
-    slot_grid=("div1", 1, 1, 1, 1),
-    subtitle=f"+{df['ventas'].pct_change().mean()*100:.1f}% promedio",
-)
-page.add_valuebox(
-    title="Ganancia Total",
-    value=f"${df['ganancia'].sum():,}",
-    icon="📈",
-    color="#00B894",
-    slot_grid=("div2", 1, 2, 1, 1),
-    subtitle=f"Margen: {df['margen'].mean():.1f}%",
-)
-page.add_valuebox(
-    title="Satisfacción",
-    value=f"{df['satisfaccion'].mean():.2f} ★",
-    icon="⭐",
-    color="#D4AF37",
-    slot_grid=("div3", 1, 3, 1, 1),
-    position_icon="right",
-)
-page.add_valuebox(
-    title="Registros",
-    value=f"{len(df):,}",
-    icon="📋",
-    color="#E94560",
-    slot_grid=("div4", 1, 4, 1, 1),
-    subtitle="últimos 120 días",
+# 3. Añadir componentes (row, col, height, width)
+# Fila 1: KPIs
+dashboard.add_valuebox("Ventas Totales", "$2.8M", "💰", row=1, col=1, height=2, width=3)
+dashboard.add_valuebox("Beneficio Neto", "$942K", "📈", "#00A86B", row=1, col=4, height=2, width=3)
+dashboard.add_valuebox("Clientes Activos", "1,247", "👥", "#FF6B35", row=1, col=7, height=2, width=3)
+dashboard.add_valuebox("Tasa Conversión", "24.5%", "🎯", "#9B59B6", row=1, col=10, height=2, width=3)
+
+# Fila 2-5: Gráfico de líneas (ventas mensuales) - Método sencillo con datos
+dashboard.add_chart(
+    data=df_ventas,
+    chart_type="line",
+    x="Mes",
+    y="Ventas",
+    title="📈 Evolución de Ventas 2024",
+    row=3, col=1, height=10, width=6
 )
 
-# ── Fila 2-3: Plots grandes ─────────────────────────────
-page.add_plot(
-    kind="line",
-    x="mes", y="ventas",
-    title="Evolución de Ventas",
-    slot_grid=("div5", 2, 1, 2, 2),
-    color="categoria",
-)
-page.add_plot(
-    kind="bar",
-    x="categoria", y="ventas",
-    title="Ventas por Categoría",
-    slot_grid=("div6", 2, 3, 1, 2),
-    color="categoria",
-)
-page.add_table(
-    columns=["mes", "ventas", "ganancia", "categoria", "margen"],
-    slot_grid=("div7", 3, 3, 1, 2),
-    max_rows=20,
-    searchable=True,
-    striped=True,
+# Fila 2-5: Gráfico de barras (productos) - Otro ejemplo sencillo
+dashboard.add_chart(
+    data=df_productos,
+    chart_type="bar",
+    x="Producto",
+    y="Ventas",
+    title="🏷️ Ventas por Producto",
+    row=3, col=7, height=10, width=6
 )
 
-# ── Fila 4: Distribuciones ──────────────────────────────
-page.add_plot(
-    kind="box",
-    x="categoria", y="ganancia",
-    title="Distribución Ganancia",
-    slot_grid=("div8", 4, 1, 1, 2),
-)
-page.add_plot(
-    kind="violin",
-    x="region", y="satisfaccion",
-    title="Satisfacción por Región",
-    slot_grid=("div9", 4, 3, 1, 2),
-    color="region",
-)
-
-# ── Fila 5: Más plots ───────────────────────────────────
-page.add_plot(
-    kind="scatter",
-    x="ventas", y="ganancia",
-    title="Ventas vs Ganancia",
-    slot_grid=("div10", 5, 1, 1, 1),
-    color="categoria",
-    size="satisfaccion",
-)
-page.add_plot(
-    kind="hist",
-    x="margen",
-    title="Distribución del Margen %",
-    slot_grid=("div11", 5, 2, 1, 1),
-)
-page.add_plot(
-    kind="pie",
-    x="categoria", y="ventas",
-    title="Participación de Ventas",
-    slot_grid=("div12", 5, 3, 1, 1),
-)
-
-# ── Progress bars ───────────────────────────────────────
-page.add_progress(
-    title="Metas por Región",
-    items=[
-        {"label": "Norte",  "value": 82, "color": "#7C3AED"},
-        {"label": "Sur",    "value": 67, "color": "#00B894"},
-        {"label": "Este",   "value": 91, "color": "#D4AF37"},
-        {"label": "Oeste",  "value": 54, "color": "#E94560"},
-    ],
-    slot_grid=("div13", 5, 4, 1, 1),
-)
-
-# ── Texto / Card ────────────────────────────────────────
-page.add_text(
-    """
-    <h2>ViewX PRO v2.0</h2>
-    <p>Dashboard interactivo con autoajuste de gráficas, animaciones fluidas y componentes avanzados.</p>
-    <p>✅ 12 tipos de gráficas &nbsp;|&nbsp; ✅ Tabla buscable &nbsp;|&nbsp; ✅ Progress bars</p>
-    <button onclick="window.scrollTo(0,0)">↑ Volver arriba</button>
-    """,
-    slot_grid=("div14", 6, 1, 1, 4),
-    align="center",
-    glass=False,
-    border_accent=True,
-)
-
-page.show("demo_viewx_pro.html", port=8001)
+# 4. Generar el archivo
+dashboard.generate("mi_dashboard.html")

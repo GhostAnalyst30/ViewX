@@ -1,4 +1,4 @@
-# 📦 ViewX — v2.0
+# 📦 ViewX — v2.1
 
 **ViewX** es un paquete moderno de Python diseñado para generar **páginas HTML interactivas**, **dashboards dinámicos** y **visualizaciones inteligentes** que se adaptan automáticamente a los objetos agregados por el usuario.
 
@@ -28,70 +28,77 @@ pip install viewx
 ### Crear una página HTML
 ```python
 import pandas as pd
-import numpy as np
-import plotly.express as px
 from viewx.HTML import HTML
 
-# 1. Datos de ejemplo (Ventas por Categoría y Región)
+# 1. Crear datos de ejemplo
 df_ventas = pd.DataFrame({
-    'Categoría': ['Electrónica', 'Hogar', 'Moda', 'Deportes', 'Juguetes'],
-    'Ventas': [12500, 8400, 15200, 6700, 4300],
-    'Margen': [0.15, 0.22, 0.18, 0.12, 0.25]
+    'Mes': ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+    'Ventas': [120, 135, 148, 170, 195, 210, 245, 268, 290, 310, 335, 400],
+    'Beneficio': [30, 35, 42, 51, 58, 63, 73, 80, 87, 93, 100, 120],
+    'Clientes': [45, 48, 52, 58, 65, 72, 80, 88, 95, 102, 110, 125]
 })
 
-df_mensual = pd.DataFrame({
-    'Mes': ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-    'Ingresos': [45000, 48000, 52000, 49000, 55000, 61000]
+# Datos para gráfico de barras
+df_productos = pd.DataFrame({
+    'Producto': ['Producto A', 'Producto B', 'Producto C', 'Producto D', 'Producto E'],
+    'Ventas': [450, 320, 280, 190, 150]
 })
 
-# 2. Gráficos estilo Power BI
-fig_bar = px.bar(df_ventas, x='Categoría', y='Ventas', color='Categoría', 
-                 title="Ventas por Categoría", template="plotly_white")
-fig_line = px.line(df_mensual, x='Mes', y='Ingresos', markers=True, 
-                  title="Evolución de Ingresos", template="plotly_white")
-fig_pie = px.pie(df_ventas, values='Ventas', names='Categoría', hole=0.4,
-                title="Distribución de Ventas")
+# Datos para scatter
+df_clientes = pd.DataFrame({
+    'Edad': [25, 32, 28, 45, 38, 29, 51, 42, 35, 30],
+    'Gasto': [120, 200, 150, 300, 250, 180, 400, 320, 220, 160],
+    'Segmento': ['Joven', 'Adulto', 'Joven', 'Senior', 'Adulto', 'Joven', 'Senior', 'Adulto', 'Adulto', 'Joven']
+})
 
-# 3. Inicializar Dashboard con Estética Power BI
-# Temas: corporate_blue, dark_enterprise, modern_green, void_indigo, glass_ocean, cyberpunk_neon
-dash = HTML(
-    title="Dashboard de Rendimiento Corporativo",
-    theme="corporate_blue", 
+# 2. Configurar el dashboard
+dashboard = HTML(
+    title="📊 Dashboard Ejecutivo - Demo",
+    theme="corporate_blue",  # Temas: corporate_blue, dark_enterprise, modern_green, void_indigo, glass_ocean, cyberpunk_neon
+    cols=12,  # Grid de 12 columnas
+    rows=12,  # 12 filas de altura
+    gap=16,
+    padding=20,
     navbar={
-        "title": "BI Analytics",
+        "title": "📈 ViewX PRO",
         "items": [
-            {"label": "Global", "link": "#"},
+            {"label": "Inicio", "link": "#"},
             {"label": "Ventas", "link": "#"},
+            {"label": "Clientes", "link": "#"},
             {"label": "Reportes", "link": "#"}
         ]
     }
 )
 
-# 4. Añadir Componentes usando el sistema de slot_grid original
-# slot_grid = (fila_inicio, columna_inicio, filas_que_ocupa, columnas_que_ocupa)
+# 3. Añadir componentes (row, col, height, width)
+# Fila 1: KPIs
+dashboard.add_valuebox("Ventas Totales", "$2.8M", "💰", row=1, col=1, height=2, width=3)
+dashboard.add_valuebox("Beneficio Neto", "$942K", "📈", "#00A86B", row=1, col=4, height=2, width=3)
+dashboard.add_valuebox("Clientes Activos", "1,247", "👥", "#FF6B35", row=1, col=7, height=2, width=3)
+dashboard.add_valuebox("Tasa Conversión", "24.5%", "🎯", "#9B59B6", row=1, col=10, height=2, width=3)
 
-# Fila superior: KPIs
-dash.add_valuebox("Ingresos Totales", "$310K", icon="💰", slot_grid=(1, 1, 2, 3))
-dash.add_valuebox("Crecimiento", "+12.5%", icon="📈", color="#107C10", slot_grid=(1, 4, 2, 3))
-dash.add_valuebox("Clientes Activos", "1,452", icon="👥", color="#0078D4", slot_grid=(1, 7, 2, 3))
-dash.add_valuebox("Tasa de Conversión", "4.2%", icon="🎯", color="#E63946", slot_grid=(1, 10, 2, 3))
+# Fila 2-5: Gráfico de líneas (ventas mensuales) - Método sencillo con datos
+dashboard.add_chart(
+    data=df_ventas,
+    chart_type="line",
+    x="Mes",
+    y="Ventas",
+    title="📈 Evolución de Ventas 2024",
+    row=3, col=1, height=10, width=6
+)
 
-# Fila central: Gráficos principales
-dash.add_plot(fig_line, title="Tendencia Mensual", slot_grid=(3, 1, 5, 8))
-dash.add_plot(fig_pie, title="Mix de Productos", slot_grid=(3, 9, 5, 4))
+# Fila 2-5: Gráfico de barras (productos) - Otro ejemplo sencillo
+dashboard.add_chart(
+    data=df_productos,
+    chart_type="bar",
+    x="Producto",
+    y="Ventas",
+    title="🏷️ Ventas por Producto",
+    row=3, col=7, height=10, width=6
+)
 
-# Fila inferior: Tabla y Texto
-dash.add_table(df_ventas, title="Detalle de Categorías", slot_grid=(8, 1, 5, 7))
-dash.add_text("""
-    <h3>Resumen de Insights</h3>
-    <p>El segmento de <b>Moda</b> lidera las ventas con un margen saludable del 18%.</p>
-    <p>Se observa un crecimiento sostenido en los ingresos mensuales, alcanzando un pico en <b>Junio</b>.</p>
-    <p><i>Recomendación:</i> Aumentar stock en la categoría 'Hogar' debido al incremento de demanda previsto.</p>
-""", slot_grid=(8, 8, 5, 5))
-
-# 5. Generar Dashboard
-output = dash.generate("powerbi_dashboard_pro.html")
-print(f"Dashboard profesional generado: {output}")
+# 4. Generar el archivo
+dashboard.generate("mi_dashboard.html")
 
 ```
 
