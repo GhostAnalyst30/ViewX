@@ -94,6 +94,9 @@ class DataMatrix:
         
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(html)
+
+        import webbrowser
+        webbrowser.open(output_path)
         return output_path
 
     def _assemble_html(self, title, bib_results):

@@ -38,7 +38,9 @@ dashboard = HTML(
             {"label": "Clientes", "link": "#"},
             {"label": "Reportes", "link": "#"}
         ]
-    }
+    },
+    authors=[{"name": "Emmanuel Ascendra", "email": "ascendraemmanuel@gmail.com"},
+             {"name": "Juan Perez", "email": "juanperez@gmail.com"}]
 )
 
 # 3. Añadir componentes (row, col, height, width)

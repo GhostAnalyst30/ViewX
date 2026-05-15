@@ -1,65 +1,150 @@
 import pandas as pd
 import numpy as np
-import plotly.express as px
-from viewx.HTML import HTML
+from datetime import datetime, timedelta
+from viewx.HTML.html_engine import HTML
 
-# 1. Datos de ejemplo (Ventas por Categoría y Región)
-df_ventas = pd.DataFrame({
-    'Categoría': ['Electrónica', 'Hogar', 'Moda', 'Deportes', 'Juguetes'],
-    'Ventas': [12500, 8400, 15200, 6700, 4300],
-    'Margen': [0.15, 0.22, 0.18, 0.12, 0.25]
+# ── Generar datos de demo ────────────────────────────────────────────────────
+np.random.seed(42)
+n = 200
+
+fechas    = [datetime(2024, 1, 1) + timedelta(days=i) for i in range(n)]
+regiones  = np.random.choice(["Norte", "Sur", "Este", "Oeste", "Centro"], n)
+productos = np.random.choice(["Laptop", "Tablet", "Phone", "Monitor", "Teclado"], n)
+ventas    = np.random.randint(500, 10000, n)
+utilidad  = ventas * np.random.uniform(0.1, 0.4, n)
+unidades  = np.random.randint(1, 50, n)
+activo    = np.random.choice([True, False], n)
+
+df = pd.DataFrame({
+    "fecha"    : fechas,
+    "region"   : regiones,
+    "producto" : productos,
+    "ventas"   : ventas,
+    "utilidad" : utilidad.astype(int),
+    "unidades" : unidades,
+    "activo"   : activo,
 })
 
-df_mensual = pd.DataFrame({
-    'Mes': ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-    'Ingresos': [45000, 48000, 52000, 49000, 55000, 61000]
-})
+print("Columnas disponibles:", df.columns.tolist())
+print(df.head(3))
 
-# 2. Gráficos estilo Power BI
-fig_bar = px.bar(df_ventas, x='Categoría', y='Ventas', color='Categoría', 
-                 title="Ventas por Categoría", template="plotly_white")
-fig_line = px.line(df_mensual, x='Mes', y='Ingresos', markers=True, 
-                  title="Evolución de Ingresos", template="plotly_white")
-fig_pie = px.pie(df_ventas, values='Ventas', names='Categoría', hole=0.4,
-                title="Distribución de Ventas")
-
-# 3. Inicializar Dashboard con Estética Power BI
-# Temas: corporate_blue, dark_enterprise, modern_green, void_indigo, glass_ocean, cyberpunk_neon
-dash = HTML(
-    title="Dashboard de Rendimiento Corporativo",
-    theme="corporate_blue", 
-    navbar={
-        "title": "BI Analytics",
-        "items": [
-            {"label": "Global", "link": "#"},
-            {"label": "Ventas", "link": "#"},
-            {"label": "Reportes", "link": "#"}
-        ]
-    }
+# ════════════════════════════════════════════════════════════════════════════
+# DEMO 1 — Layout automático, tema por defecto
+# ════════════════════════════════════════════════════════════════════════════
+HTML.auto_generate(
+    df,
+    title    = "Demo 1 · Auto Layout",
+    filename = "demo1_auto.html",
 )
 
-# 4. Añadir Componentes usando el sistema de slot_grid original
-# slot_grid = (fila_inicio, columna_inicio, filas_que_ocupa, columnas_que_ocupa)
+# ════════════════════════════════════════════════════════════════════════════
+# DEMO 2 — Solo algunas columnas + tema oscuro
+# ════════════════════════════════════════════════════════════════════════════
+HTML.auto_generate(
+    df,
+    columns  = ["fecha", "ventas", "utilidad", "region"],
+    template = "dark_enterprise",
+    title    = "Demo 2 · Columnas seleccionadas",
+    filename = "demo2_cols.html",
+    authors  = [
+        {"name": "Ana García",  "email": "ana@empresa.com"},
+        {"name": "Luis Torres", "email": "luis@empresa.com"},
+    ]
+)
 
-# Fila superior: KPIs
-dash.add_valuebox("Ingresos Totales", "$310K", icon="💰", slot_grid=(1, 1, 2, 3))
-dash.add_valuebox("Crecimiento", "+12.5%", icon="📈", color="#107C10", slot_grid=(1, 4, 2, 3))
-dash.add_valuebox("Clientes Activos", "1,452", icon="👥", color="#0078D4", slot_grid=(1, 7, 2, 3))
-dash.add_valuebox("Tasa de Conversión", "4.2%", icon="🎯", color="#E63946", slot_grid=(1, 10, 2, 3))
+# ════════════════════════════════════════════════════════════════════════════
+# DEMO 3 — Preset kpi_focus + tema void_indigo
+# ════════════════════════════════════════════════════════════════════════════
+HTML.auto_generate(
+    df,
+    columns  = ["ventas", "utilidad", "unidades", "region", "producto"],
+    template = "void_indigo",
+    title    = "Demo 3 · KPI Focus",
+    filename = "demo3_kpi_focus.html",
+    layout   = "kpi_focus",
+    authors  = "Carlos Méndez",
+)
 
-# Fila central: Gráficos principales
-dash.add_plot(fig_line, title="Tendencia Mensual", slot_grid=(3, 1, 5, 8))
-dash.add_plot(fig_pie, title="Mix de Productos", slot_grid=(3, 9, 5, 4))
+# ════════════════════════════════════════════════════════════════════════════
+# DEMO 4 — Preset chart_focus + tema glass_ocean
+# ════════════════════════════════════════════════════════════════════════════
+HTML.auto_generate(
+    df,
+    columns  = ["fecha", "ventas", "utilidad", "region"],
+    template = "glass_ocean",
+    title    = "Demo 4 · Chart Focus",
+    filename = "demo4_chart_focus.html",
+    layout   = "chart_focus",
+)
 
-# Fila inferior: Tabla y Texto
-dash.add_table(df_ventas, title="Detalle de Categorías", slot_grid=(8, 1, 5, 7))
-dash.add_text("""
-    <h3>Resumen de Insights</h3>
-    <p>El segmento de <b>Moda</b> lidera las ventas con un margen saludable del 18%.</p>
-    <p>Se observa un crecimiento sostenido en los ingresos mensuales, alcanzando un pico en <b>Junio</b>.</p>
-    <p><i>Recomendación:</i> Aumentar stock en la categoría 'Hogar' debido al incremento de demanda previsto.</p>
-""", slot_grid=(8, 8, 5, 5))
+# ════════════════════════════════════════════════════════════════════════════
+# DEMO 5 — Preset table_first + tema cyberpunk_neon
+# ════════════════════════════════════════════════════════════════════════════
+HTML.auto_generate(
+    df,
+    columns  = ["fecha", "region", "producto", "ventas", "unidades"],
+    template = "cyberpunk_neon",
+    title    = "Demo 5 · Table First",
+    filename = "demo5_table_first.html",
+    layout   = "table_first",
+)
 
-# 5. Generar Dashboard
-output = dash.generate("powerbi_dashboard_pro.html")
-print(f"Dashboard profesional generado: {output}")
+# ════════════════════════════════════════════════════════════════════════════
+# DEMO 6 — Layout 100% personalizado
+#   Diseño:
+#   [KPI ventas] [KPI utilidad] [KPI unidades] | [Chart barras región]
+#   [Chart línea temporal (ventas)            ] | [Chart scatter        ]
+#   [Tabla completa                                                      ]
+# ════════════════════════════════════════════════════════════════════════════
+HTML.auto_generate(
+    df,
+    columns  = ["fecha", "region", "ventas", "utilidad", "unidades"],
+    template = "modern_green",
+    title    = "Demo 6 · Layout Personalizado",
+    filename = "demo6_custom.html",
+    authors  = [{"name": "Equipo BI", "email": "bi@empresa.com"}],
+    layout   = [
+        # Fila 1: 3 KPIs a la izquierda + 1 chart a la derecha
+        {"type": "kpi",   "index": 0, "row": 1, "col": 1,  "height": 2, "width": 3},
+        {"type": "kpi",   "index": 1, "row": 1, "col": 4,  "height": 2, "width": 3},
+        {"type": "kpi",   "index": 2, "row": 1, "col": 7,  "height": 2, "width": 3},
+        {"type": "chart", "index": 1, "row": 1, "col": 10, "height": 7, "width": 3},  # barras región
+
+        # Fila 2: línea temporal grande + scatter
+        {"type": "chart", "index": 0, "row": 3, "col": 1,  "height": 5, "width": 6},  # línea tiempo
+        {"type": "chart", "index": 2, "row": 3, "col": 7,  "height": 5, "width": 3},  # scatter
+
+        # Fila 3: tabla completa
+        {"type": "table",             "row": 8, "col": 1,  "height": 4, "width": 12},
+    ]
+)
+
+# ════════════════════════════════════════════════════════════════════════════
+# DEMO 7 — DataFrame con strings numéricos (prueba parseo automático)
+# ════════════════════════════════════════════════════════════════════════════
+df_strings = pd.DataFrame({
+    "mes"      : ["Ene", "Feb", "Mar", "Abr", "May", "Jun"],
+    "ingresos" : ["$12,500", "$9,800", "$15,200", "$11,000", "$18,400", "$14,700"],
+    "costos"   : ["8500",    "7200",   "9800",    "8100",    "12000",   "10500"],
+    "margen%"  : ["32%",     "27%",    "36%",     "26%",     "35%",     "29%"],
+    "ciudad"   : ["Bogotá",  "Medellín","Cali",   "Bogotá",  "Cali",    "Medellín"],
+})
+
+HTML.auto_generate(
+    df_strings,
+    template = "corporate_blue",
+    title    = "Demo 7 · Parseo Automático de Strings",
+    filename = "demo7_parseo.html",
+)
+
+print("\n✅ Todos los dashboards generados:")
+for i, name in enumerate([
+    "demo1_auto.html",
+    "demo2_cols.html",
+    "demo3_kpi_focus.html",
+    "demo4_chart_focus.html",
+    "demo5_table_first.html",
+    "demo6_custom.html",
+    "demo7_parseo.html",
+], 1):
+    print(f"   {i}. {name}")

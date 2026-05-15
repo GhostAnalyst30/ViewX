@@ -5,11 +5,6 @@ import plotly.graph_objects as go
 import uuid
 from typing import Optional, Tuple, Union, List, Dict
 
-# ============================================================
-#          ViewX Dashboard PRO v5.0 - Estática e Interactiva
-#                Sin scrollbars - Grid fijo
-# ============================================================
-
 class ThemeManager:
     def __init__(self, theme_name: Union[int, str] = "corporate_blue"):
         self.themes = {
@@ -163,7 +158,8 @@ class HTML:
         rows: int = 12,
         gap: int = 16,
         padding: int = 24,
-        navbar: dict = None
+        navbar: dict = None,
+        authors: str | List[str] = None
     ):
         self.title = title
         self.theme_manager = ThemeManager(theme)
@@ -173,6 +169,17 @@ class HTML:
         self.padding = padding
         self.navbar = navbar
         
+        if isinstance(authors, list):
+            # Soporta tanto strings como dicts {"name": ..., "email": ...}
+            self.authors = [
+                a if isinstance(a, dict) else {"name": a, "email": None}
+                for a in authors
+            ]
+        elif isinstance(authors, str):
+            self.authors = [{"name": authors, "email": None}]
+        else:
+            self.authors = []
+
         self.grid_css = []
         self.components_html = []
         self._component_counter = 0
@@ -511,11 +518,22 @@ class HTML:
         self.components_html.append(html)
         return self
 
-    def _build_navbar(self) -> str:
+    def _build_navbar(self, title_link = "#") -> str:
         if not self.navbar: return ""
         bg_page, bg_card, accent, text = self.theme_manager.get_colors()
         
         items_html = "".join([f'<a href="{i["link"]}" class="nav-link">{i["label"]}</a>' for i in self.navbar.get("items", [])])
+
+        if self.authors:
+            authors_html = ", ".join([
+                f'<a href="mailto:{a["email"]}" class="nav-author nav-author-link">{a["name"]}</a>'
+                if a["email"]
+                else f'<span class="nav-author">{a["name"]}</span>'
+                for a in self.authors
+            ])
+            author_block = f'<div class="nav-author-wrap">by {authors_html}</div>'
+        else:
+            author_block = ""
         
         return f"""
         <style>
@@ -532,6 +550,12 @@ class HTML:
                 color: {accent}; text-decoration: none; 
                 letter-spacing: -0.5px;
             }}
+            .nav-author {{
+                font-size: 0.72rem;
+                color: var(--vx-text-secondary);
+                font-weight: 500;
+                letter-spacing: 0.2px;
+            }}
             .nav-links {{ display:flex; gap: 20px; }}
             .nav-link {{ 
                 color: var(--vx-text-primary); 
@@ -541,9 +565,26 @@ class HTML:
                 opacity: 0.8; transition: var(--vx-transition); 
             }}
             .nav-link:hover {{ opacity: 1; color: {accent}; }}
+            .nav-author-wrap {{
+                font-size: 0.72rem;
+                color: var(--vx-text-secondary);
+                font-weight: 500;
+            }}
+            .nav-author-link {{
+                color: {accent};
+                text-decoration: none;
+                transition: var(--vx-transition);
+            }}
+            .nav-author-link:hover {{
+                text-decoration: underline;
+                opacity: 0.8;
+            }}
         </style>
         <nav class="vx-navbar">
-            <a href="#" class="nav-brand">{self.navbar.get("title", self.title)}</a>
+            <div style="display:flex; flex-direction:column; gap:1px;">
+                <a href="{title_link}" class="nav-brand">{self.navbar.get("title", self.title)}</a>
+                {author_block}
+            </div>
             <div class="nav-links">{items_html}</div>
         </nav>
         """
@@ -631,3 +672,293 @@ class HTML:
         import webbrowser
         webbrowser.open(filename)
         return filename
+    
+    @classmethod
+    def auto_generate(
+        cls,
+        data: pd.DataFrame,
+        columns: List[str] = None,
+        template: Union[int, str] = "corporate_blue",
+        title: str = "Auto Dashboard",
+        filename: str = "auto_dashboard.html",
+        navbar: dict = None,
+        authors=None,
+        layout: Union[str, List[dict]] = "auto"
+    ) -> str:
+
+        # ── 1. Seleccionar columnas ──────────────────────────────────────────
+        cols_to_use = list(columns) if columns is not None else list(data.columns)
+        missing = [c for c in cols_to_use if c not in data.columns]
+        if missing:
+            raise KeyError(
+                f"\n❌ Columnas no encontradas: {missing}"
+                f"\n✅ Columnas disponibles: {list(data.columns)}"
+                f"\n💡 Tip: revisa mayúsculas, espacios o caracteres especiales."
+            )
+
+        df = data[cols_to_use].copy()
+
+        # ── 2. Parseo automático ─────────────────────────────────────────────
+        def try_parse_col(series: pd.Series) -> pd.Series:
+            if not pd.api.types.is_object_dtype(series):
+                return series
+
+            numeric_attempt = (
+                series.astype(str)
+                    .str.strip()
+                    .str.replace(r"[$€£¥%\s]", "", regex=True)
+                    .str.replace(r"(?<=\d),(?=\d{3})", "", regex=True)
+            )
+            converted = pd.to_numeric(numeric_attempt, errors="coerce")
+            ratio_numeric = converted.notna().sum() / max(len(series.dropna()), 1)
+            if ratio_numeric >= 0.8:
+                return converted
+
+            try:
+                converted_dt = pd.to_datetime(series, errors="coerce")
+                ratio_dt = converted_dt.notna().sum() / max(len(series.dropna()), 1)
+                if ratio_dt >= 0.8:
+                    return converted_dt
+            except Exception:
+                pass
+
+            return series
+
+        for col in cols_to_use:
+            df[col] = try_parse_col(df[col])
+
+        # ── 3. Clasificar columnas ───────────────────────────────────────────
+        def classify_col(series: pd.Series):
+            if pd.api.types.is_datetime64_any_dtype(series):
+                return "datetime"
+            if pd.api.types.is_bool_dtype(series):
+                return "boolean"
+            if pd.api.types.is_numeric_dtype(series):
+                return "numeric"
+            cardinality = series.nunique()
+            return "categorical" if cardinality / max(len(series), 1) < 0.5 else "text"
+
+        col_types    = {c: classify_col(df[c]) for c in cols_to_use}
+        numerics     = [c for c, t in col_types.items() if t == "numeric"]
+        categoricals = [c for c, t in col_types.items() if t == "categorical"]
+        datetimes    = [c for c, t in col_types.items() if t == "datetime"]
+        booleans     = [c for c, t in col_types.items() if t == "boolean"]
+
+        for c in datetimes:
+            df[c] = pd.to_datetime(df[c])
+
+        # ── 4. Planificar KPIs ───────────────────────────────────────────────
+        ICONS = [
+            "\U0001F4CA",
+            "\U0001F4B0",
+            "\U0001F4C8",
+            "\U0001F522",
+            "\U0001F3AF",
+            "\U000026A1",
+            "\U0001F4E6",
+            "\U0001F3C6",
+        ]
+        planned = []
+        for i, num_col in enumerate(numerics):
+            total = df[num_col].sum()
+            fmt   = lambda v: f"{v:,.0f}" if abs(v) >= 1000 else f"{v:,.2f}"
+            planned.append(("kpi", num_col, fmt(total), ICONS[i % len(ICONS)]))
+
+        # ── 5. Planificar gráficos ───────────────────────────────────────────
+        charts = []
+
+        if datetimes and numerics:
+            date_col = datetimes[0]
+            for num_col in numerics:
+                agg = df.groupby(date_col)[num_col].sum().reset_index()
+                fig = px.line(agg, x=date_col, y=num_col, markers=True)
+                charts.append(("chart", fig, f"{num_col} en el tiempo"))
+
+        if categoricals and numerics:
+            cat_col = categoricals[0]
+            num_col = numerics[0]
+            agg = df.groupby(cat_col)[num_col].sum().nlargest(15).reset_index()
+            fig = px.bar(agg, x=cat_col, y=num_col, color=cat_col)
+            charts.append(("chart", fig, f"{num_col} por {cat_col}"))
+
+        if len(numerics) >= 2:
+            color_col = categoricals[0] if categoricals else None
+            fig = px.scatter(df, x=numerics[0], y=numerics[1],
+                            color=color_col, opacity=0.7)
+            charts.append(("chart", fig, f"{numerics[0]} vs {numerics[1]}"))
+
+        if categoricals and not numerics:
+            cat_col = categoricals[0]
+            counts  = df[cat_col].value_counts().head(10).reset_index()
+            counts.columns = [cat_col, "count"]
+            fig = px.pie(counts, names=cat_col, values="count", hole=0.4)
+            charts.append(("chart", fig, f"Distribución de {cat_col}"))
+
+        for bool_col in booleans:
+            counts = df[bool_col].value_counts().reset_index()
+            counts.columns = [bool_col, "count"]
+            fig = px.pie(counts, names=bool_col, values="count", hole=0.35)
+            charts.append(("chart", fig, f"Distribución de {bool_col}"))
+
+        if len(numerics) >= 3:
+            corr = df[numerics].corr()
+            fig  = px.imshow(corr, text_auto=".2f", color_continuous_scale="RdBu_r",
+                            zmin=-1, zmax=1)
+            charts.append(("chart", fig, "Correlación entre variables"))
+
+        show_table = len(df) > 0
+
+        # ── 6. Calcular dimensiones base ─────────────────────────────────────
+        COLS             = 12
+        kpi_height       = 2
+        chart_height     = 5
+        table_rows       = 4
+        MAX_KPIS_PER_ROW = 6
+
+        n_kpis   = len(planned)
+        n_charts = len(charts)
+
+        kpi_per_row      = min(n_kpis, MAX_KPIS_PER_ROW) if n_kpis else 1
+        actual_kpi_width = COLS // kpi_per_row
+        kpi_rows_needed  = -(-n_kpis // MAX_KPIS_PER_ROW) if n_kpis else 0
+        kpi_rows_used    = kpi_rows_needed * kpi_height
+
+        chart_cols       = 6 if n_charts > 1 else 12
+        chart_rows_total = -(-n_charts // 2) * chart_height
+
+        table_rows_used  = table_rows if show_table else 0
+
+        # ── 6b. Resolver layout ──────────────────────────────────────────────
+        PRESETS = {
+            "kpi_focus": [
+                *[{"type": "kpi", "index": i,
+                "row": 1 + (i // 4) * 3, "col": (i % 4) * 3 + 1,
+                "height": 3, "width": 3}
+                for i in range(n_kpis)],
+                *[{"type": "chart", "index": i,
+                "row": 1 + (-(-n_kpis // 4)) * 3 + (i // 2) * 5,
+                "col": (i % 2) * 6 + 1, "height": 5, "width": 6}
+                for i in range(n_charts)],
+                *([ {"type": "table",
+                    "row": 1 + (-(-n_kpis // 4)) * 3 + (-(-n_charts // 2)) * 5,
+                    "col": 1, "height": table_rows, "width": COLS} ]
+                if show_table else [])
+            ],
+            "chart_focus": [
+                *[{"type": "kpi", "index": i,
+                "row": 1, "col": i * 2 + 1, "height": 2, "width": 2}
+                for i in range(min(n_kpis, 6))],
+                *[{"type": "chart", "index": i,
+                "row": 3 + (i // 2) * 6, "col": (i % 2) * 6 + 1,
+                "height": 6, "width": 6}
+                for i in range(n_charts)],
+                *([ {"type": "table",
+                    "row": 3 + (-(-n_charts // 2)) * 6,
+                    "col": 1, "height": table_rows, "width": COLS} ]
+                if show_table else [])
+            ],
+            "table_first": [
+                {"type": "table", "row": 1, "col": 1, "height": 5, "width": COLS},
+                *[{"type": "kpi", "index": i,
+                "row": 6, "col": i * 2 + 1, "height": 2, "width": 2}
+                for i in range(min(n_kpis, 6))],
+                *[{"type": "chart", "index": i,
+                "row": 8 + (i // 2) * 5, "col": (i % 2) * 6 + 1,
+                "height": 5, "width": 6}
+                for i in range(n_charts)],
+            ],
+        }
+
+        use_custom_layout = isinstance(layout, list)
+        if use_custom_layout:
+            all_blocks = layout
+        elif layout in PRESETS:
+            all_blocks = PRESETS[layout]
+        else:
+            all_blocks = None  # "auto"
+
+        # ── 7. Calcular total_rows ───────────────────────────────────────────
+        if all_blocks:
+            total_rows = max(b["row"] + b["height"] - 1 for b in all_blocks)
+        else:
+            total_rows = kpi_rows_used + chart_rows_total + table_rows_used
+            total_rows = max(total_rows, 6)
+
+        # ── 8. Construir dashboard ───────────────────────────────────────────
+        dash = cls(
+            title=title,
+            theme=template,
+            cols=COLS,
+            rows=total_rows,
+            gap=14,
+            padding=20,
+            navbar=navbar or {"title": title, "items": []},
+            authors=authors
+        )
+
+        if all_blocks:
+            # ── Layout personalizado o preset ────────────────────────────────
+            kpi_idx   = 0
+            chart_idx = 0
+            for block in all_blocks:
+                btype = block["type"]
+                r, c, h, w = block["row"], block["col"], block["height"], block["width"]
+                idx = block.get("index")
+
+                if btype == "kpi":
+                    i = idx if idx is not None else kpi_idx
+                    if i < len(planned):
+                        _, col_name, val, icon = planned[i]
+                        dash.add_valuebox(title=col_name, value=val, icon=icon,
+                                        row=r, col=c, height=h, width=w)
+                        kpi_idx += 1
+
+                elif btype == "chart":
+                    i = idx if idx is not None else chart_idx
+                    if i < len(charts):
+                        _, fig, chart_title = charts[i]
+                        dash.add_chart(fig=fig, title=chart_title,
+                                    row=r, col=c, height=h, width=w)
+                        chart_idx += 1
+
+                elif btype == "table" and show_table:
+                    dash.add_table(df=df.head(200), title="Vista de datos",
+                                row=r, col=c, height=h, width=w)
+
+        else:
+            # ── Layout automático ────────────────────────────────────────────
+            current_row = 1
+
+            if n_kpis:
+                for i, (_, col_name, val, icon) in enumerate(planned):
+                    fila_kpi = i // MAX_KPIS_PER_ROW
+                    col_kpi  = i %  MAX_KPIS_PER_ROW
+                    dash.add_valuebox(
+                        title=col_name, value=val, icon=icon,
+                        row=current_row + fila_kpi * kpi_height,
+                        col=col_kpi * actual_kpi_width + 1,
+                        height=kpi_height, width=actual_kpi_width
+                    )
+                current_row += kpi_rows_used
+
+            for i, (_, fig, chart_title) in enumerate(charts):
+                col_pos = (i % 2) * chart_cols + 1
+                dash.add_chart(
+                    fig=fig, title=chart_title,
+                    row=current_row, col=col_pos,
+                    height=chart_height, width=chart_cols
+                )
+                if i % 2 == 1:
+                    current_row += chart_height
+
+            if n_charts % 2 != 0:
+                current_row += chart_height
+
+            if show_table:
+                dash.add_table(
+                    df=df.head(200), title="Vista de datos",
+                    row=current_row, col=1,
+                    height=table_rows, width=COLS
+                )
+
+        return dash.generate(filename=filename)

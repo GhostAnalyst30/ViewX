@@ -1,0 +1,629 @@
+
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <title>Demo 7 · Parseo Automático de Strings</title>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+            <style>
+                
+        :root {
+            --vx-bg-page: #F3F4F6;
+            --vx-bg-card: #FFFFFF;
+            --vx-accent: #0078D4;
+            --vx-text-primary: #252423;
+            --vx-text-secondary: #605E5C;
+            --vx-card-radius: 12px;
+            --vx-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --vx-transition: all 0.3s cubic-bezier(.16,1,.3,1);
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: var(--vx-bg-page);
+            color: var(--vx-text-primary);
+            font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+        .vx-card {
+            background: var(--vx-bg-card);
+            border-radius: var(--vx-card-radius);
+            box-shadow: var(--vx-shadow);
+            transition: var(--vx-transition);
+            overflow: auto;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .vx-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        
+        /* Asegurar que los gráficos Plotly sean 100% responsivos */
+        .plotly-graph-div {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        .js-plotly-plot, .plot-container {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        /* Scroll interno elegante */
+        .vx-card::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .vx-card::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .vx-card::-webkit-scrollbar-thumb {
+            background: #0078D455;
+            border-radius: 3px;
+        }
+        
+                
+                .dashboard-container {
+                    padding: 20px;
+                    padding-top: 76px;
+                    height: 100vh;
+                    width: 100vw;
+                    display: flex;
+                    flex-direction: column;
+                }
+                
+                .vx-grid {
+                    display: grid;
+                    grid-template-columns: repeat(12, 1fr);
+                    grid-template-rows: repeat(11, 1fr);
+                    gap: 14px;
+                    flex: 1;
+                    min-height: 0;  /* Importante para evitar overflow */
+                }
+                
+                .comp_1_549c14 { grid-area: 1 / 1 / 3 / 5; }
+.comp_2_4a0fa1 { grid-area: 1 / 5 / 3 / 9; }
+.comp_3_de8bd2 { grid-area: 1 / 9 / 3 / 13; }
+.comp_4_f909d0 { grid-area: 3 / 1 / 8 / 7; }
+.comp_5_928158 { grid-area: 3 / 7 / 8 / 13; }
+.comp_6_addedd { grid-area: 8 / 1 / 12 / 13; }
+                
+                .vx-card {
+                    animation: fadeInUp 0.4s ease-out both;
+                }
+                
+                @keyframes fadeInUp {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                
+                /* Animación secuencial */
+                .vx-card:nth-child(1) { animation-delay: 0.0s; }
+.vx-card:nth-child(2) { animation-delay: 0.05s; }
+.vx-card:nth-child(3) { animation-delay: 0.1s; }
+.vx-card:nth-child(4) { animation-delay: 0.15000000000000002s; }
+.vx-card:nth-child(5) { animation-delay: 0.2s; }
+.vx-card:nth-child(6) { animation-delay: 0.25s; }
+                
+                /* Responsive: en pantallas pequeñas se apilan */
+                @media (max-width: 768px) {
+                    .vx-grid {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 14px;
+                        overflow-y: auto;
+                    }
+                    .vx-card {
+                        min-height: 250px;
+                        flex-shrink: 0;
+                    }
+                    body {
+                        overflow-y: auto;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            
+        <style>
+            .vx-navbar {
+                position: fixed; top: 0; left: 0; right: 0; height: 56px;
+                background: #FFFFFF;
+                display: flex; align-items: center; justify-content: space-between;
+                padding: 0 24px; z-index: 1000; 
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                border-bottom: 2px solid #0078D4;
+            }
+            .nav-brand { 
+                font-weight: 800; font-size: 1.3rem; 
+                color: #0078D4; text-decoration: none; 
+                letter-spacing: -0.5px;
+            }
+            .nav-author {
+                font-size: 0.72rem;
+                color: var(--vx-text-secondary);
+                font-weight: 500;
+                letter-spacing: 0.2px;
+            }
+            .nav-links { display:flex; gap: 20px; }
+            .nav-link { 
+                color: var(--vx-text-primary); 
+                text-decoration: none; 
+                font-weight: 600; 
+                font-size: 0.85rem;
+                opacity: 0.8; transition: var(--vx-transition); 
+            }
+            .nav-link:hover { opacity: 1; color: #0078D4; }
+            .nav-author-wrap {
+                font-size: 0.72rem;
+                color: var(--vx-text-secondary);
+                font-weight: 500;
+            }
+            .nav-author-link {
+                color: #0078D4;
+                text-decoration: none;
+                transition: var(--vx-transition);
+            }
+            .nav-author-link:hover {
+                text-decoration: underline;
+                opacity: 0.8;
+            }
+        </style>
+        <nav class="vx-navbar">
+            <div style="display:flex; flex-direction:column; gap:1px;">
+                <a href="#" class="nav-brand">Demo 7 · Parseo Automático de Strings</a>
+                
+            </div>
+            <div class="nav-links"></div>
+        </nav>
+        
+            <div class="dashboard-container">
+                <div class="vx-grid">
+                    
+        <style>
+            .vb-comp_1_549c14 {
+                padding: 20px;
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                border-left: 6px solid #0078D4;
+                height: 100%;
+            }
+            .vb-icon-comp_1_549c14 { 
+                font-size: 2.5rem; 
+                color: #0078D4; 
+                opacity: 0.9;
+                background: #0078D415;
+                width: 56px; height: 56px;
+                display: flex; align-items: center; justify-content: center;
+                border-radius: 12px;
+            }
+            .vb-content-comp_1_549c14 { flex: 1; }
+            .vb-title-comp_1_549c14 { 
+                font-size: 0.8rem; 
+                color: var(--vx-text-secondary); 
+                text-transform: uppercase; 
+                font-weight: 700;
+                letter-spacing: 0.5px;
+                margin-bottom: 4px;
+            }
+            .vb-val-comp_1_549c14 { 
+                font-size: 1.8rem; 
+                font-weight: 800; 
+                color: var(--vx-text-primary); 
+                line-height: 1;
+            }
+            @media (max-height: 700px) {
+                .vb-comp_1_549c14 { padding: 12px; }
+                .vb-icon-comp_1_549c14 { font-size: 1.8rem; width: 44px; height: 44px; }
+                .vb-val-comp_1_549c14 { font-size: 1.4rem; }
+            }
+        </style>
+        <div class="vx-card vb-comp_1_549c14 comp_1_549c14">
+            <div class="vb-icon-comp_1_549c14">📊</div>
+            <div class="vb-content-comp_1_549c14">
+                <div class="vb-title-comp_1_549c14">ingresos</div>
+                <div class="vb-val-comp_1_549c14">81,600</div>
+            </div>
+        </div>
+        
+        <style>
+            .vb-comp_2_4a0fa1 {
+                padding: 20px;
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                border-left: 6px solid #0078D4;
+                height: 100%;
+            }
+            .vb-icon-comp_2_4a0fa1 { 
+                font-size: 2.5rem; 
+                color: #0078D4; 
+                opacity: 0.9;
+                background: #0078D415;
+                width: 56px; height: 56px;
+                display: flex; align-items: center; justify-content: center;
+                border-radius: 12px;
+            }
+            .vb-content-comp_2_4a0fa1 { flex: 1; }
+            .vb-title-comp_2_4a0fa1 { 
+                font-size: 0.8rem; 
+                color: var(--vx-text-secondary); 
+                text-transform: uppercase; 
+                font-weight: 700;
+                letter-spacing: 0.5px;
+                margin-bottom: 4px;
+            }
+            .vb-val-comp_2_4a0fa1 { 
+                font-size: 1.8rem; 
+                font-weight: 800; 
+                color: var(--vx-text-primary); 
+                line-height: 1;
+            }
+            @media (max-height: 700px) {
+                .vb-comp_2_4a0fa1 { padding: 12px; }
+                .vb-icon-comp_2_4a0fa1 { font-size: 1.8rem; width: 44px; height: 44px; }
+                .vb-val-comp_2_4a0fa1 { font-size: 1.4rem; }
+            }
+        </style>
+        <div class="vx-card vb-comp_2_4a0fa1 comp_2_4a0fa1">
+            <div class="vb-icon-comp_2_4a0fa1">💰</div>
+            <div class="vb-content-comp_2_4a0fa1">
+                <div class="vb-title-comp_2_4a0fa1">costos</div>
+                <div class="vb-val-comp_2_4a0fa1">56,100</div>
+            </div>
+        </div>
+        
+        <style>
+            .vb-comp_3_de8bd2 {
+                padding: 20px;
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                border-left: 6px solid #0078D4;
+                height: 100%;
+            }
+            .vb-icon-comp_3_de8bd2 { 
+                font-size: 2.5rem; 
+                color: #0078D4; 
+                opacity: 0.9;
+                background: #0078D415;
+                width: 56px; height: 56px;
+                display: flex; align-items: center; justify-content: center;
+                border-radius: 12px;
+            }
+            .vb-content-comp_3_de8bd2 { flex: 1; }
+            .vb-title-comp_3_de8bd2 { 
+                font-size: 0.8rem; 
+                color: var(--vx-text-secondary); 
+                text-transform: uppercase; 
+                font-weight: 700;
+                letter-spacing: 0.5px;
+                margin-bottom: 4px;
+            }
+            .vb-val-comp_3_de8bd2 { 
+                font-size: 1.8rem; 
+                font-weight: 800; 
+                color: var(--vx-text-primary); 
+                line-height: 1;
+            }
+            @media (max-height: 700px) {
+                .vb-comp_3_de8bd2 { padding: 12px; }
+                .vb-icon-comp_3_de8bd2 { font-size: 1.8rem; width: 44px; height: 44px; }
+                .vb-val-comp_3_de8bd2 { font-size: 1.4rem; }
+            }
+        </style>
+        <div class="vx-card vb-comp_3_de8bd2 comp_3_de8bd2">
+            <div class="vb-icon-comp_3_de8bd2">📈</div>
+            <div class="vb-content-comp_3_de8bd2">
+                <div class="vb-title-comp_3_de8bd2">margen%</div>
+                <div class="vb-val-comp_3_de8bd2">185.00</div>
+            </div>
+        </div>
+        
+                    <style>
+                        .plot-card-comp_4_f909d0 {
+                            padding: 12px;
+                            display: grid;
+                            grid-template-rows: auto 1fr;
+                            height: 100%;
+                            width: 100%;
+                            overflow: hidden;
+                            gap: 8px;
+                        }
+                        .plot-card-comp_4_f909d0 h4 { 
+                            margin: 0; 
+                            color: var(--vx-text-primary); 
+                            font-weight: 600;
+                            font-size: 0.95rem;
+                            border-bottom: 2px solid #0078D433;
+                            padding-bottom: 6px;
+                        }
+                        .plot-container-comp_4_f909d0 { 
+                            position: relative;
+                            width: 100%;
+                            height: 100%;
+                            min-height: 0;
+                            overflow: hidden;
+                        }
+                        /* Quitar position: absolute del graph-div */
+                        .plot-container-comp_4_f909d0 .plotly-graph-div {
+                            width: 100% !important;
+                            height: 100% !important;
+                            /* sin position: absolute */
+                        }
+                        .plot-container-comp_4_f909d0 .js-plotly-plot {
+                            width: 100% !important;
+                            height: 100% !important;
+                        }
+                    </style>
+
+                    <div class="vx-card plot-card-comp_4_f909d0 comp_4_f909d0">
+                        <h4>ingresos vs costos</h4>
+                        <div class="plot-container-comp_4_f909d0"><div>                        <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.1.1.min.js" integrity="sha256-HUEFyfiTnZJxCxur99FjbKYTvKSzwDaD3/x5TqHpFu4=" crossorigin="anonymous"></script>                <div id="c3124625-762a-4b86-9e73-d8c4a4c1c1d1" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("c3124625-762a-4b86-9e73-d8c4a4c1c1d1")) {                    Plotly.newPlot(                        "c3124625-762a-4b86-9e73-d8c4a4c1c1d1",                        [{"hovertemplate":"ingresos=%{x}\u003cbr\u003ecostos=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"","marker":{"color":"#636efa","opacity":0.7,"symbol":"circle"},"mode":"markers","name":"","orientation":"v","showlegend":false,"x":{"dtype":"i2","bdata":"1DBIJmA7+CrgR2w5"},"xaxis":"x","y":{"dtype":"i2","bdata":"NCEgHEgmpB\u002fgLgQp"},"yaxis":"y","type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"ingresos"},"gridcolor":"rgba(37, 36, 35, 0.13)","zerolinecolor":"rgba(37, 36, 35, 0.13)","showgrid":true},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"costos"},"gridcolor":"rgba(37, 36, 35, 0.13)","zerolinecolor":"rgba(37, 36, 35, 0.13)","showgrid":true},"legend":{"tracegroupgap":0},"margin":{"t":40,"l":40,"r":20,"b":30},"font":{"color":"#252423","family":"'Segoe UI', sans-serif"},"title":{"font":{"color":"#0078D4","size":14}},"autosize":true,"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","hovermode":"closest"},                        {"displaylogo": false, "responsive": true, "autosizable": true, "frameMargins": 0}                    )                };            </script>        </div></div>
+                    </div>
+
+                    <!-- Script DESPUÉS del div para que container no sea null -->
+                    <script>
+                    (function() {
+                        var container = document.querySelector('.plot-container-comp_4_f909d0');
+                        var resizeTimeout;
+
+                        function forceResize_comp_4_f909d0() {
+                            if (!container) return;
+                            var plotDiv = container.querySelector('.plotly-graph-div');
+                            if (plotDiv && window.Plotly) {
+                                // Subir al padre para leer dimensiones reales
+                                var card = container.closest('.plot-card-comp_4_f909d0');
+                                var ref = card || container;
+                                var w = ref.clientWidth;
+                                var h = container.clientHeight;   // altura sigue viniendo del container
+                                if (w > 0 && h > 0) {
+                                    Plotly.relayout(plotDiv, { width: w, height: h });
+                                }
+                            }
+                        }
+
+                        // Reintentar hasta que Plotly esté listo
+                        function waitAndResize_comp_4_f909d0(attempts) {
+                            var plotDiv = container ? container.querySelector('.plotly-graph-div') : null;
+                            if (plotDiv && window.Plotly) {
+                                forceResize_comp_4_f909d0();
+                            } else if (attempts > 0) {
+                                setTimeout(function() { waitAndResize_comp_4_f909d0(attempts - 1); }, 100);
+                            }
+                        }
+
+                        if (window.ResizeObserver && container) {
+                            new ResizeObserver(function() {
+                                clearTimeout(resizeTimeout);
+                                resizeTimeout = setTimeout(forceResize_comp_4_f909d0, 50);
+                            }).observe(container);
+                        }
+
+                        window.addEventListener('resize', function() {
+                            clearTimeout(resizeTimeout);
+                            resizeTimeout = setTimeout(forceResize_comp_4_f909d0, 100);
+                        });
+
+                        document.addEventListener('keydown', function(e) {
+                            if ((e.ctrlKey || e.metaKey) && ['+','-','0','='].includes(e.key)) {
+                                clearTimeout(resizeTimeout);
+                                resizeTimeout = setTimeout(forceResize_comp_4_f909d0, 150);
+                            }
+                        });
+
+                        // Esperar hasta 20 intentos × 100ms = 2 segundos
+                        waitAndResize_comp_4_f909d0(20);
+                    })();
+                    </script>
+                    
+                    <style>
+                        .plot-card-comp_5_928158 {
+                            padding: 12px;
+                            display: grid;
+                            grid-template-rows: auto 1fr;
+                            height: 100%;
+                            width: 100%;
+                            overflow: hidden;
+                            gap: 8px;
+                        }
+                        .plot-card-comp_5_928158 h4 { 
+                            margin: 0; 
+                            color: var(--vx-text-primary); 
+                            font-weight: 600;
+                            font-size: 0.95rem;
+                            border-bottom: 2px solid #0078D433;
+                            padding-bottom: 6px;
+                        }
+                        .plot-container-comp_5_928158 { 
+                            position: relative;
+                            width: 100%;
+                            height: 100%;
+                            min-height: 0;
+                            overflow: hidden;
+                        }
+                        /* Quitar position: absolute del graph-div */
+                        .plot-container-comp_5_928158 .plotly-graph-div {
+                            width: 100% !important;
+                            height: 100% !important;
+                            /* sin position: absolute */
+                        }
+                        .plot-container-comp_5_928158 .js-plotly-plot {
+                            width: 100% !important;
+                            height: 100% !important;
+                        }
+                    </style>
+
+                    <div class="vx-card plot-card-comp_5_928158 comp_5_928158">
+                        <h4>Correlación entre variables</h4>
+                        <div class="plot-container-comp_5_928158"><div>                        <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.1.1.min.js" integrity="sha256-HUEFyfiTnZJxCxur99FjbKYTvKSzwDaD3/x5TqHpFu4=" crossorigin="anonymous"></script>                <div id="98aa43b7-2cdb-46cb-ba8c-90f097d697e5" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("98aa43b7-2cdb-46cb-ba8c-90f097d697e5")) {                    Plotly.newPlot(                        "98aa43b7-2cdb-46cb-ba8c-90f097d697e5",                        [{"coloraxis":"coloraxis","name":"0","texttemplate":"%{z:.2f}","x":["ingresos","costos","margen%"],"y":["ingresos","costos","margen%"],"z":{"dtype":"f8","bdata":"AAAAAAAA8D\u002f6eJRyV2XvP5nvHdaAgOk\u002f+niUcldl7z8AAAAAAADwP79VqgXkceU\u002fme8d1oCA6T+\u002fVaoF5HHlPwAAAAAAAPA\u002f","shape":"3, 3"},"type":"heatmap","xaxis":"x","yaxis":"y","hovertemplate":"x: %{x}\u003cbr\u003ey: %{y}\u003cbr\u003ecolor: %{z}\u003cextra\u003e\u003c\u002fextra\u003e"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"scaleanchor":"y","constrain":"domain","gridcolor":"rgba(37, 36, 35, 0.13)","zerolinecolor":"rgba(37, 36, 35, 0.13)","showgrid":true},"yaxis":{"anchor":"x","domain":[0.0,1.0],"autorange":"reversed","constrain":"domain","gridcolor":"rgba(37, 36, 35, 0.13)","zerolinecolor":"rgba(37, 36, 35, 0.13)","showgrid":true},"coloraxis":{"colorscale":[[0.0,"rgb(5,48,97)"],[0.1,"rgb(33,102,172)"],[0.2,"rgb(67,147,195)"],[0.3,"rgb(146,197,222)"],[0.4,"rgb(209,229,240)"],[0.5,"rgb(247,247,247)"],[0.6,"rgb(253,219,199)"],[0.7,"rgb(244,165,130)"],[0.8,"rgb(214,96,77)"],[0.9,"rgb(178,24,43)"],[1.0,"rgb(103,0,31)"]],"cmin":-1,"cmax":1},"margin":{"t":40,"l":40,"r":20,"b":30},"font":{"color":"#252423","family":"'Segoe UI', sans-serif"},"title":{"font":{"color":"#0078D4","size":14}},"autosize":true,"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","hovermode":"closest"},                        {"displaylogo": false, "responsive": true, "autosizable": true, "frameMargins": 0}                    )                };            </script>        </div></div>
+                    </div>
+
+                    <!-- Script DESPUÉS del div para que container no sea null -->
+                    <script>
+                    (function() {
+                        var container = document.querySelector('.plot-container-comp_5_928158');
+                        var resizeTimeout;
+
+                        function forceResize_comp_5_928158() {
+                            if (!container) return;
+                            var plotDiv = container.querySelector('.plotly-graph-div');
+                            if (plotDiv && window.Plotly) {
+                                // Subir al padre para leer dimensiones reales
+                                var card = container.closest('.plot-card-comp_5_928158');
+                                var ref = card || container;
+                                var w = ref.clientWidth;
+                                var h = container.clientHeight;   // altura sigue viniendo del container
+                                if (w > 0 && h > 0) {
+                                    Plotly.relayout(plotDiv, { width: w, height: h });
+                                }
+                            }
+                        }
+
+                        // Reintentar hasta que Plotly esté listo
+                        function waitAndResize_comp_5_928158(attempts) {
+                            var plotDiv = container ? container.querySelector('.plotly-graph-div') : null;
+                            if (plotDiv && window.Plotly) {
+                                forceResize_comp_5_928158();
+                            } else if (attempts > 0) {
+                                setTimeout(function() { waitAndResize_comp_5_928158(attempts - 1); }, 100);
+                            }
+                        }
+
+                        if (window.ResizeObserver && container) {
+                            new ResizeObserver(function() {
+                                clearTimeout(resizeTimeout);
+                                resizeTimeout = setTimeout(forceResize_comp_5_928158, 50);
+                            }).observe(container);
+                        }
+
+                        window.addEventListener('resize', function() {
+                            clearTimeout(resizeTimeout);
+                            resizeTimeout = setTimeout(forceResize_comp_5_928158, 100);
+                        });
+
+                        document.addEventListener('keydown', function(e) {
+                            if ((e.ctrlKey || e.metaKey) && ['+','-','0','='].includes(e.key)) {
+                                clearTimeout(resizeTimeout);
+                                resizeTimeout = setTimeout(forceResize_comp_5_928158, 150);
+                            }
+                        });
+
+                        // Esperar hasta 20 intentos × 100ms = 2 segundos
+                        waitAndResize_comp_5_928158(20);
+                    })();
+                    </script>
+                    
+        <style>
+            .table-card-comp_6_addedd {
+                padding: 16px;
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+            }
+            .table-card-comp_6_addedd h4 { 
+                color: var(--vx-text-primary); 
+                margin: 0 0 12px 0; 
+                font-weight: 600;
+                font-size: 0.95rem;
+                flex-shrink: 0;
+            }
+            .table-container-comp_6_addedd { 
+                overflow: auto; 
+                flex: 1; 
+                scrollbar-width: thin;
+            }
+            .vxt-comp_6_addedd {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.8rem;
+            }
+            .vxt-comp_6_addedd th {
+                background: #0078D411;
+                color: #0078D4;
+                padding: 10px 8px;
+                text-align: left;
+                font-weight: 700;
+                position: sticky; top: 0;
+                border-bottom: 2px solid #0078D444;
+            }
+            .vxt-comp_6_addedd td {
+                padding: 8px;
+                border-bottom: 1px solid var(--vx-text-secondary)22;
+                color: var(--vx-text-primary);
+            }
+            .vxt-comp_6_addedd tr:hover { background: #0078D408; }
+        </style>
+        <div class="vx-card table-card-comp_6_addedd comp_6_addedd">
+            <h4>Vista de datos</h4>
+            <div class="table-container-comp_6_addedd"><table class="dataframe vxt-comp_6_addedd">
+  <thead>
+    <tr style="text-align: right;">
+      <th>mes</th>
+      <th>ingresos</th>
+      <th>costos</th>
+      <th>margen%</th>
+      <th>ciudad</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Ene</td>
+      <td>12500</td>
+      <td>8500</td>
+      <td>32</td>
+      <td>Bogotá</td>
+    </tr>
+    <tr>
+      <td>Feb</td>
+      <td>9800</td>
+      <td>7200</td>
+      <td>27</td>
+      <td>Medellín</td>
+    </tr>
+    <tr>
+      <td>Mar</td>
+      <td>15200</td>
+      <td>9800</td>
+      <td>36</td>
+      <td>Cali</td>
+    </tr>
+    <tr>
+      <td>Abr</td>
+      <td>11000</td>
+      <td>8100</td>
+      <td>26</td>
+      <td>Bogotá</td>
+    </tr>
+    <tr>
+      <td>May</td>
+      <td>18400</td>
+      <td>12000</td>
+      <td>35</td>
+      <td>Cali</td>
+    </tr>
+    <tr>
+      <td>Jun</td>
+      <td>14700</td>
+      <td>10500</td>
+      <td>29</td>
+      <td>Medellín</td>
+    </tr>
+  </tbody>
+</table></div>
+        </div>
+        
+                </div>
+            </div>
+        </body>
+        </html>
+        

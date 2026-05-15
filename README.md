@@ -1,4 +1,4 @@
-# 📦 ViewX — v2.1
+# ViewX — v2.1
 
 **ViewX** es un paquete moderno de Python diseñado para generar **páginas HTML interactivas**, **dashboards dinámicos** y **visualizaciones inteligentes** que se adaptan automáticamente a los objetos agregados por el usuario.
 
