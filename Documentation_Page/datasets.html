@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Datasets - ViewX</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #fafaf9;
+  --bg-alt: #f5f5f4;
+  --surface: #ffffff;
+  --border: #e7e5e4;
+  --text: #1c1917;
+  --text-muted: #78716c;
+  --accent: #ea580c;
+  --accent-light: #fed7aa;
+  --accent-dark: #c2410c;
+  --teal: #0d9488;
+  --teal-light: #99f6e4;
+  --shadow: 0 4px 24px rgba(28,25,23,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Space Grotesk',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;}
+
+nav{position:sticky;top:0;z-index:100;background:rgba(250,250,249,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 2rem;}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px;}
+.logo{font-weight:700;font-size:1.35rem;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:0.5rem;}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--teal));border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.9rem;}
+.nav-links{display:flex;gap:0.5rem;}
+.nav-links a{font-size:0.88rem;font-weight:500;color:var(--text-muted);text-decoration:none;padding:0.5rem 0.9rem;border-radius:8px;transition:all 0.2s;}
+.nav-links a:hover,.nav-links a.active{color:var(--text);background:var(--bg-alt);}
+.nav-pip{font-family:'JetBrains Mono',monospace;font-size:0.8rem;background:var(--text);color:#fff;padding:0.5rem 1rem;border-radius:8px;border:none;cursor:pointer;transition:all 0.2s;}
+.nav-pip:hover{background:var(--accent);}
+
+.doc-layout{display:grid;grid-template-columns:260px 1fr;max-width:1400px;margin:0 auto;min-height:calc(100vh - 64px);}
+@media(max-width:900px){.doc-layout{grid-template-columns:1fr;}.sidebar{display:none;}}
+
+.sidebar{border-right:1px solid var(--border);padding:2rem 1.5rem;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto;}
+.sidebar-title{font-size:0.7rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.75rem;margin-top:1.5rem;}
+.sidebar-title:first-child{margin-top:0;}
+.sidebar-links{display:flex;flex-direction:column;gap:0.25rem;}
+.sidebar-links a{font-size:0.88rem;color:var(--text-muted);text-decoration:none;padding:0.5rem 0.75rem;border-radius:6px;transition:all 0.2s;border-left:2px solid transparent;}
+.sidebar-links a:hover{color:var(--text);background:var(--bg-alt);}
+.sidebar-links a.active{color:var(--accent);border-left-color:var(--accent);background:var(--accent-light);font-weight:500;}
+
+.main-content{padding:3rem 4rem;max-width:900px;}
+@media(max-width:900px){.main-content{padding:2rem 1.5rem;}}
+
+.breadcrumb{font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}
+.page-title{font-size:2.5rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:0.5rem;}
+.page-desc{font-size:1.1rem;color:var(--text-muted);margin-bottom:2rem;line-height:1.6;}
+
+.section{margin-bottom:3rem;}
+.section h2{font-size:1.5rem;font-weight:600;margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
+.section p{color:var(--text-muted);margin-bottom:1rem;}
+
+.code-block{background:#1e1e1e;border-radius:12px;overflow:hidden;margin:1.5rem 0;box-shadow:var(--shadow);}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 1rem;background:#2d2d2d;border-bottom:1px solid #3d3d3d;}
+.code-dots{display:flex;gap:0.4rem;}
+.dot{width:10px;height:10px;border-radius:50%;}
+.dot-r{background:#ff5f57;}
+.dot-y{background:#febc2e;}
+.dot-g{background:#28c840;}
+.code-lang{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:#888;}
+.code-copy{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:#888;background:transparent;border:1px solid #444;padding:0.2rem 0.5rem;border-radius:4px;cursor:pointer;transition:all 0.2s;}
+.code-copy:hover{color:#fff;border-color:#666;}
+.code-block pre{margin:0!important;padding:1.25rem!important;font-size:0.85rem!important;overflow-x:auto;}
+
+.method-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1rem 0;transition:all 0.2s;}
+.method-card:hover{border-color:var(--accent);box-shadow:var(--shadow);}
+.method-name{font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:600;color:var(--accent-dark);margin-bottom:0.5rem;}
+.method-desc{font-size:0.9rem;color:var(--text-muted);margin-bottom:1rem;}
+.param-list{background:var(--bg-alt);border-radius:8px;padding:1rem;font-size:0.85rem;}
+.param{margin-bottom:0.5rem;}
+.param:last-child{margin-bottom:0;}
+.param-name{font-family:'JetBrains Mono',monospace;color:var(--teal);font-weight:500;}
+.param-type{font-family:'JetBrains Mono',monospace;color:var(--text-muted);font-size:0.8rem;}
+
+.dataset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin:1.5rem 0;}
+.dataset-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;transition:all 0.2s;display:flex;align-items:center;gap:1rem;}
+.dataset-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow);}
+.dataset-icon{font-size:1.5rem;}
+.dataset-info{flex:1;}
+.dataset-name{font-family:'JetBrains Mono',monospace;font-size:0.9rem;font-weight:600;color:var(--text);}
+.dataset-desc{font-size:0.75rem;color:var(--text-muted);}
+
+.dist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0.75rem;margin:1.5rem 0;}
+.dist-tag{font-family:'JetBrains Mono',monospace;font-size:0.8rem;background:var(--bg-alt);border:1px solid var(--border);padding:0.6rem 1rem;border-radius:8px;text-align:center;transition:all 0.2s;}
+.dist-tag:hover{border-color:var(--teal);background:var(--teal-light);}
+
+.copied-toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--teal);color:#fff;padding:0.75rem 1.5rem;border-radius:8px;font-size:0.9rem;font-weight:600;opacity:0;transform:translateY(10px);transition:all 0.3s;pointer-events:none;z-index:9999;}
+.copied-toast.show{opacity:1;transform:translateY(0);}
+
+footer{border-top:1px solid var(--border);padding:2rem;text-align:center;background:var(--bg-alt);}
+.footer-meta{font-size:0.85rem;color:var(--text-muted);}
+</style>
+</head>
+<body>
+
+<div class="copied-toast" id="toast">Copiado al portapapeles</div>
+
+<nav>
+  <div class="nav-inner">
+    <a class="logo" href="index.html">
+      <div class="logo-icon">Vx</div>
+      ViewX
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Inicio</a>
+      <a href="datamatrix.html">DataMatrix</a>
+      <a href="report.html">Report</a>
+      <a href="html.html">HTML</a>
+      <a href="slides.html">Slides</a>
+      <a href="datasets.html" class="active">Datasets</a>
+    </div>
+    <button class="nav-pip" onclick="copyText('pip install viewx')">pip install viewx</button>
+  </div>
+</nav>
+
+<div class="doc-layout">
+  <aside class="sidebar">
+    <div class="sidebar-title">Inicio</div>
+    <div class="sidebar-links">
+      <a href="#overview" class="active">Descripcion general</a>
+      <a href="#available">Datasets disponibles</a>
+    </div>
+    <div class="sidebar-title">Cargar datos</div>
+    <div class="sidebar-links">
+      <a href="#load_dataset">load_dataset()</a>
+      <a href="#load_iris">load_iris()</a>
+      <a href="#load_penguins">load_penguins()</a>
+    </div>
+    <div class="sidebar-title">Generar datos</div>
+    <div class="sidebar-links">
+      <a href="#generate_dataset">generate_dataset()</a>
+      <a href="#distributions">Distribuciones</a>
+      <a href="#schema">Schema de ejemplo</a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="breadcrumb"><a href="index.html">ViewX</a> / Datasets</div>
+    <h1 class="page-title">Datasets</h1>
+    <p class="page-desc">Modulo para cargar datasets internos y generar datos sinteticos con distribuciones estadisticas configurables. Compatible con pandas como backend.</p>
+
+    <section class="section" id="overview">
+      <h2>Descripcion general</h2>
+      <p>El modulo datasets de ViewX proporciona:</p>
+      <ul style="margin-left:1.5rem;color:var(--text-muted);">
+        <li>Datasets clasicos listos para usar (iris, penguins, titanic, etc.)</li>
+        <li>Carga flexible desde paquete o ruta local</li>
+        <li>Soporte para CSV, Parquet, Excel y JSON</li>
+        <li>Generacion de datos sinteticos con 7+ distribuciones</li>
+        <li>Opcion return_X_y para machine learning</li>
+      </ul>
+    </section>
+
+    <section class="section" id="available">
+      <h2>Datasets disponibles</h2>
+      <div class="dataset-grid">
+        <div class="dataset-card">
+          <div class="dataset-icon">&#127800;</div>
+          <div class="dataset-info">
+            <div class="dataset-name">iris.csv</div>
+            <div class="dataset-desc">150 filas, 5 columnas</div>
+          </div>
+        </div>
+        <div class="dataset-card">
+          <div class="dataset-icon">&#128039;</div>
+          <div class="dataset-info">
+            <div class="dataset-name">penguins.csv</div>
+            <div class="dataset-desc">344 filas, 7 columnas</div>
+          </div>
+        </div>
+        <div class="dataset-card">
+          <div class="dataset-icon">&#128674;</div>
+          <div class="dataset-info">
+            <div class="dataset-name">titanic.csv</div>
+            <div class="dataset-desc">891 filas, 12 columnas</div>
+          </div>
+        </div>
+        <div class="dataset-card">
+          <div class="dataset-icon">&#128200;</div>
+          <div class="dataset-info">
+            <div class="dataset-name">sp500_companies.csv</div>
+            <div class="dataset-desc">Empresas S&P 500</div>
+          </div>
+        </div>
+        <div class="dataset-card">
+          <div class="dataset-icon">&#128218;</div>
+          <div class="dataset-info">
+            <div class="dataset-name">course_completion.csv</div>
+            <div class="dataset-desc">Datos educativos</div>
+          </div>
+        </div>
+        <div class="dataset-card">
+          <div class="dataset-icon">&#127851;</div>
+          <div class="dataset-info">
+            <div class="dataset-name">Cocoa_Bubbles_...xlsx</div>
+            <div class="dataset-desc">Inversiones cacao</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="load_dataset">
+      <h2>load_dataset()</h2>
+      <div class="method-card">
+        <div class="method-name">load_dataset(name, backend="pandas", return_X_y=None, sep=",")</div>
+        <div class="method-desc">Funcion generica para cargar cualquier dataset. Busca primero en el paquete viewx.datasets, luego en ruta local.</div>
+        <div class="param-list">
+          <div class="param"><span class="param-name">name</span> <span class="param-type">str</span> - Nombre del archivo (con extension)</div>
+          <div class="param"><span class="param-name">backend</span> <span class="param-type">str, default="pandas"</span> - Backend de DataFrame</div>
+          <div class="param"><span class="param-name">return_X_y</span> <span class="param-type">tuple, optional</span> - Tupla (X_columns, y_column) para retornar arrays numpy</div>
+          <div class="param"><span class="param-name">sep</span> <span class="param-type">str, default=","</span> - Separador para CSV</div>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="code-lang">Python</span>
+          <button class="code-copy" onclick="copyCode('load-code')">Copiar</button>
+        </div>
+        <pre><code class="language-python" id="load-code">from viewx.datasets import load_dataset
+
+# Cargar como DataFrame
+df = load_dataset("iris.csv")
+
+# Cargar como arrays X, y para ML
+X, y = load_dataset(
+    "iris.csv",
+    return_X_y=(
+        ["sepal_length", "sepal_width", "petal_length", "petal_width"],
+        "species"
+    )
+)
+
+# Cargar archivo local
+df = load_dataset("mis_datos.csv")</code></pre>
+      </div>
+    </section>
+
+    <section class="section" id="load_iris">
+      <h2>load_iris()</h2>
+      <div class="method-card">
+        <div class="method-name">load_iris(backend="pandas", return_X_y=None) &rarr; DataFrame | tuple</div>
+        <div class="method-desc">Atajo para cargar el dataset Iris. 150 muestras de 3 especies de flores con medidas de sepalo y petalo.</div>
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="code-lang">Python</span>
+          <button class="code-copy" onclick="copyCode('iris-code')">Copiar</button>
+        </div>
+        <pre><code class="language-python" id="iris-code">from viewx.datasets import load_iris
+
+df = load_iris()
+print(df.head())</code></pre>
+      </div>
+    </section>
+
+    <section class="section" id="load_penguins">
+      <h2>load_penguins()</h2>
+      <div class="method-card">
+        <div class="method-name">load_penguins(backend="pandas", return_X_y=None) &rarr; DataFrame | tuple</div>
+        <div class="method-desc">Atajo para cargar el dataset Penguins. 344 pinguinos de 3 especies con medidas corporales.</div>
+      </div>
+    </section>
+
+    <section class="section" id="generate_dataset">
+      <h2>generate_dataset()</h2>
+      <div class="method-card">
+        <div class="method-name">generate_dataset(n_rows, schema, seed=None, save=False, filename=None)</div>
+        <div class="method-desc">Genera un dataset sintetico con distribuciones estadisticas configurables por columna.</div>
+        <div class="param-list">
+          <div class="param"><span class="param-name">n_rows</span> <span class="param-type">int</span> - Numero de filas a generar</div>
+          <div class="param"><span class="param-name">schema</span> <span class="param-type">dict</span> - Diccionario con configuracion por columna</div>
+          <div class="param"><span class="param-name">seed</span> <span class="param-type">int, optional</span> - Semilla para reproducibilidad</div>
+          <div class="param"><span class="param-name">save</span> <span class="param-type">bool, default=False</span> - Guardar como CSV</div>
+          <div class="param"><span class="param-name">filename</span> <span class="param-type">str, optional</span> - Nombre del archivo (sin extension)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="distributions">
+      <h2>Distribuciones soportadas</h2>
+      <div class="dist-grid">
+        <div class="dist-tag">normal</div>
+        <div class="dist-tag">uniform</div>
+        <div class="dist-tag">exponential</div>
+        <div class="dist-tag">lognormal</div>
+        <div class="dist-tag">poisson</div>
+        <div class="dist-tag">binomial</div>
+        <div class="dist-tag">categorical</div>
+      </div>
+      <p>Cada distribucion acepta parametros especificos en el schema:</p>
+      <ul style="margin-left:1.5rem;color:var(--text-muted);font-size:0.9rem;">
+        <li><strong>normal:</strong> mean, std</li>
+        <li><strong>uniform:</strong> low, high</li>
+        <li><strong>exponential:</strong> scale</li>
+        <li><strong>lognormal:</strong> mean, std (del log)</li>
+        <li><strong>poisson:</strong> lam (lambda)</li>
+        <li><strong>binomial:</strong> n, p</li>
+        <li><strong>categorical:</strong> choices (lista de opciones)</li>
+      </ul>
+    </section>
+
+    <section class="section" id="schema">
+      <h2>Schema de ejemplo</h2>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="code-lang">Python</span>
+          <button class="code-copy" onclick="copyCode('schema-code')">Copiar</button>
+        </div>
+        <pre><code class="language-python" id="schema-code">from viewx.datasets import generate_dataset
+
+schema = {
+    "edad": {
+        "dist": "normal",
+        "mean": 35,
+        "std": 10,
+        "type": "int"
+    },
+    "salario": {
+        "dist": "lognormal",
+        "mean": 10.5,
+        "std": 0.5,
+        "type": "float",
+        "round": 2
+    },
+    "departamento": {
+        "dist": "categorical",
+        "choices": ["Ventas", "IT", "Marketing", "RRHH"]
+    },
+    "visitas_mensuales": {
+        "dist": "poisson",
+        "lam": 15,
+        "type": "int"
+    },
+    "tasa_conversion": {
+        "dist": "uniform",
+        "low": 0.01,
+        "high": 0.15,
+        "type": "float",
+        "round": 4
+    }
+}
+
+df = generate_dataset(
+    n_rows=1000,
+    schema=schema,
+    seed=42,
+    save=True,
+    filename="datos_sinteticos"
+)
+
+print(df.head())
+print(df.describe())</code></pre>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  <div class="footer-meta">ViewX &middot; Documentacion &middot; v1.0</div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script>
+function copyText(text){navigator.clipboard.writeText(text).then(()=>showToast());}
+function copyCode(id){const el=document.getElementById(id);navigator.clipboard.writeText(el.textContent).then(()=>showToast());}
+function showToast(){const toast=document.getElementById('toast');toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2000);}
+</script>
+</body>
+</html>

@@ -1353,3 +1353,162 @@ class HTML:
             )
 
         return dash.generate(filename=filename)
+
+
+"""
+ViewX Dashboard Engine — Full Feature Demo  (v3.1)
+===================================================
+Run:  python demo_viewx.py
+Each example generates an HTML file in the current directory.
+"""
+
+import numpy as np
+import pandas as pd
+import plotly.express as px
+rng = np.random.default_rng(42)
+n   = 300
+
+dates    = pd.date_range("2023-01-01", periods=n, freq="D")
+regions  = rng.choice(["North", "South", "East", "West"], n)
+products = rng.choice(["Alpha", "Beta", "Gamma", "Delta"], n)
+revenue  = (rng.normal(8_000, 2_000, n) + np.linspace(0, 5_000, n)).clip(100)
+costs    = revenue * rng.uniform(0.45, 0.65, n)
+units    = (revenue / rng.uniform(40, 120, n)).astype(int)
+rating   = rng.uniform(3.0, 5.0, n).round(1)
+returned = rng.choice([True, False], n, p=[0.12, 0.88])
+
+# Revenue stored as "$1,234" strings — engine auto-coerces to float
+revenue_str = [f"${v:,.0f}" for v in revenue]
+
+df = pd.DataFrame({
+    "date": dates, "region": regions, "product": products,
+    "revenue": revenue_str, "costs": costs.round(2),
+    "units": units, "rating": rating, "returned": returned,
+})
+
+print("=" * 64)
+print("  ViewX Dashboard Engine — Demo Suite  (v3.1)")
+print("=" * 64)
+
+# ── DEMO 1 ── corporate_blue, all columns, data_button ───────────────────────
+print("\n[1/7]  corporate_blue . all columns . data_button=True")
+HTML.auto_generate(
+    data=df, title="Sales Dashboard", template="corporate_blue",
+    filename="demo1_auto_default.html",
+    navbar={"title": "Sales Dashboard", "items": [
+        {"label": "Overview", "link": "#"},
+        {"label": "Reports",  "link": "#"},
+    ]},
+    authors=["Alice Rivera"],
+    data_button=True,
+    method_valuebox="sum",
+)
+
+# ── DEMO 2 ── dark_enterprise, selected columns ───────────────────────────────
+print("\n[2/7]  dark_enterprise . selected columns")
+HTML.auto_generate(
+    data=df,
+    columns=["date", "revenue", "costs", "units"],
+    title="Financial Trends", template="dark_enterprise",
+    filename="demo2_dark_selected.html",
+    navbar={"title": "Financial Trends", "items": []},
+    authors=[{"name": "Bob Kim", "email": "bob@acme.com"}],
+    data_button=True, method_valuebox="mean",
+)
+
+# ── DEMO 3 ── void_indigo + custom color palette ──────────────────────────────
+print("\n[3/7]  void_indigo . custom palette")
+HTML.auto_generate(
+    data=df, title="Custom Palette Dashboard", template="void_indigo",
+    filename="demo3_custom_palette.html",
+    color_palette=["#F43F5E", "#FB923C", "#FBBF24", "#34D399", "#818CF8"],
+    navbar={"title": "Custom Palette", "items": []},
+    data_button=True,
+)
+
+# ── DEMO 4 ── glass_ocean ─────────────────────────────────────────────────────
+print("\n[4/7]  glass_ocean")
+HTML.auto_generate(
+    data=df, title="Ocean Glass Dashboard", template="glass_ocean",
+    filename="demo4_glass_ocean.html",
+    navbar={"title": "Ocean Glass", "items": []},
+)
+
+# ── DEMO 5 ── cyberpunk_neon ──────────────────────────────────────────────────
+print("\n[5/7]  cyberpunk_neon")
+HTML.auto_generate(
+    data=df, title="Neon Dashboard", template="cyberpunk_neon",
+    filename="demo5_cyberpunk.html",
+    navbar={"title": "Neon Board", "items": []},
+    authors=["CyberTeam"],
+)
+
+# ── DEMO 6 ── Manual build: valuebox + infobox + charts ──────────────────────
+print("\n[6/7]  Manual build — modern_green")
+
+df2 = df.copy()
+df2["revenue"] = pd.to_numeric(
+    df2["revenue"].str.replace(r"[$,]", "", regex=True), errors="coerce"
+)
+
+fig_bar = px.bar(
+    df2.groupby("region")["revenue"].sum().reset_index().sort_values("revenue"),
+    x="revenue", y="region", orientation="h", color="region",
+    color_discrete_sequence=["#059669", "#10B981", "#34D399", "#6EE7B7"],
+)
+fig_bar.update_layout(showlegend=False)
+
+fig_line = px.line(
+    df2.groupby("date")["revenue"].sum().reset_index(),
+    x="date", y="revenue", color_discrete_sequence=["#059669"],
+)
+
+dash = HTML(
+    title="Manual Dashboard", theme="modern_green",
+    cols=12, rows=9, gap=14, padding=20,
+    navbar={"title": "Manual Dashboard",
+            "items": [{"label": "Home", "link": "#"}, {"label": "Analytics", "link": "#"}]},
+    authors=[{"name": "Data Team", "email": "data@acme.com"}],
+    data_button=True, df=df2,
+)
+
+dash.add_valuebox("Total Revenue", "$2.4M",  icon_key="dollar",  row=1, col=1,  height=2, width=3)
+dash.add_valuebox("Total Units",   "18.4K",  icon_key="box",     row=1, col=4,  height=2, width=3)
+dash.add_valuebox("Avg Rating",    "4.12",   icon_key="award",   row=1, col=7,  height=2, width=3)
+dash.add_valuebox("Return Rate",   "12%",    icon_key="percent", row=1, col=10, height=2, width=3)
+
+dash.add_infobox(df=df2, variable="revenue",
+    info=["mean", "median", "std", "min", "max", "kurtosis", "skewness", "nulls"],
+    title="Revenue Stats", row=3, col=1, height=4, width=3)
+dash.add_chart(fig=fig_bar, title="Revenue by Region",
+    row=3, col=4, height=4, width=9, show_info_btn=True,
+    _info_stats={"Regions": "4", "Total": "$2.4M"})
+dash.add_chart(fig=fig_line, title="Daily Revenue Trend",
+    row=7, col=1, height=3, width=12, show_info_btn=True)
+
+dash.generate("demo6_manual.html")
+
+# ── DEMO 7 ── Fully custom theme dict ────────────────────────────────────────
+print("\n[7/7]  Custom theme dict")
+HTML.auto_generate(
+    data=df,
+    columns=["region", "product", "units", "rating", "returned"],
+    title="Brand Dashboard",
+    template={
+        "bg_page":        "#0A0A1A",
+        "bg_card":        "#12122A",
+        "accent":         "#FF6B35",
+        "text_primary":   "#F0EAD6",
+        "text_secondary": "#A09080",
+        "shadow":         "0 4px 20px rgba(255,107,53,0.15)",
+        "chart_colors":   ["#FF6B35", "#F7C59F", "#EFEFD0", "#004E89", "#1A936F"],
+    },
+    filename="demo7_custom_theme.html",
+    navbar={"title": "Brand Dashboard", "items": []},
+    authors=["Brand Studio"],
+    data_button=True,
+)
+
+print("\n" + "=" * 64)
+print("  All 7 demos generated. Open any demo*.html in your browser.")
+print("=" * 64)

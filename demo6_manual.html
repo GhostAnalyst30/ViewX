@@ -1,0 +1,1711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Manual Dashboard</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <style>
+        
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        :root {
+            --vx-bg-page:       #F0FAF4;
+            --vx-bg-card:       #FFFFFF;
+            --vx-accent:        #059669;
+            --vx-text-primary:  #1A2E1A;
+            --vx-text-secondary:#6B7280;
+            --vx-card-radius:   14px;
+            --vx-shadow:        0 2px 12px rgba(5,150,105,0.1);
+            --vx-transition:    all 0.28s cubic-bezier(.16,1,.3,1);
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--vx-bg-page);
+            color: var(--vx-text-primary);
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            overflow: hidden;
+            height: 100vh; width: 100vw;
+        }
+        .vx-card {
+            background: var(--vx-bg-card);
+            border-radius: var(--vx-card-radius);
+            box-shadow: var(--vx-shadow);
+            transition: var(--vx-transition);
+            overflow: auto;
+            border: 1px solid rgba(128,128,128,0.08);
+        }
+        .vx-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.14); }
+        .plotly-graph-div, .js-plotly-plot, .plot-container {
+            width: 100% !important; height: 100% !important;
+        }
+        .vx-card::-webkit-scrollbar { width:5px; height:5px; }
+        .vx-card::-webkit-scrollbar-track { background: transparent; }
+        .vx-card::-webkit-scrollbar-thumb { background:#05966955; border-radius:3px; }
+
+        /* ── Modal overlay ── */
+        .vx-modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7); z-index: 9000;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .vx-modal-overlay.open { display: flex; }
+        .vx-modal-box {
+            background: #FFFFFF;
+            border-radius: 16px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+            border: 1px solid #05966933;
+            width: min(92vw, 1100px);
+            max-height: 88vh;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            animation: vxModalIn .22s cubic-bezier(.16,1,.3,1);
+        }
+        @keyframes vxModalIn {
+            from { opacity:0; transform: scale(.96) translateY(12px); }
+            to   { opacity:1; transform: scale(1) translateY(0); }
+        }
+        .vx-modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 24px 14px;
+            border-bottom: 1px solid #05966922;
+            flex-shrink: 0;
+        }
+        .vx-modal-header h3 {
+            font-size: 1.05rem; font-weight: 700; color: var(--vx-text-primary);
+        }
+        .vx-modal-close {
+            background: none; border: none; cursor: pointer;
+            color: var(--vx-text-secondary); border-radius: 8px;
+            width:32px; height:32px; display:flex; align-items:center; justify-content:center;
+            transition: var(--vx-transition);
+        }
+        .vx-modal-close:hover { background:#05966922; color:#059669; }
+        .vx-modal-body {
+            flex: 1; overflow: auto; padding: 20px 24px 24px;
+        }
+
+        /* ── Info FAB button on charts ── */
+        .vx-chart-info-btn {
+            position: absolute; bottom: 10px; right: 10px;
+            width: 32px; height: 32px; border-radius: 50%;
+            background: #059669EE; border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            transition: var(--vx-transition); z-index: 10;
+            opacity: 0.75;
+        }
+        .vx-chart-info-btn:hover { opacity:1; transform: scale(1.12); }
+        .vx-chart-info-btn svg { pointer-events: none; }
+
+        /* ── Data button ── */
+        .vx-data-fab {
+            position: fixed; bottom: 22px; right: 22px;
+            background: #059669; color: #fff;
+            border: none; border-radius: 50px;
+            padding: 10px 20px; font-weight: 700; font-size: 0.82rem;
+            cursor: pointer; z-index: 8000;
+            display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 18px #05966955;
+            transition: var(--vx-transition); letter-spacing: 0.3px;
+        }
+        .vx-data-fab:hover { transform: translateY(-2px); box-shadow: 0 8px 28px #05966966; }
+        
+        .dashboard-container {
+            padding: 74px 20px 20px;
+            height: 100vh; width: 100vw;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .vx-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-template-rows: repeat(9, 1fr);
+            gap: 14px;
+            flex: 1; min-height: 0;
+        }
+        .c1_186bc1 { grid-area: 1 / 1 / 3 / 4; }
+.c2_b66923 { grid-area: 1 / 4 / 3 / 7; }
+.c3_3d476a { grid-area: 1 / 7 / 3 / 10; }
+.c4_fdcdf5 { grid-area: 1 / 10 / 3 / 13; }
+.c5_4d979c { grid-area: 3 / 1 / 7 / 4; }
+.c6_435423 { grid-area: 3 / 4 / 7 / 13; }
+.c7_d9e0b2 { grid-area: 7 / 1 / 10 / 13; }
+        .vx-card { animation: vxFadeUp .35s ease-out both; }
+        @keyframes vxFadeUp {
+            from { opacity:0; transform:translateY(10px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        .vx-card:nth-child(1){animation-delay:0.0s}
+.vx-card:nth-child(2){animation-delay:0.04s}
+.vx-card:nth-child(3){animation-delay:0.08s}
+.vx-card:nth-child(4){animation-delay:0.12s}
+.vx-card:nth-child(5){animation-delay:0.16s}
+.vx-card:nth-child(6){animation-delay:0.2s}
+.vx-card:nth-child(7){animation-delay:0.24s}
+        @media(max-width:768px){
+            .vx-grid { display:flex; flex-direction:column; overflow-y:auto; }
+            .vx-card { min-height:220px; flex-shrink:0; }
+            body { overflow-y:auto; }
+        }
+    </style>
+</head>
+<body>
+    
+        <style>
+        .vx-navbar {
+            position:fixed; top:0; left:0; right:0; height:54px;
+            background:#FFFFFFF5; display:flex; align-items:center;
+            justify-content:space-between; padding:0 24px; z-index:1000;
+            box-shadow:0 1px 0 rgba(128,128,128,.12);
+            border-bottom:2px solid #059669;
+            backdrop-filter:blur(8px);
+        }
+        .nav-brand-wrap { display:flex; flex-direction:column; gap:1px; }
+        .nav-brand {
+            font-weight:800; font-size:1.1rem; color:#059669;
+            text-decoration:none; letter-spacing:-.4px;
+            display:flex; align-items:center; gap:7px;
+        }
+        .nav-author-wrap { font-size:.7rem; color:var(--vx-text-secondary); font-weight:500; }
+        .nav-author { font-size:.7rem; color:var(--vx-text-secondary); }
+        .nav-alink { color:#059669; text-decoration:none; }
+        .nav-alink:hover { text-decoration:underline; }
+        .nav-links { display:flex; gap:18px; }
+        .nav-link {
+            color:var(--vx-text-primary); text-decoration:none;
+            font-weight:600; font-size:.82rem; opacity:.75;
+            transition:var(--vx-transition);
+        }
+        .nav-link:hover { opacity:1; color:#059669; }
+        </style>
+        <nav class="vx-navbar">
+            <div class="nav-brand-wrap">
+                <a href="#" class="nav-brand"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"</svg>Manual Dashboard</a>
+                <div class="nav-author-wrap">by <a href="mailto:data@acme.com" class="nav-author nav-alink">Data Team</a></div>
+            </div>
+            <div class="nav-links"><a href="#" class="nav-link">Home</a><a href="#" class="nav-link">Analytics</a></div>
+        </nav>
+    <div class="dashboard-container">
+        <div class="vx-grid">
+            
+        <style>
+        .vb-c1_186bc1 {
+            padding: 18px 20px; display: flex; align-items: center;
+            gap: 14px; border-left: 5px solid #059669;
+            height: 100%; position: relative; overflow: hidden;
+        }
+        .vb-c1_186bc1::after {
+            content:''; position:absolute; right:-18px; top:-18px;
+            width:80px; height:80px; border-radius:50%;
+            background:#0596690D;
+        }
+        .vb-icon-c1_186bc1 {
+            width: 48px; height: 48px; border-radius: 12px;
+            background: #05966915;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .vb-label-c1_186bc1 {
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.6px;
+            text-transform: uppercase; color: var(--vx-text-secondary);
+            margin-bottom: 5px;
+        }
+        .vb-val-c1_186bc1 {
+            font-size: 1.75rem; font-weight: 800;
+            color: var(--vx-text-primary); line-height: 1; letter-spacing: -0.5px;
+        }
+        </style>
+        <div class="vx-card vb-c1_186bc1 c1_186bc1">
+            <div class="vb-icon-c1_186bc1"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"</svg></div>
+            <div>
+                <div class="vb-label-c1_186bc1">Total Revenue</div>
+                <div class="vb-val-c1_186bc1">$2.4M</div>
+            </div>
+        </div>
+        <style>
+        .vb-c2_b66923 {
+            padding: 18px 20px; display: flex; align-items: center;
+            gap: 14px; border-left: 5px solid #059669;
+            height: 100%; position: relative; overflow: hidden;
+        }
+        .vb-c2_b66923::after {
+            content:''; position:absolute; right:-18px; top:-18px;
+            width:80px; height:80px; border-radius:50%;
+            background:#0596690D;
+        }
+        .vb-icon-c2_b66923 {
+            width: 48px; height: 48px; border-radius: 12px;
+            background: #05966915;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .vb-label-c2_b66923 {
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.6px;
+            text-transform: uppercase; color: var(--vx-text-secondary);
+            margin-bottom: 5px;
+        }
+        .vb-val-c2_b66923 {
+            font-size: 1.75rem; font-weight: 800;
+            color: var(--vx-text-primary); line-height: 1; letter-spacing: -0.5px;
+        }
+        </style>
+        <div class="vx-card vb-c2_b66923 c2_b66923">
+            <div class="vb-icon-c2_b66923"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"</svg></div>
+            <div>
+                <div class="vb-label-c2_b66923">Total Units</div>
+                <div class="vb-val-c2_b66923">18.4K</div>
+            </div>
+        </div>
+        <style>
+        .vb-c3_3d476a {
+            padding: 18px 20px; display: flex; align-items: center;
+            gap: 14px; border-left: 5px solid #059669;
+            height: 100%; position: relative; overflow: hidden;
+        }
+        .vb-c3_3d476a::after {
+            content:''; position:absolute; right:-18px; top:-18px;
+            width:80px; height:80px; border-radius:50%;
+            background:#0596690D;
+        }
+        .vb-icon-c3_3d476a {
+            width: 48px; height: 48px; border-radius: 12px;
+            background: #05966915;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .vb-label-c3_3d476a {
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.6px;
+            text-transform: uppercase; color: var(--vx-text-secondary);
+            margin-bottom: 5px;
+        }
+        .vb-val-c3_3d476a {
+            font-size: 1.75rem; font-weight: 800;
+            color: var(--vx-text-primary); line-height: 1; letter-spacing: -0.5px;
+        }
+        </style>
+        <div class="vx-card vb-c3_3d476a c3_3d476a">
+            <div class="vb-icon-c3_3d476a"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"</svg></div>
+            <div>
+                <div class="vb-label-c3_3d476a">Avg Rating</div>
+                <div class="vb-val-c3_3d476a">4.12</div>
+            </div>
+        </div>
+        <style>
+        .vb-c4_fdcdf5 {
+            padding: 18px 20px; display: flex; align-items: center;
+            gap: 14px; border-left: 5px solid #059669;
+            height: 100%; position: relative; overflow: hidden;
+        }
+        .vb-c4_fdcdf5::after {
+            content:''; position:absolute; right:-18px; top:-18px;
+            width:80px; height:80px; border-radius:50%;
+            background:#0596690D;
+        }
+        .vb-icon-c4_fdcdf5 {
+            width: 48px; height: 48px; border-radius: 12px;
+            background: #05966915;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .vb-label-c4_fdcdf5 {
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.6px;
+            text-transform: uppercase; color: var(--vx-text-secondary);
+            margin-bottom: 5px;
+        }
+        .vb-val-c4_fdcdf5 {
+            font-size: 1.75rem; font-weight: 800;
+            color: var(--vx-text-primary); line-height: 1; letter-spacing: -0.5px;
+        }
+        </style>
+        <div class="vx-card vb-c4_fdcdf5 c4_fdcdf5">
+            <div class="vb-icon-c4_fdcdf5"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"</svg></div>
+            <div>
+                <div class="vb-label-c4_fdcdf5">Return Rate</div>
+                <div class="vb-val-c4_fdcdf5">12%</div>
+            </div>
+        </div>
+        <style>
+        .ib-card-c5_4d979c {
+            padding: 16px 18px; display: flex; flex-direction: column;
+            height: 100%; border-top: 4px solid #059669;
+        }
+        .ib-title-c5_4d979c {
+            font-size: 0.78rem; font-weight: 700; letter-spacing: 0.5px;
+            text-transform: uppercase; color: #059669; margin-bottom: 12px;
+        }
+        .ib-rows-c5_4d979c { display: flex; flex-direction: column; gap: 7px; flex: 1; overflow: auto; }
+        .ib-row-c5_4d979c {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 5px 8px; border-radius: 7px; background: #05966909;
+        }
+        .ib-label-c5_4d979c {
+            font-size: 0.73rem; color: var(--vx-text-secondary); font-weight: 500;
+        }
+        .ib-val-c5_4d979c {
+            font-size: 0.82rem; font-weight: 700; color: var(--vx-text-primary);
+        }
+        </style>
+        <div class="vx-card ib-card-c5_4d979c c5_4d979c">
+            <div class="ib-title-c5_4d979c">Revenue Stats</div>
+            <div class="ib-rows-c5_4d979c">
+            <div class="ib-row-c5_4d979c">
+                <span class="ib-label-c5_4d979c">Mean</span>
+                <span class="ib-val-c5_4d979c">1.05e+04</span>
+            </div>
+            <div class="ib-row-c5_4d979c">
+                <span class="ib-label-c5_4d979c">Median</span>
+                <span class="ib-val-c5_4d979c">1.06e+04</span>
+            </div>
+            <div class="ib-row-c5_4d979c">
+                <span class="ib-label-c5_4d979c">Std Dev</span>
+                <span class="ib-val-c5_4d979c">2.41e+03</span>
+            </div>
+            <div class="ib-row-c5_4d979c">
+                <span class="ib-label-c5_4d979c">Min</span>
+                <span class="ib-val-c5_4d979c">2.95e+03</span>
+            </div>
+            <div class="ib-row-c5_4d979c">
+                <span class="ib-label-c5_4d979c">Max</span>
+                <span class="ib-val-c5_4d979c">1.7e+04</span>
+            </div>
+            <div class="ib-row-c5_4d979c">
+                <span class="ib-label-c5_4d979c">Kurtosis</span>
+                <span class="ib-val-c5_4d979c">0.053</span>
+            </div>
+            <div class="ib-row-c5_4d979c">
+                <span class="ib-label-c5_4d979c">Skewness</span>
+                <span class="ib-val-c5_4d979c">-0.118</span>
+            </div>
+            <div class="ib-row-c5_4d979c">
+                <span class="ib-label-c5_4d979c">Nulls</span>
+                <span class="ib-val-c5_4d979c">0</span>
+            </div></div>
+        </div>
+        <style>
+        .pc-c6_435423 {
+            padding: 12px 14px; display: grid;
+            grid-template-rows: auto 1fr; height: 100%;
+            width: 100%; overflow: hidden; gap: 6px; position: relative;
+        }
+        .pc-c6_435423 h4 {
+            margin: 0; color: var(--vx-text-primary); font-weight: 600;
+            font-size: 0.88rem;
+            border-bottom: 2px solid #05966928; padding-bottom: 6px;
+        }
+        .pcc-c6_435423 { position:relative; width:100%; height:100%; min-height:0; overflow:hidden; }
+        .pcc-c6_435423 .plotly-graph-div { width:100%!important; height:100%!important; }
+        </style>
+        <div class="vx-card pc-c6_435423 c6_435423">
+            <h4>Revenue by Region</h4>
+            <div class="pcc-c6_435423">
+                <div>                        <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.1.1.min.js" integrity="sha256-HUEFyfiTnZJxCxur99FjbKYTvKSzwDaD3/x5TqHpFu4=" crossorigin="anonymous"></script>                <div id="8c065536-f74b-4582-96ab-05bbadf11296" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("8c065536-f74b-4582-96ab-05bbadf11296")) {                    Plotly.newPlot(                        "8c065536-f74b-4582-96ab-05bbadf11296",                        [{"hovertemplate":"region=%{y}\u003cbr\u003erevenue=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"North","marker":{"color":"#059669","pattern":{"shape":""}},"name":"North","orientation":"h","showlegend":true,"textposition":"auto","x":{"dtype":"i4","bdata":"O34KAA=="},"xaxis":"x","y":["North"],"yaxis":"y","type":"bar"},{"hovertemplate":"region=%{y}\u003cbr\u003erevenue=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"West","marker":{"color":"#10B981","pattern":{"shape":""}},"name":"West","orientation":"h","showlegend":true,"textposition":"auto","x":{"dtype":"i4","bdata":"GfgKAA=="},"xaxis":"x","y":["West"],"yaxis":"y","type":"bar"},{"hovertemplate":"region=%{y}\u003cbr\u003erevenue=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"East","marker":{"color":"#34D399","pattern":{"shape":""}},"name":"East","orientation":"h","showlegend":true,"textposition":"auto","x":{"dtype":"i4","bdata":"0vMLAA=="},"xaxis":"x","y":["East"],"yaxis":"y","type":"bar"},{"hovertemplate":"region=%{y}\u003cbr\u003erevenue=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"South","marker":{"color":"#6EE7B7","pattern":{"shape":""}},"name":"South","orientation":"h","showlegend":true,"textposition":"auto","x":{"dtype":"i4","bdata":"ZYIOAA=="},"xaxis":"x","y":["South"],"yaxis":"y","type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"revenue"},"gridcolor":"rgba(5,150,105,0.1)","zerolinecolor":"rgba(5,150,105,0.1)","showgrid":true},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"region"},"categoryorder":"array","categoryarray":["South","East","West","North"],"gridcolor":"rgba(5,150,105,0.1)","zerolinecolor":"rgba(5,150,105,0.1)","showgrid":true},"legend":{"title":{"text":"region"},"tracegroupgap":0,"font":{"size":11}},"margin":{"t":24,"l":36,"r":18,"b":28},"barmode":"relative","showlegend":false,"font":{"color":"#1A2E1A","family":"'Inter','Segoe UI',sans-serif"},"title":{"text":""},"autosize":true,"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","hovermode":"closest","colorway":["#059669","#10B981","#34D399","#6EE7B7","#A7F3D0"]},                        {"displaylogo": false, "responsive": true, "autosizable": true}                    )                };            </script>        </div>
+                
+            <button class="vx-chart-info-btn" onclick="document.getElementById('modal_c6_435423').classList.add('open')"
+                    title="Variable info">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"</svg>
+            </button>
+            </div>
+        </div>
+        
+            <div id="modal_c6_435423" class="vx-modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+                <div class="vx-modal-box" style="max-width:520px">
+                    <div class="vx-modal-header">
+                        <h3>Revenue by Region</h3>
+                        <button class="vx-modal-close" onclick="document.getElementById('modal_c6_435423').classList.remove('open')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"</svg></button>
+                    </div>
+                    <div class="vx-modal-body"><table style='width:100%;border-collapse:collapse'><tr><td style='padding:6px 10px;color:var(--vx-text-secondary);font-size:.8rem'>Regions</td><td style='padding:6px 10px;font-weight:600;font-size:.82rem'>4</td></tr><tr><td style='padding:6px 10px;color:var(--vx-text-secondary);font-size:.8rem'>Total</td><td style='padding:6px 10px;font-weight:600;font-size:.82rem'>$2.4M</td></tr></table></div>
+                </div>
+            </div>
+        <script>
+        (function(){
+            var cont = document.querySelector('.pcc-c6_435423');
+            var t;
+            function resize(){
+                var d = cont ? cont.querySelector('.plotly-graph-div') : null;
+                if(d && window.Plotly){
+                    var w = cont.clientWidth, h = cont.clientHeight;
+                    if(w>0&&h>0) Plotly.relayout(d,{width:w,height:h});
+                }
+            }
+            if(window.ResizeObserver && cont)
+                new ResizeObserver(()=>{clearTimeout(t);t=setTimeout(resize,50);}).observe(cont);
+            window.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(resize,100);});
+            (function wait(n){
+                var d=cont?cont.querySelector('.plotly-graph-div'):null;
+                if(d&&window.Plotly) resize();
+                else if(n>0) setTimeout(()=>wait(n-1),120);
+            })(18);
+        })();
+        </script>
+        <style>
+        .pc-c7_d9e0b2 {
+            padding: 12px 14px; display: grid;
+            grid-template-rows: auto 1fr; height: 100%;
+            width: 100%; overflow: hidden; gap: 6px; position: relative;
+        }
+        .pc-c7_d9e0b2 h4 {
+            margin: 0; color: var(--vx-text-primary); font-weight: 600;
+            font-size: 0.88rem;
+            border-bottom: 2px solid #05966928; padding-bottom: 6px;
+        }
+        .pcc-c7_d9e0b2 { position:relative; width:100%; height:100%; min-height:0; overflow:hidden; }
+        .pcc-c7_d9e0b2 .plotly-graph-div { width:100%!important; height:100%!important; }
+        </style>
+        <div class="vx-card pc-c7_d9e0b2 c7_d9e0b2">
+            <h4>Daily Revenue Trend</h4>
+            <div class="pcc-c7_d9e0b2">
+                <div>                        <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.1.1.min.js" integrity="sha256-HUEFyfiTnZJxCxur99FjbKYTvKSzwDaD3/x5TqHpFu4=" crossorigin="anonymous"></script>                <div id="d759e299-ebb8-4d0a-afc8-a1aed7e7dc0f" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("d759e299-ebb8-4d0a-afc8-a1aed7e7dc0f")) {                    Plotly.newPlot(                        "d759e299-ebb8-4d0a-afc8-a1aed7e7dc0f",                        [{"hovertemplate":"date=%{x}\u003cbr\u003erevenue=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"","line":{"color":"#059669","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"","orientation":"v","showlegend":false,"x":["2023-01-01T00:00:00","2023-01-02T00:00:00","2023-01-03T00:00:00","2023-01-04T00:00:00","2023-01-05T00:00:00","2023-01-06T00:00:00","2023-01-07T00:00:00","2023-01-08T00:00:00","2023-01-09T00:00:00","2023-01-10T00:00:00","2023-01-11T00:00:00","2023-01-12T00:00:00","2023-01-13T00:00:00","2023-01-14T00:00:00","2023-01-15T00:00:00","2023-01-16T00:00:00","2023-01-17T00:00:00","2023-01-18T00:00:00","2023-01-19T00:00:00","2023-01-20T00:00:00","2023-01-21T00:00:00","2023-01-22T00:00:00","2023-01-23T00:00:00","2023-01-24T00:00:00","2023-01-25T00:00:00","2023-01-26T00:00:00","2023-01-27T00:00:00","2023-01-28T00:00:00","2023-01-29T00:00:00","2023-01-30T00:00:00","2023-01-31T00:00:00","2023-02-01T00:00:00","2023-02-02T00:00:00","2023-02-03T00:00:00","2023-02-04T00:00:00","2023-02-05T00:00:00","2023-02-06T00:00:00","2023-02-07T00:00:00","2023-02-08T00:00:00","2023-02-09T00:00:00","2023-02-10T00:00:00","2023-02-11T00:00:00","2023-02-12T00:00:00","2023-02-13T00:00:00","2023-02-14T00:00:00","2023-02-15T00:00:00","2023-02-16T00:00:00","2023-02-17T00:00:00","2023-02-18T00:00:00","2023-02-19T00:00:00","2023-02-20T00:00:00","2023-02-21T00:00:00","2023-02-22T00:00:00","2023-02-23T00:00:00","2023-02-24T00:00:00","2023-02-25T00:00:00","2023-02-26T00:00:00","2023-02-27T00:00:00","2023-02-28T00:00:00","2023-03-01T00:00:00","2023-03-02T00:00:00","2023-03-03T00:00:00","2023-03-04T00:00:00","2023-03-05T00:00:00","2023-03-06T00:00:00","2023-03-07T00:00:00","2023-03-08T00:00:00","2023-03-09T00:00:00","2023-03-10T00:00:00","2023-03-11T00:00:00","2023-03-12T00:00:00","2023-03-13T00:00:00","2023-03-14T00:00:00","2023-03-15T00:00:00","2023-03-16T00:00:00","2023-03-17T00:00:00","2023-03-18T00:00:00","2023-03-19T00:00:00","2023-03-20T00:00:00","2023-03-21T00:00:00","2023-03-22T00:00:00","2023-03-23T00:00:00","2023-03-24T00:00:00","2023-03-25T00:00:00","2023-03-26T00:00:00","2023-03-27T00:00:00","2023-03-28T00:00:00","2023-03-29T00:00:00","2023-03-30T00:00:00","2023-03-31T00:00:00","2023-04-01T00:00:00","2023-04-02T00:00:00","2023-04-03T00:00:00","2023-04-04T00:00:00","2023-04-05T00:00:00","2023-04-06T00:00:00","2023-04-07T00:00:00","2023-04-08T00:00:00","2023-04-09T00:00:00","2023-04-10T00:00:00","2023-04-11T00:00:00","2023-04-12T00:00:00","2023-04-13T00:00:00","2023-04-14T00:00:00","2023-04-15T00:00:00","2023-04-16T00:00:00","2023-04-17T00:00:00","2023-04-18T00:00:00","2023-04-19T00:00:00","2023-04-20T00:00:00","2023-04-21T00:00:00","2023-04-22T00:00:00","2023-04-23T00:00:00","2023-04-24T00:00:00","2023-04-25T00:00:00","2023-04-26T00:00:00","2023-04-27T00:00:00","2023-04-28T00:00:00","2023-04-29T00:00:00","2023-04-30T00:00:00","2023-05-01T00:00:00","2023-05-02T00:00:00","2023-05-03T00:00:00","2023-05-04T00:00:00","2023-05-05T00:00:00","2023-05-06T00:00:00","2023-05-07T00:00:00","2023-05-08T00:00:00","2023-05-09T00:00:00","2023-05-10T00:00:00","2023-05-11T00:00:00","2023-05-12T00:00:00","2023-05-13T00:00:00","2023-05-14T00:00:00","2023-05-15T00:00:00","2023-05-16T00:00:00","2023-05-17T00:00:00","2023-05-18T00:00:00","2023-05-19T00:00:00","2023-05-20T00:00:00","2023-05-21T00:00:00","2023-05-22T00:00:00","2023-05-23T00:00:00","2023-05-24T00:00:00","2023-05-25T00:00:00","2023-05-26T00:00:00","2023-05-27T00:00:00","2023-05-28T00:00:00","2023-05-29T00:00:00","2023-05-30T00:00:00","2023-05-31T00:00:00","2023-06-01T00:00:00","2023-06-02T00:00:00","2023-06-03T00:00:00","2023-06-04T00:00:00","2023-06-05T00:00:00","2023-06-06T00:00:00","2023-06-07T00:00:00","2023-06-08T00:00:00","2023-06-09T00:00:00","2023-06-10T00:00:00","2023-06-11T00:00:00","2023-06-12T00:00:00","2023-06-13T00:00:00","2023-06-14T00:00:00","2023-06-15T00:00:00","2023-06-16T00:00:00","2023-06-17T00:00:00","2023-06-18T00:00:00","2023-06-19T00:00:00","2023-06-20T00:00:00","2023-06-21T00:00:00","2023-06-22T00:00:00","2023-06-23T00:00:00","2023-06-24T00:00:00","2023-06-25T00:00:00","2023-06-26T00:00:00","2023-06-27T00:00:00","2023-06-28T00:00:00","2023-06-29T00:00:00","2023-06-30T00:00:00","2023-07-01T00:00:00","2023-07-02T00:00:00","2023-07-03T00:00:00","2023-07-04T00:00:00","2023-07-05T00:00:00","2023-07-06T00:00:00","2023-07-07T00:00:00","2023-07-08T00:00:00","2023-07-09T00:00:00","2023-07-10T00:00:00","2023-07-11T00:00:00","2023-07-12T00:00:00","2023-07-13T00:00:00","2023-07-14T00:00:00","2023-07-15T00:00:00","2023-07-16T00:00:00","2023-07-17T00:00:00","2023-07-18T00:00:00","2023-07-19T00:00:00","2023-07-20T00:00:00","2023-07-21T00:00:00","2023-07-22T00:00:00","2023-07-23T00:00:00","2023-07-24T00:00:00","2023-07-25T00:00:00","2023-07-26T00:00:00","2023-07-27T00:00:00","2023-07-28T00:00:00","2023-07-29T00:00:00","2023-07-30T00:00:00","2023-07-31T00:00:00","2023-08-01T00:00:00","2023-08-02T00:00:00","2023-08-03T00:00:00","2023-08-04T00:00:00","2023-08-05T00:00:00","2023-08-06T00:00:00","2023-08-07T00:00:00","2023-08-08T00:00:00","2023-08-09T00:00:00","2023-08-10T00:00:00","2023-08-11T00:00:00","2023-08-12T00:00:00","2023-08-13T00:00:00","2023-08-14T00:00:00","2023-08-15T00:00:00","2023-08-16T00:00:00","2023-08-17T00:00:00","2023-08-18T00:00:00","2023-08-19T00:00:00","2023-08-20T00:00:00","2023-08-21T00:00:00","2023-08-22T00:00:00","2023-08-23T00:00:00","2023-08-24T00:00:00","2023-08-25T00:00:00","2023-08-26T00:00:00","2023-08-27T00:00:00","2023-08-28T00:00:00","2023-08-29T00:00:00","2023-08-30T00:00:00","2023-08-31T00:00:00","2023-09-01T00:00:00","2023-09-02T00:00:00","2023-09-03T00:00:00","2023-09-04T00:00:00","2023-09-05T00:00:00","2023-09-06T00:00:00","2023-09-07T00:00:00","2023-09-08T00:00:00","2023-09-09T00:00:00","2023-09-10T00:00:00","2023-09-11T00:00:00","2023-09-12T00:00:00","2023-09-13T00:00:00","2023-09-14T00:00:00","2023-09-15T00:00:00","2023-09-16T00:00:00","2023-09-17T00:00:00","2023-09-18T00:00:00","2023-09-19T00:00:00","2023-09-20T00:00:00","2023-09-21T00:00:00","2023-09-22T00:00:00","2023-09-23T00:00:00","2023-09-24T00:00:00","2023-09-25T00:00:00","2023-09-26T00:00:00","2023-09-27T00:00:00","2023-09-28T00:00:00","2023-09-29T00:00:00","2023-09-30T00:00:00","2023-10-01T00:00:00","2023-10-02T00:00:00","2023-10-03T00:00:00","2023-10-04T00:00:00","2023-10-05T00:00:00","2023-10-06T00:00:00","2023-10-07T00:00:00","2023-10-08T00:00:00","2023-10-09T00:00:00","2023-10-10T00:00:00","2023-10-11T00:00:00","2023-10-12T00:00:00","2023-10-13T00:00:00","2023-10-14T00:00:00","2023-10-15T00:00:00","2023-10-16T00:00:00","2023-10-17T00:00:00","2023-10-18T00:00:00","2023-10-19T00:00:00","2023-10-20T00:00:00","2023-10-21T00:00:00","2023-10-22T00:00:00","2023-10-23T00:00:00","2023-10-24T00:00:00","2023-10-25T00:00:00","2023-10-26T00:00:00","2023-10-27T00:00:00"],"xaxis":"x","y":{"dtype":"i2","bdata":"+ByCHmkdoyACK4YLyx0WIRYi7xwuEogihy0eFOomqh3RHyIY0B2mKhwlKC7jKS8kcS5QJGsnsh6ZIbIb8SgSGHQn6x+fKmcn0y9gJ3MVRiG1GOEdzS0KJ6ocRRqDItEYJB3jJIsrVie\u002fEBclVyMUJokv2xJsHrgn0BbELi4m+yn4Htop6StyJYYl3yUUHbwiwyIEJ+Ur4Rs9I9sviR79HQ4mIyuyJA4vbithKzIpHjdlI2kVqjGeIRomji\u002ffGK0bAxliHxYp0CnxJ88a3RNnJlwisymoK1InPiwpKJQq\u002fyAqJSsoGy2wI+Yq0SQKJoEthRcGHaQbDhUNIkUtQSUXKR8wDTI0J2IymChlIVwjgBwyIWcliy7GNZkdiCtlIE0soidrGgowICS\u002fJKAg8CN1LLMn0CsjLLEzwyb4HekxDCdpMsMszyifLDU5QTqjKmkrojKvI\u002fUsOCrwLAokMx58GgQiOyeWKBQ6pjOPI9stBigMKcgsPTDRKNgzrSK2KwVAiS0ON6MshjCcK8kqGCacL6kllDHtNGAvVyowMEsqFTSHHkgqah1aIcE3KDScJ44hMxYuKWZA9DBAKVIxjiF+K6kuRi0xNMUwXTPVKEo1ETvTJokn+TgbLaI5RisqOuQv8jA4OzssxSevK8oyFiNdND4rfDjgHIApiSJSKccxgi7+LcsusTFKKMI1ejVfM8c00DJ2QPIvSy7fKsIoKicCKncwsjOMMTwrUDgfNyowYCzTNRMzWyY0Mdkz1ipqM6ImgDzhOzgwGTV\u002fH1spKTAlKis4QUKGKT0s"},"yaxis":"y","type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"date"},"gridcolor":"rgba(5,150,105,0.1)","zerolinecolor":"rgba(5,150,105,0.1)","showgrid":true},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"revenue"},"gridcolor":"rgba(5,150,105,0.1)","zerolinecolor":"rgba(5,150,105,0.1)","showgrid":true},"legend":{"tracegroupgap":0,"font":{"size":11}},"margin":{"t":24,"l":36,"r":18,"b":28},"font":{"color":"#1A2E1A","family":"'Inter','Segoe UI',sans-serif"},"title":{"text":""},"autosize":true,"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","hovermode":"closest","colorway":["#059669","#10B981","#34D399","#6EE7B7","#A7F3D0"]},                        {"displaylogo": false, "responsive": true, "autosizable": true}                    )                };            </script>        </div>
+                
+            <button class="vx-chart-info-btn" onclick="document.getElementById('modal_c7_d9e0b2').classList.add('open')"
+                    title="Variable info">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"</svg>
+            </button>
+            </div>
+        </div>
+        
+            <div id="modal_c7_d9e0b2" class="vx-modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+                <div class="vx-modal-box" style="max-width:520px">
+                    <div class="vx-modal-header">
+                        <h3>Daily Revenue Trend</h3>
+                        <button class="vx-modal-close" onclick="document.getElementById('modal_c7_d9e0b2').classList.remove('open')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"</svg></button>
+                    </div>
+                    <div class="vx-modal-body"><p style='color:var(--vx-text-secondary);font-size:.85rem'>No additional statistics available.</p></div>
+                </div>
+            </div>
+        <script>
+        (function(){
+            var cont = document.querySelector('.pcc-c7_d9e0b2');
+            var t;
+            function resize(){
+                var d = cont ? cont.querySelector('.plotly-graph-div') : null;
+                if(d && window.Plotly){
+                    var w = cont.clientWidth, h = cont.clientHeight;
+                    if(w>0&&h>0) Plotly.relayout(d,{width:w,height:h});
+                }
+            }
+            if(window.ResizeObserver && cont)
+                new ResizeObserver(()=>{clearTimeout(t);t=setTimeout(resize,50);}).observe(cont);
+            window.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(resize,100);});
+            (function wait(n){
+                var d=cont?cont.querySelector('.plotly-graph-div'):null;
+                if(d&&window.Plotly) resize();
+                else if(n>0) setTimeout(()=>wait(n-1),120);
+            })(18);
+        })();
+        </script>
+        </div>
+    </div>
+    
+        <style>
+        .vx-desc-tbl, .vx-prev-tbl {
+            width:100%; border-collapse:collapse; font-size:.75rem;
+        }
+        .vx-desc-tbl th, .vx-prev-tbl th {
+            background:#05966912; color:#059669; padding:8px 10px;
+            text-align:left; font-weight:700; position:sticky; top:0;
+            border-bottom:2px solid #05966933;
+        }
+        .vx-desc-tbl td, .vx-prev-tbl td {
+            padding:6px 10px; border-bottom:1px solid rgba(128,128,128,.09);
+            color:var(--vx-text-primary);
+        }
+        .vx-desc-tbl tr:hover, .vx-prev-tbl tr:hover { background:#05966906; }
+        .vx-dm-badges { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+        .vx-dm-badge {
+            padding:4px 12px; border-radius:20px; font-size:.74rem;
+            font-weight:600; background:#05966915; color:#059669;
+        }
+        .vx-dm-layout { display:grid; grid-template-columns:1fr 1fr; gap:20px; height:100%; }
+        .vx-dm-pane { overflow:auto; height:100%; }
+        .vx-dm-pane-title {
+            font-size:.78rem; font-weight:700; text-transform:uppercase;
+            letter-spacing:.5px; color:var(--vx-text-secondary); margin-bottom:10px;
+        }
+        @media(max-width:700px){ .vx-dm-layout{ grid-template-columns:1fr; } }
+        </style>
+
+        <div id="vx-data-modal" class="vx-modal-overlay"
+             onclick="if(event.target===this)this.classList.remove('open')">
+            <div class="vx-modal-box">
+                <div class="vx-modal-header">
+                    <h3>Dataset Overview</h3>
+                    <button class="vx-modal-close"
+                            onclick="document.getElementById('vx-data-modal').classList.remove('open')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"</svg>
+                    </button>
+                </div>
+                <div class="vx-modal-body">
+                    <div class="vx-dm-badges"><span class="vx-dm-badge">300 rows</span><span class="vx-dm-badge">8 columns</span><span class="vx-dm-badge">4 numeric</span><span class="vx-dm-badge">2 categorical</span></div>
+                    <div class="vx-dm-layout">
+                        <div class="vx-dm-pane">
+                            <div class="vx-dm-pane-title">Data Preview</div>
+                            <table class="dataframe vx-prev-tbl">
+  <thead>
+    <tr style="text-align: right;">
+      <th>date</th>
+      <th>region</th>
+      <th>product</th>
+      <th>revenue</th>
+      <th>costs</th>
+      <th>units</th>
+      <th>rating</th>
+      <th>returned</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>2023-01-01</td>
+      <td>North</td>
+      <td>Beta</td>
+      <td>7416</td>
+      <td>4307.17</td>
+      <td>67</td>
+      <td>4.7</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-02</td>
+      <td>West</td>
+      <td>Delta</td>
+      <td>7810</td>
+      <td>5029.19</td>
+      <td>69</td>
+      <td>4.1</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-03</td>
+      <td>East</td>
+      <td>Alpha</td>
+      <td>7529</td>
+      <td>4870.94</td>
+      <td>63</td>
+      <td>3.8</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-04</td>
+      <td>South</td>
+      <td>Delta</td>
+      <td>8355</td>
+      <td>4241.53</td>
+      <td>70</td>
+      <td>3.5</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-05</td>
+      <td>South</td>
+      <td>Gamma</td>
+      <td>11010</td>
+      <td>6570.15</td>
+      <td>94</td>
+      <td>4.0</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-06</td>
+      <td>West</td>
+      <td>Alpha</td>
+      <td>2950</td>
+      <td>1770.17</td>
+      <td>64</td>
+      <td>3.6</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>2023-01-07</td>
+      <td>North</td>
+      <td>Beta</td>
+      <td>7627</td>
+      <td>3960.50</td>
+      <td>149</td>
+      <td>4.1</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-08</td>
+      <td>East</td>
+      <td>Gamma</td>
+      <td>8470</td>
+      <td>4021.37</td>
+      <td>131</td>
+      <td>4.4</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-09</td>
+      <td>North</td>
+      <td>Beta</td>
+      <td>8726</td>
+      <td>3998.05</td>
+      <td>103</td>
+      <td>3.1</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-10</td>
+      <td>North</td>
+      <td>Alpha</td>
+      <td>7407</td>
+      <td>4484.51</td>
+      <td>155</td>
+      <td>3.0</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-11</td>
+      <td>East</td>
+      <td>Gamma</td>
+      <td>4654</td>
+      <td>2549.99</td>
+      <td>43</td>
+      <td>3.4</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-12</td>
+      <td>West</td>
+      <td>Gamma</td>
+      <td>8840</td>
+      <td>5720.39</td>
+      <td>98</td>
+      <td>4.8</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-13</td>
+      <td>East</td>
+      <td>Alpha</td>
+      <td>11655</td>
+      <td>6328.80</td>
+      <td>139</td>
+      <td>4.3</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-14</td>
+      <td>West</td>
+      <td>Beta</td>
+      <td>5150</td>
+      <td>3324.54</td>
+      <td>96</td>
+      <td>3.3</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-15</td>
+      <td>East</td>
+      <td>Alpha</td>
+      <td>9962</td>
+      <td>5302.80</td>
+      <td>165</td>
+      <td>4.8</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-16</td>
+      <td>West</td>
+      <td>Gamma</td>
+      <td>7594</td>
+      <td>4622.61</td>
+      <td>143</td>
+      <td>3.9</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-17</td>
+      <td>East</td>
+      <td>Gamma</td>
+      <td>8145</td>
+      <td>3803.38</td>
+      <td>75</td>
+      <td>4.0</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-18</td>
+      <td>North</td>
+      <td>Gamma</td>
+      <td>6178</td>
+      <td>3466.70</td>
+      <td>71</td>
+      <td>4.9</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-19</td>
+      <td>West</td>
+      <td>Delta</td>
+      <td>7632</td>
+      <td>4658.72</td>
+      <td>77</td>
+      <td>3.1</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-20</td>
+      <td>South</td>
+      <td>Delta</td>
+      <td>10918</td>
+      <td>6932.16</td>
+      <td>171</td>
+      <td>3.4</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-21</td>
+      <td>East</td>
+      <td>Beta</td>
+      <td>9500</td>
+      <td>5837.76</td>
+      <td>136</td>
+      <td>4.2</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-22</td>
+      <td>South</td>
+      <td>Alpha</td>
+      <td>11816</td>
+      <td>5404.47</td>
+      <td>163</td>
+      <td>3.4</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-23</td>
+      <td>North</td>
+      <td>Gamma</td>
+      <td>10723</td>
+      <td>5624.50</td>
+      <td>106</td>
+      <td>4.4</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-24</td>
+      <td>West</td>
+      <td>Delta</td>
+      <td>9263</td>
+      <td>4258.47</td>
+      <td>91</td>
+      <td>3.4</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>2023-01-25</td>
+      <td>West</td>
+      <td>Delta</td>
+      <td>11889</td>
+      <td>5610.00</td>
+      <td>210</td>
+      <td>3.2</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-26</td>
+      <td>East</td>
+      <td>Alpha</td>
+      <td>9296</td>
+      <td>5438.76</td>
+      <td>80</td>
+      <td>3.4</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-27</td>
+      <td>South</td>
+      <td>Alpha</td>
+      <td>10091</td>
+      <td>5980.30</td>
+      <td>203</td>
+      <td>3.8</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-28</td>
+      <td>West</td>
+      <td>Alpha</td>
+      <td>7858</td>
+      <td>4752.30</td>
+      <td>70</td>
+      <td>3.4</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-29</td>
+      <td>East</td>
+      <td>Alpha</td>
+      <td>8601</td>
+      <td>5359.41</td>
+      <td>179</td>
+      <td>3.3</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-30</td>
+      <td>South</td>
+      <td>Gamma</td>
+      <td>7090</td>
+      <td>4239.07</td>
+      <td>115</td>
+      <td>4.7</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-01-31</td>
+      <td>South</td>
+      <td>Gamma</td>
+      <td>10481</td>
+      <td>6395.14</td>
+      <td>97</td>
+      <td>3.6</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-01</td>
+      <td>North</td>
+      <td>Beta</td>
+      <td>6162</td>
+      <td>2833.15</td>
+      <td>113</td>
+      <td>3.7</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-02</td>
+      <td>North</td>
+      <td>Beta</td>
+      <td>10100</td>
+      <td>5018.67</td>
+      <td>138</td>
+      <td>3.1</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-03</td>
+      <td>East</td>
+      <td>Delta</td>
+      <td>8171</td>
+      <td>4692.99</td>
+      <td>107</td>
+      <td>3.7</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-04</td>
+      <td>West</td>
+      <td>Beta</td>
+      <td>10911</td>
+      <td>6782.59</td>
+      <td>183</td>
+      <td>3.5</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-05</td>
+      <td>North</td>
+      <td>Delta</td>
+      <td>10087</td>
+      <td>4548.24</td>
+      <td>104</td>
+      <td>4.2</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-06</td>
+      <td>West</td>
+      <td>Delta</td>
+      <td>12243</td>
+      <td>6769.64</td>
+      <td>113</td>
+      <td>3.4</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-07</td>
+      <td>West</td>
+      <td>Beta</td>
+      <td>10080</td>
+      <td>5901.57</td>
+      <td>91</td>
+      <td>4.8</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-08</td>
+      <td>South</td>
+      <td>Alpha</td>
+      <td>5491</td>
+      <td>2503.63</td>
+      <td>81</td>
+      <td>4.9</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-09</td>
+      <td>East</td>
+      <td>Delta</td>
+      <td>8518</td>
+      <td>4516.99</td>
+      <td>103</td>
+      <td>3.2</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-10</td>
+      <td>North</td>
+      <td>Gamma</td>
+      <td>6325</td>
+      <td>3979.15</td>
+      <td>105</td>
+      <td>3.2</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-11</td>
+      <td>West</td>
+      <td>Beta</td>
+      <td>7649</td>
+      <td>4469.52</td>
+      <td>128</td>
+      <td>3.2</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-12</td>
+      <td>East</td>
+      <td>Gamma</td>
+      <td>11725</td>
+      <td>5833.46</td>
+      <td>221</td>
+      <td>4.2</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-13</td>
+      <td>South</td>
+      <td>Gamma</td>
+      <td>9994</td>
+      <td>6201.92</td>
+      <td>86</td>
+      <td>3.2</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-14</td>
+      <td>North</td>
+      <td>Delta</td>
+      <td>7338</td>
+      <td>3812.83</td>
+      <td>66</td>
+      <td>4.7</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-15</td>
+      <td>West</td>
+      <td>Beta</td>
+      <td>6725</td>
+      <td>4174.04</td>
+      <td>65</td>
+      <td>4.5</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-16</td>
+      <td>South</td>
+      <td>Delta</td>
+      <td>8835</td>
+      <td>4503.88</td>
+      <td>108</td>
+      <td>4.6</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-17</td>
+      <td>West</td>
+      <td>Delta</td>
+      <td>6353</td>
+      <td>3608.82</td>
+      <td>80</td>
+      <td>4.1</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-18</td>
+      <td>East</td>
+      <td>Alpha</td>
+      <td>7460</td>
+      <td>3949.44</td>
+      <td>90</td>
+      <td>5.0</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-19</td>
+      <td>West</td>
+      <td>Alpha</td>
+      <td>9443</td>
+      <td>4768.60</td>
+      <td>113</td>
+      <td>3.1</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-20</td>
+      <td>West</td>
+      <td>Gamma</td>
+      <td>11147</td>
+      <td>6992.48</td>
+      <td>149</td>
+      <td>3.8</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-21</td>
+      <td>North</td>
+      <td>Alpha</td>
+      <td>10070</td>
+      <td>4909.49</td>
+      <td>199</td>
+      <td>3.6</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-22</td>
+      <td>South</td>
+      <td>Beta</td>
+      <td>4287</td>
+      <td>2001.86</td>
+      <td>85</td>
+      <td>4.9</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-23</td>
+      <td>South</td>
+      <td>Beta</td>
+      <td>9495</td>
+      <td>4922.08</td>
+      <td>81</td>
+      <td>4.2</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-24</td>
+      <td>South</td>
+      <td>Delta</td>
+      <td>9047</td>
+      <td>5369.69</td>
+      <td>115</td>
+      <td>4.6</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-25</td>
+      <td>North</td>
+      <td>Delta</td>
+      <td>9748</td>
+      <td>5960.47</td>
+      <td>83</td>
+      <td>3.3</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>2023-02-26</td>
+      <td>East</td>
+      <td>Alpha</td>
+      <td>12169</td>
+      <td>7906.71</td>
+      <td>229</td>
+      <td>5.0</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>2023-02-27</td>
+      <td>North</td>
+      <td>Delta</td>
+      <td>4827</td>
+      <td>2458.11</td>
+      <td>57</td>
+      <td>4.0</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-02-28</td>
+      <td>East</td>
+      <td>Alpha</td>
+      <td>7788</td>
+      <td>4139.85</td>
+      <td>137</td>
+      <td>4.0</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-01</td>
+      <td>East</td>
+      <td>Gamma</td>
+      <td>10168</td>
+      <td>4854.05</td>
+      <td>168</td>
+      <td>4.9</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-02</td>
+      <td>West</td>
+      <td>Delta</td>
+      <td>5840</td>
+      <td>3299.54</td>
+      <td>137</td>
+      <td>3.8</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-03</td>
+      <td>East</td>
+      <td>Delta</td>
+      <td>11972</td>
+      <td>7775.98</td>
+      <td>241</td>
+      <td>3.8</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-04</td>
+      <td>South</td>
+      <td>Alpha</td>
+      <td>9774</td>
+      <td>5768.09</td>
+      <td>86</td>
+      <td>4.2</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-05</td>
+      <td>West</td>
+      <td>Delta</td>
+      <td>10747</td>
+      <td>6115.32</td>
+      <td>163</td>
+      <td>3.3</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>2023-03-06</td>
+      <td>South</td>
+      <td>Alpha</td>
+      <td>7928</td>
+      <td>4189.92</td>
+      <td>89</td>
+      <td>3.6</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-07</td>
+      <td>South</td>
+      <td>Gamma</td>
+      <td>10714</td>
+      <td>6782.91</td>
+      <td>138</td>
+      <td>3.4</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-08</td>
+      <td>West</td>
+      <td>Beta</td>
+      <td>11241</td>
+      <td>6175.41</td>
+      <td>156</td>
+      <td>3.2</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-09</td>
+      <td>South</td>
+      <td>Beta</td>
+      <td>9586</td>
+      <td>4571.38</td>
+      <td>116</td>
+      <td>4.7</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-10</td>
+      <td>North</td>
+      <td>Alpha</td>
+      <td>9606</td>
+      <td>5024.63</td>
+      <td>174</td>
+      <td>4.2</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-11</td>
+      <td>South</td>
+      <td>Delta</td>
+      <td>9695</td>
+      <td>4492.77</td>
+      <td>81</td>
+      <td>3.7</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-12</td>
+      <td>West</td>
+      <td>Beta</td>
+      <td>7444</td>
+      <td>3650.45</td>
+      <td>70</td>
+      <td>3.8</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-13</td>
+      <td>North</td>
+      <td>Gamma</td>
+      <td>8892</td>
+      <td>4032.93</td>
+      <td>89</td>
+      <td>3.9</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-14</td>
+      <td>South</td>
+      <td>Beta</td>
+      <td>8899</td>
+      <td>4811.28</td>
+      <td>114</td>
+      <td>4.3</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-15</td>
+      <td>North</td>
+      <td>Beta</td>
+      <td>9988</td>
+      <td>5761.88</td>
+      <td>191</td>
+      <td>4.9</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-16</td>
+      <td>East</td>
+      <td>Delta</td>
+      <td>11237</td>
+      <td>5828.22</td>
+      <td>98</td>
+      <td>4.9</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-17</td>
+      <td>South</td>
+      <td>Alpha</td>
+      <td>7137</td>
+      <td>3811.76</td>
+      <td>106</td>
+      <td>3.8</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-18</td>
+      <td>South</td>
+      <td>Gamma</td>
+      <td>9021</td>
+      <td>5789.98</td>
+      <td>204</td>
+      <td>3.7</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-19</td>
+      <td>North</td>
+      <td>Gamma</td>
+      <td>12251</td>
+      <td>7355.13</td>
+      <td>181</td>
+      <td>3.9</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-20</td>
+      <td>East</td>
+      <td>Beta</td>
+      <td>7817</td>
+      <td>4363.32</td>
+      <td>75</td>
+      <td>4.1</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-21</td>
+      <td>East</td>
+      <td>Beta</td>
+      <td>7677</td>
+      <td>3891.32</td>
+      <td>85</td>
+      <td>3.9</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-22</td>
+      <td>West</td>
+      <td>Alpha</td>
+      <td>9742</td>
+      <td>6131.86</td>
+      <td>97</td>
+      <td>4.3</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>2023-03-23</td>
+      <td>South</td>
+      <td>Delta</td>
+      <td>11043</td>
+      <td>5488.73</td>
+      <td>106</td>
+      <td>4.1</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-24</td>
+      <td>North</td>
+      <td>Delta</td>
+      <td>9394</td>
+      <td>4838.60</td>
+      <td>164</td>
+      <td>3.6</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-25</td>
+      <td>West</td>
+      <td>Alpha</td>
+      <td>12046</td>
+      <td>7610.74</td>
+      <td>105</td>
+      <td>3.7</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-26</td>
+      <td>East</td>
+      <td>Alpha</td>
+      <td>11118</td>
+      <td>6180.74</td>
+      <td>148</td>
+      <td>3.8</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-27</td>
+      <td>East</td>
+      <td>Alpha</td>
+      <td>11105</td>
+      <td>6645.96</td>
+      <td>121</td>
+      <td>3.2</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-28</td>
+      <td>North</td>
+      <td>Alpha</td>
+      <td>10546</td>
+      <td>5991.90</td>
+      <td>262</td>
+      <td>3.3</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-29</td>
+      <td>South</td>
+      <td>Delta</td>
+      <td>14110</td>
+      <td>8193.60</td>
+      <td>118</td>
+      <td>4.4</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-30</td>
+      <td>West</td>
+      <td>Delta</td>
+      <td>9061</td>
+      <td>4620.12</td>
+      <td>145</td>
+      <td>3.8</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-03-31</td>
+      <td>West</td>
+      <td>Alpha</td>
+      <td>5481</td>
+      <td>2731.17</td>
+      <td>121</td>
+      <td>3.4</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-04-01</td>
+      <td>South</td>
+      <td>Gamma</td>
+      <td>12714</td>
+      <td>6541.09</td>
+      <td>165</td>
+      <td>4.1</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-04-02</td>
+      <td>West</td>
+      <td>Alpha</td>
+      <td>8606</td>
+      <td>4140.41</td>
+      <td>171</td>
+      <td>4.5</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-04-03</td>
+      <td>West</td>
+      <td>Beta</td>
+      <td>9754</td>
+      <td>6095.05</td>
+      <td>186</td>
+      <td>3.5</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-04-04</td>
+      <td>South</td>
+      <td>Gamma</td>
+      <td>12174</td>
+      <td>6168.09</td>
+      <td>134</td>
+      <td>4.7</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-04-05</td>
+      <td>West</td>
+      <td>Gamma</td>
+      <td>6367</td>
+      <td>3580.37</td>
+      <td>89</td>
+      <td>4.9</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-04-06</td>
+      <td>South</td>
+      <td>Delta</td>
+      <td>7085</td>
+      <td>4310.68</td>
+      <td>62</td>
+      <td>4.2</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-04-07</td>
+      <td>North</td>
+      <td>Alpha</td>
+      <td>6403</td>
+      <td>3884.99</td>
+      <td>97</td>
+      <td>4.3</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-04-08</td>
+      <td>East</td>
+      <td>Alpha</td>
+      <td>8034</td>
+      <td>4319.59</td>
+      <td>81</td>
+      <td>3.1</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-04-09</td>
+      <td>East</td>
+      <td>Beta</td>
+      <td>10518</td>
+      <td>5734.99</td>
+      <td>136</td>
+      <td>4.9</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023-04-10</td>
+      <td>North</td>
+      <td>Beta</td>
+      <td>10704</td>
+      <td>6946.19</td>
+      <td>115</td>
+      <td>3.8</td>
+      <td>False</td>
+    </tr>
+  </tbody>
+</table>
+                        </div>
+                        <div class="vx-dm-pane">
+                            <div class="vx-dm-pane-title">Statistical Summary</div>
+                            <table class="dataframe vx-desc-tbl">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>date</th>
+      <th>region</th>
+      <th>product</th>
+      <th>revenue</th>
+      <th>costs</th>
+      <th>units</th>
+      <th>rating</th>
+      <th>returned</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>count</th>
+      <td>300</td>
+      <td>300</td>
+      <td>300</td>
+      <td>300.0</td>
+      <td>300.0</td>
+      <td>300.0</td>
+      <td>300.0</td>
+      <td>300</td>
+    </tr>
+    <tr>
+      <th>unique</th>
+      <td>—</td>
+      <td>4</td>
+      <td>4</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>top</th>
+      <td>—</td>
+      <td>South</td>
+      <td>Delta</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>freq</th>
+      <td>—</td>
+      <td>87</td>
+      <td>85</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>275</td>
+    </tr>
+    <tr>
+      <th>mean</th>
+      <td>2023-05-30 12:00:00</td>
+      <td>—</td>
+      <td>—</td>
+      <td>10469.157</td>
+      <td>5741.76</td>
+      <td>141.0</td>
+      <td>4.001</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <th>min</th>
+      <td>2023-01-01 00:00:00</td>
+      <td>—</td>
+      <td>—</td>
+      <td>2950.0</td>
+      <td>1770.17</td>
+      <td>43.0</td>
+      <td>3.0</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <th>25%</th>
+      <td>2023-03-16 18:00:00</td>
+      <td>—</td>
+      <td>—</td>
+      <td>8888.25</td>
+      <td>4649.692</td>
+      <td>99.5</td>
+      <td>3.5</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <th>50%</th>
+      <td>2023-05-30 12:00:00</td>
+      <td>—</td>
+      <td>—</td>
+      <td>10553.0</td>
+      <td>5753.57</td>
+      <td>131.5</td>
+      <td>4.0</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <th>75%</th>
+      <td>2023-08-13 06:00:00</td>
+      <td>—</td>
+      <td>—</td>
+      <td>12138.25</td>
+      <td>6721.478</td>
+      <td>176.0</td>
+      <td>4.5</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <th>max</th>
+      <td>2023-10-27 00:00:00</td>
+      <td>—</td>
+      <td>—</td>
+      <td>16961.0</td>
+      <td>10292.56</td>
+      <td>337.0</td>
+      <td>5.0</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <th>std</th>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>2412.374</td>
+      <td>1504.093</td>
+      <td>56.197</td>
+      <td>0.589</td>
+      <td>—</td>
+    </tr>
+  </tbody>
+</table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="vx-data-fab"
+                onclick="document.getElementById('vx-data-modal').classList.add('open')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"</svg> View Data
+        </button>
+</body>
+</html>

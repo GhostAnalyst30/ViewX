@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HTML Dashboard - ViewX</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #fafaf9;
+  --bg-alt: #f5f5f4;
+  --surface: #ffffff;
+  --border: #e7e5e4;
+  --text: #1c1917;
+  --text-muted: #78716c;
+  --accent: #ea580c;
+  --accent-light: #fed7aa;
+  --accent-dark: #c2410c;
+  --teal: #0d9488;
+  --teal-light: #99f6e4;
+  --indigo: #4f46e5;
+  --shadow: 0 4px 24px rgba(28,25,23,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Space Grotesk',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;}
+
+nav{position:sticky;top:0;z-index:100;background:rgba(250,250,249,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 2rem;}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px;}
+.logo{font-weight:700;font-size:1.35rem;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:0.5rem;}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--teal));border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.9rem;}
+.nav-links{display:flex;gap:0.5rem;}
+.nav-links a{font-size:0.88rem;font-weight:500;color:var(--text-muted);text-decoration:none;padding:0.5rem 0.9rem;border-radius:8px;transition:all 0.2s;}
+.nav-links a:hover,.nav-links a.active{color:var(--text);background:var(--bg-alt);}
+.nav-pip{font-family:'JetBrains Mono',monospace;font-size:0.8rem;background:var(--text);color:#fff;padding:0.5rem 1rem;border-radius:8px;border:none;cursor:pointer;transition:all 0.2s;}
+.nav-pip:hover{background:var(--accent);}
+
+.doc-layout{display:grid;grid-template-columns:260px 1fr;max-width:1400px;margin:0 auto;min-height:calc(100vh - 64px);}
+@media(max-width:900px){.doc-layout{grid-template-columns:1fr;}.sidebar{display:none;}}
+
+.sidebar{border-right:1px solid var(--border);padding:2rem 1.5rem;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto;}
+.sidebar-title{font-size:0.7rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.75rem;margin-top:1.5rem;}
+.sidebar-title:first-child{margin-top:0;}
+.sidebar-links{display:flex;flex-direction:column;gap:0.25rem;}
+.sidebar-links a{font-size:0.88rem;color:var(--text-muted);text-decoration:none;padding:0.5rem 0.75rem;border-radius:6px;transition:all 0.2s;border-left:2px solid transparent;}
+.sidebar-links a:hover{color:var(--text);background:var(--bg-alt);}
+.sidebar-links a.active{color:var(--accent);border-left-color:var(--accent);background:var(--accent-light);font-weight:500;}
+
+.main-content{padding:3rem 4rem;max-width:900px;}
+@media(max-width:900px){.main-content{padding:2rem 1.5rem;}}
+
+.breadcrumb{font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}
+.page-title{font-size:2.5rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:0.5rem;}
+.page-desc{font-size:1.1rem;color:var(--text-muted);margin-bottom:2rem;line-height:1.6;}
+
+.section{margin-bottom:3rem;}
+.section h2{font-size:1.5rem;font-weight:600;margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
+.section p{color:var(--text-muted);margin-bottom:1rem;}
+
+.code-block{background:#1e1e1e;border-radius:12px;overflow:hidden;margin:1.5rem 0;box-shadow:var(--shadow);}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 1rem;background:#2d2d2d;border-bottom:1px solid #3d3d3d;}
+.code-dots{display:flex;gap:0.4rem;}
+.dot{width:10px;height:10px;border-radius:50%;}
+.dot-r{background:#ff5f57;}
+.dot-y{background:#febc2e;}
+.dot-g{background:#28c840;}
+.code-lang{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:#888;}
+.code-copy{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:#888;background:transparent;border:1px solid #444;padding:0.2rem 0.5rem;border-radius:4px;cursor:pointer;transition:all 0.2s;}
+.code-copy:hover{color:#fff;border-color:#666;}
+.code-block pre{margin:0!important;padding:1.25rem!important;font-size:0.85rem!important;overflow-x:auto;}
+
+.method-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1rem 0;transition:all 0.2s;}
+.method-card:hover{border-color:var(--accent);box-shadow:var(--shadow);}
+.method-name{font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:600;color:var(--accent-dark);margin-bottom:0.5rem;}
+.method-desc{font-size:0.9rem;color:var(--text-muted);margin-bottom:1rem;}
+.param-list{background:var(--bg-alt);border-radius:8px;padding:1rem;font-size:0.85rem;}
+.param{margin-bottom:0.5rem;}
+.param:last-child{margin-bottom:0;}
+.param-name{font-family:'JetBrains Mono',monospace;color:var(--teal);font-weight:500;}
+.param-type{font-family:'JetBrains Mono',monospace;color:var(--text-muted);font-size:0.8rem;}
+
+.theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin:1.5rem 0;}
+.theme-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;text-align:center;transition:all 0.2s;cursor:pointer;}
+.theme-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+.theme-preview{height:60px;border-radius:6px;margin-bottom:0.75rem;}
+.theme-name{font-size:0.85rem;font-weight:600;}
+.theme-id{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--text-muted);}
+
+.copied-toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--teal);color:#fff;padding:0.75rem 1.5rem;border-radius:8px;font-size:0.9rem;font-weight:600;opacity:0;transform:translateY(10px);transition:all 0.3s;pointer-events:none;z-index:9999;}
+.copied-toast.show{opacity:1;transform:translateY(0);}
+
+footer{border-top:1px solid var(--border);padding:2rem;text-align:center;background:var(--bg-alt);}
+.footer-meta{font-size:0.85rem;color:var(--text-muted);}
+</style>
+</head>
+<body>
+
+<div class="copied-toast" id="toast">Copiado al portapapeles</div>
+
+<nav>
+  <div class="nav-inner">
+    <a class="logo" href="index.html">
+      <div class="logo-icon">Vx</div>
+      ViewX
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Inicio</a>
+      <a href="datamatrix.html">DataMatrix</a>
+      <a href="report.html">Report</a>
+      <a href="html.html" class="active">HTML</a>
+      <a href="slides.html">Slides</a>
+      <a href="datasets.html">Datasets</a>
+    </div>
+    <button class="nav-pip" onclick="copyText('pip install viewx')">pip install viewx</button>
+  </div>
+</nav>
+
+<div class="doc-layout">
+  <aside class="sidebar">
+    <div class="sidebar-title">Inicio</div>
+    <div class="sidebar-links">
+      <a href="#overview" class="active">Descripcion general</a>
+      <a href="#themes">Temas disponibles</a>
+      <a href="#quickstart">Inicio rapido</a>
+    </div>
+    <div class="sidebar-title">ThemeManager</div>
+    <div class="sidebar-links">
+      <a href="#thememanager">ThemeManager</a>
+    </div>
+    <div class="sidebar-title">Clase HTML</div>
+    <div class="sidebar-links">
+      <a href="#constructor">Constructor</a>
+      <a href="#add_valuebox">add_valuebox()</a>
+      <a href="#add_infobox">add_infobox()</a>
+      <a href="#add_chart">add_chart()</a>
+      <a href="#add_table">add_table()</a>
+      <a href="#add_text">add_text()</a>
+      <a href="#generate">generate()</a>
+    </div>
+    <div class="sidebar-title">Auto Generate</div>
+    <div class="sidebar-links">
+      <a href="#auto_generate">auto_generate()</a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="breadcrumb"><a href="index.html">ViewX</a> / HTML Dashboard</div>
+    <h1 class="page-title">HTML Dashboard</h1>
+    <p class="page-desc">Constructor de dashboards interactivos con Plotly. Sistema de grid CSS responsive, 6 temas profesionales integrados, y componentes como valueboxes, infoboxes, graficos y tablas.</p>
+
+    <section class="section" id="overview">
+      <h2>Descripcion general</h2>
+      <p>La clase HTML permite crear dashboards complejos de forma programatica. Caracteristicas principales:</p>
+      <ul style="margin-left:1.5rem;color:var(--text-muted);">
+        <li>Grid CSS de 12 columnas configurable</li>
+        <li>6 temas profesionales + soporte para temas custom</li>
+        <li>Valueboxes con iconos SVG (Heroicons)</li>
+        <li>Infoboxes con estadisticas automaticas</li>
+        <li>Graficos Plotly interactivos con boton info</li>
+        <li>Boton flotante para preview de datos</li>
+      </ul>
+    </section>
+
+    <section class="section" id="themes">
+      <h2>Temas disponibles</h2>
+      <p>ViewX incluye 6 temas profesionales listos para usar:</p>
+      <div class="theme-grid">
+        <div class="theme-card">
+          <div class="theme-preview" style="background:linear-gradient(135deg,#F3F4F6,#FFFFFF);border:1px solid #ddd;"></div>
+          <div class="theme-name">Corporate Blue</div>
+          <div class="theme-id">ID: 0</div>
+        </div>
+        <div class="theme-card">
+          <div class="theme-preview" style="background:linear-gradient(135deg,#0D0D0D,#161616);"></div>
+          <div class="theme-name">Dark Enterprise</div>
+          <div class="theme-id">ID: 1</div>
+        </div>
+        <div class="theme-card">
+          <div class="theme-preview" style="background:linear-gradient(135deg,#F0FAF4,#FFFFFF);border:1px solid #ddd;"></div>
+          <div class="theme-name">Modern Green</div>
+          <div class="theme-id">ID: 2</div>
+        </div>
+        <div class="theme-card">
+          <div class="theme-preview" style="background:linear-gradient(135deg,#07080F,#0F1117);"></div>
+          <div class="theme-name">Void Indigo</div>
+          <div class="theme-id">ID: 3</div>
+        </div>
+        <div class="theme-card">
+          <div class="theme-preview" style="background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);"></div>
+          <div class="theme-name">Glass Ocean</div>
+          <div class="theme-id">ID: 4</div>
+        </div>
+        <div class="theme-card">
+          <div class="theme-preview" style="background:linear-gradient(135deg,#050505,#0D0214);"></div>
+          <div class="theme-name">Cyberpunk Neon</div>
+          <div class="theme-id">ID: 5</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="quickstart">
+      <h2>Inicio rapido</h2>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="code-lang">Python</span>
+          <button class="code-copy" onclick="copyCode('quick-code')">Copiar</button>
+        </div>
+        <pre><code class="language-python" id="quick-code">from viewx import HTML
+import plotly.express as px
+import pandas as pd
+
+df = pd.DataFrame({"mes": [1,2,3,4], "ventas": [100,150,130,180]})
+fig = px.line(df, x="mes", y="ventas")
+
+# Crear dashboard
+dash = HTML(
+    title="Dashboard Ventas",
+    theme="dark_enterprise",  # o ID: 1
+    cols=12,
+    rows=8
+)
+
+# Agregar componentes
+dash.add_valuebox("Total Ventas", "$560K", icon_key="dollar", row=1, col=1, height=2, width=3)
+dash.add_valuebox("Clientes", "1,234", icon_key="users", row=1, col=4, height=2, width=3)
+dash.add_chart(fig, title="Tendencia", row=3, col=1, height=5, width=12)
+
+# Generar HTML
+dash.generate("dashboard.html")</code></pre>
+      </div>
+    </section>
+
+    <section class="section" id="thememanager">
+      <h2>ThemeManager</h2>
+      <div class="method-card">
+        <div class="method-name">ThemeManager(theme: int | str | dict)</div>
+        <div class="method-desc">Gestor de temas que soporta temas integrados por nombre o ID, y temas custom como diccionario.</div>
+        <div class="param-list">
+          <div class="param"><span class="param-name">theme</span> <span class="param-type">int | str | dict</span> - Nombre ("corporate_blue"), ID (0), o diccionario custom</div>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="code-lang">Python</span>
+          <button class="code-copy" onclick="copyCode('theme-code')">Copiar</button>
+        </div>
+        <pre><code class="language-python" id="theme-code"># Tema custom
+custom = {
+    "bg_page": "#0D0D0D",
+    "bg_card": "#1A1A2E",
+    "accent": "#E94560",
+    "text_primary": "#EAEAEA",
+    "text_secondary": "#888888",
+    "chart_colors": ["#E94560", "#00D4FF", "#FFD166"]
+}
+dash = HTML(title="Mi Dashboard", theme=custom)</code></pre>
+      </div>
+    </section>
+
+    <section class="section" id="constructor">
+      <h2>Constructor HTML</h2>
+      <div class="method-card">
+        <div class="method-name">HTML(title, theme, cols, rows, gap, padding, navbar, authors, data_button, df)</div>
+        <div class="method-desc">Inicializa el constructor de dashboards con la configuracion del grid y tema.</div>
+        <div class="param-list">
+          <div class="param"><span class="param-name">title</span> <span class="param-type">str</span> - Titulo del dashboard</div>
+          <div class="param"><span class="param-name">theme</span> <span class="param-type">int | str | dict</span> - Tema a usar</div>
+          <div class="param"><span class="param-name">cols</span> <span class="param-type">int, default=12</span> - Columnas del grid</div>
+          <div class="param"><span class="param-name">rows</span> <span class="param-type">int, default=12</span> - Filas del grid</div>
+          <div class="param"><span class="param-name">gap</span> <span class="param-type">int, default=16</span> - Espacio entre celdas (px)</div>
+          <div class="param"><span class="param-name">data_button</span> <span class="param-type">bool, default=False</span> - Mostrar boton flotante de datos</div>
+          <div class="param"><span class="param-name">df</span> <span class="param-type">pd.DataFrame, optional</span> - DataFrame para preview</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="add_valuebox">
+      <h2>add_valuebox()</h2>
+      <div class="method-card">
+        <div class="method-name">add_valuebox(title, value, icon_key, color, row, col, height, width)</div>
+        <div class="method-desc">Agrega una caja de valor destacado con icono SVG. Ideal para KPIs y metricas principales.</div>
+        <div class="param-list">
+          <div class="param"><span class="param-name">title</span> <span class="param-type">str</span> - Etiqueta del KPI</div>
+          <div class="param"><span class="param-name">value</span> <span class="param-type">any</span> - Valor a mostrar</div>
+          <div class="param"><span class="param-name">icon_key</span> <span class="param-type">str</span> - Clave del icono (chart-bar, trending-up, dollar, hash, target, zap, users, activity, percent, clock)</div>
+          <div class="param"><span class="param-name">row, col</span> <span class="param-type">int</span> - Posicion en el grid</div>
+          <div class="param"><span class="param-name">height, width</span> <span class="param-type">int</span> - Tamano en celdas del grid</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="add_infobox">
+      <h2>add_infobox()</h2>
+      <div class="method-card">
+        <div class="method-name">add_infobox(df, variable, info, title, color, row, col, height, width)</div>
+        <div class="method-desc">Caja con multiples estadisticas para una variable. Calcula automaticamente mean, median, std, min, max, q1, q3, etc.</div>
+        <div class="param-list">
+          <div class="param"><span class="param-name">df</span> <span class="param-type">pd.DataFrame</span> - DataFrame con los datos</div>
+          <div class="param"><span class="param-name">variable</span> <span class="param-type">str</span> - Nombre de la columna</div>
+          <div class="param"><span class="param-name">info</span> <span class="param-type">list[str], optional</span> - Estadisticas a mostrar (mean, median, std, min, max, sum, count, kurtosis, skewness, q1, q3, iqr, nulls, nunique)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="add_chart">
+      <h2>add_chart()</h2>
+      <div class="method-card">
+        <div class="method-name">add_chart(fig, title, row, col, height, width)</div>
+        <div class="method-desc">Inserta un grafico Plotly interactivo. Incluye automaticamente un boton de info que abre un modal con detalles.</div>
+        <div class="param-list">
+          <div class="param"><span class="param-name">fig</span> <span class="param-type">plotly.graph_objects.Figure</span> - Figura de Plotly</div>
+          <div class="param"><span class="param-name">title</span> <span class="param-type">str</span> - Titulo del grafico</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="add_table">
+      <h2>add_table()</h2>
+      <div class="method-card">
+        <div class="method-name">add_table(df, title, row, col, height, width)</div>
+        <div class="method-desc">Renderiza un DataFrame como tabla HTML estilizada con scroll.</div>
+      </div>
+    </section>
+
+    <section class="section" id="add_text">
+      <h2>add_text()</h2>
+      <div class="method-card">
+        <div class="method-name">add_text(content, title, row, col, height, width)</div>
+        <div class="method-desc">Agrega una tarjeta de texto con titulo opcional. Soporta HTML basico.</div>
+      </div>
+    </section>
+
+    <section class="section" id="generate">
+      <h2>generate()</h2>
+      <div class="method-card">
+        <div class="method-name">generate(filename="dashboard.html")</div>
+        <div class="method-desc">Exporta el dashboard como archivo HTML autocontenido.</div>
+      </div>
+    </section>
+
+    <section class="section" id="auto_generate">
+      <h2>auto_generate()</h2>
+      <div class="method-card">
+        <div class="method-name">auto_generate(df, title, theme, filename) &rarr; str</div>
+        <div class="method-desc">Funcion standalone que genera automaticamente un dashboard completo a partir de un DataFrame. Detecta tipos de columnas, genera KPIs, graficos y tablas de forma inteligente.</div>
+        <div class="param-list">
+          <div class="param"><span class="param-name">df</span> <span class="param-type">pd.DataFrame</span> - DataFrame a visualizar</div>
+          <div class="param"><span class="param-name">title</span> <span class="param-type">str</span> - Titulo del dashboard</div>
+          <div class="param"><span class="param-name">theme</span> <span class="param-type">int | str | dict</span> - Tema a usar</div>
+          <div class="param"><span class="param-name">filename</span> <span class="param-type">str</span> - Ruta del archivo de salida</div>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="code-lang">Python</span>
+          <button class="code-copy" onclick="copyCode('auto-code')">Copiar</button>
+        </div>
+        <pre><code class="language-python" id="auto-code">from viewx.html_engine import auto_generate
+from viewx.datasets import load_iris
+
+df = load_iris()
+auto_generate(df, title="Iris Dashboard", theme="glass_ocean", filename="iris_dash.html")</code></pre>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  <div class="footer-meta">ViewX &middot; Documentacion &middot; v1.0</div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script>
+function copyText(text){navigator.clipboard.writeText(text).then(()=>showToast());}
+function copyCode(id){const el=document.getElementById(id);navigator.clipboard.writeText(el.textContent).then(()=>showToast());}
+function showToast(){const toast=document.getElementById('toast');toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2000);}
+</script>
+</body>
+</html>

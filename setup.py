@@ -9,7 +9,7 @@ except FileNotFoundError:
 
 setup(
     name="viewx",
-    version="0.2.1",
+    version="0.2.2",
     author="Emmanuel Ascendra Perez",
     author_email="ascendraemmanuel@gmail.com",
     description="Librería de visualización adaptable para HTML, Dashboards y PDFs en Python",

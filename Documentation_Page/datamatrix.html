@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DataMatrix - ViewX</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #fafaf9;
+  --bg-alt: #f5f5f4;
+  --surface: #ffffff;
+  --border: #e7e5e4;
+  --text: #1c1917;
+  --text-muted: #78716c;
+  --accent: #ea580c;
+  --accent-light: #fed7aa;
+  --accent-dark: #c2410c;
+  --teal: #0d9488;
+  --teal-light: #99f6e4;
+  --shadow: 0 4px 24px rgba(28,25,23,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Space Grotesk',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;}
+
+nav{position:sticky;top:0;z-index:100;background:rgba(250,250,249,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 2rem;}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px;}
+.logo{font-weight:700;font-size:1.35rem;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:0.5rem;}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--teal));border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.9rem;}
+.nav-links{display:flex;gap:0.5rem;}
+.nav-links a{font-size:0.88rem;font-weight:500;color:var(--text-muted);text-decoration:none;padding:0.5rem 0.9rem;border-radius:8px;transition:all 0.2s;}
+.nav-links a:hover,.nav-links a.active{color:var(--text);background:var(--bg-alt);}
+.nav-pip{font-family:'JetBrains Mono',monospace;font-size:0.8rem;background:var(--text);color:#fff;padding:0.5rem 1rem;border-radius:8px;border:none;cursor:pointer;transition:all 0.2s;}
+.nav-pip:hover{background:var(--accent);}
+
+.doc-layout{display:grid;grid-template-columns:260px 1fr;max-width:1400px;margin:0 auto;min-height:calc(100vh - 64px);}
+@media(max-width:900px){.doc-layout{grid-template-columns:1fr;}.sidebar{display:none;}}
+
+.sidebar{border-right:1px solid var(--border);padding:2rem 1.5rem;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto;}
+.sidebar-title{font-size:0.7rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.75rem;margin-top:1.5rem;}
+.sidebar-title:first-child{margin-top:0;}
+.sidebar-links{display:flex;flex-direction:column;gap:0.25rem;}
+.sidebar-links a{font-size:0.88rem;color:var(--text-muted);text-decoration:none;padding:0.5rem 0.75rem;border-radius:6px;transition:all 0.2s;border-left:2px solid transparent;}
+.sidebar-links a:hover{color:var(--text);background:var(--bg-alt);}
+.sidebar-links a.active{color:var(--accent);border-left-color:var(--accent);background:var(--accent-light);font-weight:500;}
+
+.main-content{padding:3rem 4rem;max-width:900px;}
+@media(max-width:900px){.main-content{padding:2rem 1.5rem;}}
+
+.breadcrumb{font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}
+.page-title{font-size:2.5rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:0.5rem;}
+.page-desc{font-size:1.1rem;color:var(--text-muted);margin-bottom:2rem;line-height:1.6;}
+
+.section{margin-bottom:3rem;}
+.section h2{font-size:1.5rem;font-weight:600;margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
+.section h3{font-size:1.15rem;font-weight:600;margin:1.5rem 0 0.75rem;color:var(--accent-dark);}
+.section p{color:var(--text-muted);margin-bottom:1rem;}
+
+.code-block{background:#1e1e1e;border-radius:12px;overflow:hidden;margin:1.5rem 0;box-shadow:var(--shadow);}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 1rem;background:#2d2d2d;border-bottom:1px solid #3d3d3d;}
+.code-dots{display:flex;gap:0.4rem;}
+.dot{width:10px;height:10px;border-radius:50%;}
+.dot-r{background:#ff5f57;}
+.dot-y{background:#febc2e;}
+.dot-g{background:#28c840;}
+.code-lang{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:#888;}
+.code-copy{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:#888;background:transparent;border:1px solid #444;padding:0.2rem 0.5rem;border-radius:4px;cursor:pointer;transition:all 0.2s;}
+.code-copy:hover{color:#fff;border-color:#666;}
+.code-block pre{margin:0!important;padding:1.25rem!important;font-size:0.85rem!important;overflow-x:auto;}
+
+.method-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1rem 0;transition:all 0.2s;}
+.method-card:hover{border-color:var(--accent);box-shadow:var(--shadow);}
+.method-name{font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:600;color:var(--accent-dark);margin-bottom:0.5rem;}
+.method-desc{font-size:0.9rem;color:var(--text-muted);margin-bottom:1rem;}
+.param-list{background:var(--bg-alt);border-radius:8px;padding:1rem;font-size:0.85rem;}
+.param{margin-bottom:0.5rem;}
+.param:last-child{margin-bottom:0;}
+.param-name{font-family:'JetBrains Mono',monospace;color:var(--teal);font-weight:500;}
+.param-type{font-family:'JetBrains Mono',monospace;color:var(--text-muted);font-size:0.8rem;}
+
+.info-box{background:linear-gradient(135deg,var(--teal-light),#e0f2fe);border:1px solid var(--teal);border-radius:12px;padding:1.25rem;margin:1.5rem 0;}
+.info-box-title{font-weight:600;color:var(--teal);margin-bottom:0.5rem;display:flex;align-items:center;gap:0.5rem;}
+.info-box p{color:#0f766e;font-size:0.9rem;margin:0;}
+
+.copied-toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--teal);color:#fff;padding:0.75rem 1.5rem;border-radius:8px;font-size:0.9rem;font-weight:600;opacity:0;transform:translateY(10px);transition:all 0.3s;pointer-events:none;z-index:9999;}
+.copied-toast.show{opacity:1;transform:translateY(0);}
+
+footer{border-top:1px solid var(--border);padding:2rem;text-align:center;background:var(--bg-alt);}
+.footer-meta{font-size:0.85rem;color:var(--text-muted);}
+</style>
+</head>
+<body>
+
+<div class="copied-toast" id="toast">Copiado al portapapeles</div>
+
+<nav>
+  <div class="nav-inner">
+    <a class="logo" href="index.html">
+      <div class="logo-icon">Vx</div>
+      ViewX
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Inicio</a>
+      <a href="datamatrix.html" class="active">DataMatrix</a>
+      <a href="report.html">Report</a>
+      <a href="html.html">HTML</a>
+      <a href="slides.html">Slides</a>
+      <a href="datasets.html">Datasets</a>
+    </div>
+    <button class="nav-pip" onclick="copyText('pip install viewx')">pip install viewx</button>
+  </div>
+</nav>
+
+<div class="doc-layout">
+  <aside class="sidebar">
+    <div class="sidebar-title">Inicio</div>
+    <div class="sidebar-links">
+      <a href="#overview" class="active">Descripcion general</a>
+      <a href="#installation">Instalacion</a>
+      <a href="#quickstart">Inicio rapido</a>
+    </div>
+    <div class="sidebar-title">Clase DataMatrix</div>
+    <div class="sidebar-links">
+      <a href="#constructor">Constructor</a>
+      <a href="#clean_data">clean_data()</a>
+      <a href="#generate_report">generate_report()</a>
+    </div>
+    <div class="sidebar-title">Internos</div>
+    <div class="sidebar-links">
+      <a href="#analyze_columns">_analyze_columns()</a>
+      <a href="#get_column_type">_get_column_type()</a>
+      <a href="#assemble_html">_assemble_html()</a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="breadcrumb"><a href="index.html">ViewX</a> / DataMatrix</div>
+    <h1 class="page-title">DataMatrix</h1>
+    <p class="page-desc">Clase para analisis exploratorio automatico de DataFrames. Genera reportes HTML interactivos con estadisticas, visualizaciones y alertas de calidad de datos.</p>
+
+    <section class="section" id="overview">
+      <h2>Descripcion general</h2>
+      <p>DataMatrix toma un DataFrame de pandas y genera automaticamente un reporte HTML completo con:</p>
+      <ul style="margin-left:1.5rem;color:var(--text-muted);">
+        <li>Resumen del dataset (filas, columnas, nulos, duplicados)</li>
+        <li>Analisis por variable (tipo, estadisticas, distribucion)</li>
+        <li>Alertas automaticas de calidad de datos</li>
+        <li>Visualizaciones interactivas con Plotly</li>
+        <li>Analisis bibliometrico opcional (si detecta columnas relevantes)</li>
+      </ul>
+    </section>
+
+    <section class="section" id="installation">
+      <h2>Instalacion</h2>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <button class="code-copy" onclick="copyCode('install-code')">Copiar</button>
+        </div>
+        <pre><code class="language-bash" id="install-code">pip install viewx</code></pre>
+      </div>
+    </section>
+
+    <section class="section" id="quickstart">
+      <h2>Inicio rapido</h2>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="code-lang">Python</span>
+          <button class="code-copy" onclick="copyCode('quick-code')">Copiar</button>
+        </div>
+        <pre><code class="language-python" id="quick-code">from viewx import DataMatrix
+from viewx.datasets import load_iris
+
+# Cargar datos
+df = load_iris()
+
+# Crear instancia y generar reporte
+dm = DataMatrix(df)
+dm.clean_data(drop_duplicates=True, fill_na=True)
+dm.generate_report("mi_reporte.html", title="Analisis Iris")</code></pre>
+      </div>
+    </section>
+
+    <section class="section" id="constructor">
+      <h2>Constructor</h2>
+      <div class="method-card">
+        <div class="method-name">DataMatrix(df: pd.DataFrame)</div>
+        <div class="method-desc">Inicializa una instancia de DataMatrix con un DataFrame de pandas. Crea copias internas del DataFrame original y prepara los contenedores para estadisticas y alertas.</div>
+        <div class="param-list">
+          <div class="param"><span class="param-name">df</span> <span class="param-type">pd.DataFrame</span> - DataFrame a analizar</div>
+        </div>
+      </div>
+      <div class="info-box">
+        <div class="info-box-title">&#9432; Nota</div>
+        <p>DataMatrix mantiene una copia del DataFrame original (self.original_df) y una copia de trabajo (self.df) para preservar los datos originales durante la limpieza.</p>
+      </div>
+    </section>
+
+    <section class="section" id="clean_data">
+      <h2>clean_data()</h2>
+      <div class="method-card">
+        <div class="method-name">clean_data(drop_duplicates=True, fill_na=False)</div>
+        <div class="method-desc">Limpia el DataFrame eliminando duplicados y/o imputando valores faltantes. Los valores numericos se imputan con la mediana, los categoricos con la moda.</div>
+        <div class="param-list">
+          <div class="param"><span class="param-name">drop_duplicates</span> <span class="param-type">bool, default=True</span> - Si True, elimina filas duplicadas</div>
+          <div class="param"><span class="param-name">fill_na</span> <span class="param-type">bool, default=False</span> - Si True, imputa valores faltantes</div>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="code-lang">Python</span>
+          <button class="code-copy" onclick="copyCode('clean-code')">Copiar</button>
+        </div>
+        <pre><code class="language-python" id="clean-code">dm = DataMatrix(df)
+
+# Solo eliminar duplicados
+dm.clean_data(drop_duplicates=True, fill_na=False)
+
+# Eliminar duplicados e imputar nulos
+dm.clean_data(drop_duplicates=True, fill_na=True)</code></pre>
+      </div>
+    </section>
+
+    <section class="section" id="generate_report">
+      <h2>generate_report()</h2>
+      <div class="method-card">
+        <div class="method-name">generate_report(output_path="datamatrix_report.html", title="Viewx DataMatrix Report")</div>
+        <div class="method-desc">Genera el reporte HTML completo con todas las secciones: resumen general, analisis de variables, bibliometria (si aplica) y muestra de datos. Abre automaticamente el archivo en el navegador.</div>
+        <div class="param-list">
+          <div class="param"><span class="param-name">output_path</span> <span class="param-type">str</span> - Ruta del archivo HTML de salida</div>
+          <div class="param"><span class="param-name">title</span> <span class="param-type">str</span> - Titulo del reporte</div>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="code-lang">Python</span>
+          <button class="code-copy" onclick="copyCode('report-code')">Copiar</button>
+        </div>
+        <pre><code class="language-python" id="report-code">dm = DataMatrix(df)
+path = dm.generate_report(
+    output_path="analisis_ventas.html",
+    title="Reporte de Ventas Q4 2024"
+)
+print(f"Reporte generado: {path}")</code></pre>
+      </div>
+    </section>
+
+    <section class="section" id="analyze_columns">
+      <h2>_analyze_columns()</h2>
+      <div class="method-card">
+        <div class="method-name">_analyze_columns()</div>
+        <div class="method-desc">Metodo interno que analiza cada columna del DataFrame. Detecta el tipo de dato, calcula estadisticas descriptivas y genera alertas automaticas para problemas de calidad de datos.</div>
+      </div>
+      <p>Para columnas numericas calcula: mean, std, min, max, median. Genera alertas si:</p>
+      <ul style="margin-left:1.5rem;color:var(--text-muted);">
+        <li>Una columna tiene mas del 50% de valores faltantes</li>
+        <li>Una columna tiene un solo valor constante</li>
+      </ul>
+    </section>
+
+    <section class="section" id="get_column_type">
+      <h2>_get_column_type()</h2>
+      <div class="method-card">
+        <div class="method-name">_get_column_type(series) &rarr; str</div>
+        <div class="method-desc">Determina el tipo de una columna. Retorna: "numeric", "datetime", "boolean" o "categorical".</div>
+      </div>
+    </section>
+
+    <section class="section" id="assemble_html">
+      <h2>_assemble_html()</h2>
+      <div class="method-card">
+        <div class="method-name">_assemble_html(title, bib_results) &rarr; str</div>
+        <div class="method-desc">Ensambla el HTML final del reporte. Utiliza Bootstrap 5 para el layout y Plotly para los graficos interactivos. Incluye tabs para navegar entre secciones.</div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  <div class="footer-meta">ViewX &middot; Documentacion &middot; v1.0</div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script>
+function copyText(text){navigator.clipboard.writeText(text).then(()=>showToast());}
+function copyCode(id){const el=document.getElementById(id);navigator.clipboard.writeText(el.textContent).then(()=>showToast());}
+function showToast(){const toast=document.getElementById('toast');toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2000);}
+document.querySelectorAll('.sidebar-links a').forEach(link=>{
+  link.addEventListener('click',function(){
+    document.querySelectorAll('.sidebar-links a').forEach(l=>l.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

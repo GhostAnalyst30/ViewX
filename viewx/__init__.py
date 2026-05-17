@@ -9,7 +9,6 @@ __author__ = "Emmanuel Ascendra"
 
 # Importar las clases principales
 from .HTML import HTML
-from .DashBoard import DashBoard
 from .Report import Report
 from .Slides import Presentation, Slide
 from .DataMatrix import DataMatrix
@@ -19,7 +18,6 @@ from .datasets import load_dataset
 __all__ = [
     # Clases principales
     'HTML',
-    'DashBoard',
     'Report',
     'Presentation',
     'Slide',
