@@ -1,10 +1,10 @@
 """
 ViewX - Librería de Visualizacion para Python
 Autor: Emmanuel Ascendra
-Versión: 0.2.1
+Versión: 0.2.3
 """
 
-__version__ = "0.2.1"
+__version__ = "0.2.3"
 __author__ = "Emmanuel Ascendra"
 
 # Importar las clases principales
@@ -39,3 +39,4 @@ def welcome():
     print(f" - Slides")
     print(f" - DataMatrix")
     print(f"\nPara más información: help(viewx)")
+    print(f"\nO lee la información en: https://ghostanalyst30.github.io/ViewX/Documentation_Page/index.html")
