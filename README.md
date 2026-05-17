@@ -12,7 +12,6 @@ Este proyecto ofrece una solución **ligera, intuitiva y escalable**, ideal para
 - 🧩 **API intuitiva**: crea páginas y dashboards en segundos.  
 - 📐 **Diseño adaptativo**: cada componente se acomoda automáticamente.  
 - 🌐 **Modo HTML**: genera páginas `.html` totalmente autónomas.  
-- 📊 **Modo Dashboard**: plantillas escalables con soporte opcional para Streamlit/Dash.  
 - 🛠️ **Extensible**: añade tus propias plantillas y módulos personalizados.  
 - 🔮 **Visión a futuro**: pensado para expandirse a interfaces inteligentes.
 
