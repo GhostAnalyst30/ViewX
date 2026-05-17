@@ -6,14 +6,14 @@ Este proyecto ofrece una solución **ligera, intuitiva y escalable**, ideal para
 
 ---
 
-## ✨ Características principales
+## Características principales
 
-- ⚡ **Rápido y minimalista**: cero dependencias pesadas por defecto.  
-- 🧩 **API intuitiva**: crea páginas y dashboards en segundos.  
-- 📐 **Diseño adaptativo**: cada componente se acomoda automáticamente.  
-- 🌐 **Modo HTML**: genera páginas `.html` totalmente autónomas.  
-- 🛠️ **Extensible**: añade tus propias plantillas y módulos personalizados.  
-- 🔮 **Visión a futuro**: pensado para expandirse a interfaces inteligentes.
+- **Rápido y minimalista**: cero dependencias pesadas por defecto.  
+- **API intuitiva**: crea páginas y dashboards en segundos.  
+- **Diseño adaptativo**: cada componente se acomoda automáticamente.  
+- **Modo HTML**: genera páginas `.html` totalmente autónomas.  
+- **Extensible**: añade tus propias plantillas y módulos personalizados.  
+- **Visión a futuro**: pensado para expandirse a interfaces inteligentes.
 
 ---
 
@@ -22,83 +22,55 @@ Este proyecto ofrece una solución **ligera, intuitiva y escalable**, ideal para
 pip install viewx
 ```
 
-## 🚀 Ejemplo rápido
+## Ejemplo rápido
 
-### Crear una página HTML
+### Crear un DashBoard HTML
 ```python
-import pandas as pd
-from viewx.HTML import HTML
-
-# 1. Crear datos de ejemplo
-df_ventas = pd.DataFrame({
-    'Mes': ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
-    'Ventas': [120, 135, 148, 170, 195, 210, 245, 268, 290, 310, 335, 400],
-    'Beneficio': [30, 35, 42, 51, 58, 63, 73, 80, 87, 93, 100, 120],
-    'Clientes': [45, 48, 52, 58, 65, 72, 80, 88, 95, 102, 110, 125]
+df = pd.DataFrame({
+    "date": dates, "region": regions, "product": products,
+    "revenue": revenue_str, "costs": costs.round(2),
+    "units": units, "rating": rating, "returned": returned,
 })
-
-# Datos para gráfico de barras
-df_productos = pd.DataFrame({
-    'Producto': ['Producto A', 'Producto B', 'Producto C', 'Producto D', 'Producto E'],
-    'Ventas': [450, 320, 280, 190, 150]
-})
-
-# Datos para scatter
-df_clientes = pd.DataFrame({
-    'Edad': [25, 32, 28, 45, 38, 29, 51, 42, 35, 30],
-    'Gasto': [120, 200, 150, 300, 250, 180, 400, 320, 220, 160],
-    'Segmento': ['Joven', 'Adulto', 'Joven', 'Senior', 'Adulto', 'Joven', 'Senior', 'Adulto', 'Adulto', 'Joven']
-})
-
-# 2. Configurar el dashboard
-dashboard = HTML(
-    title="📊 Dashboard Ejecutivo - Demo",
-    theme="corporate_blue",  # Temas: corporate_blue, dark_enterprise, modern_green, void_indigo, glass_ocean, cyberpunk_neon
-    cols=12,  # Grid de 12 columnas
-    rows=12,  # 12 filas de altura
-    gap=16,
-    padding=20,
-    navbar={
-        "title": "📈 ViewX PRO",
-        "items": [
-            {"label": "Inicio", "link": "#"},
-            {"label": "Ventas", "link": "#"},
-            {"label": "Clientes", "link": "#"},
-            {"label": "Reportes", "link": "#"}
-        ]
-    }
+df["revenue"] = pd.to_numeric(
+    df["revenue"].str.replace(r"[$,]", "", regex=True), errors="coerce"
 )
 
-# 3. Añadir componentes (row, col, height, width)
-# Fila 1: KPIs
-dashboard.add_valuebox("Ventas Totales", "$2.8M", "💰", row=1, col=1, height=2, width=3)
-dashboard.add_valuebox("Beneficio Neto", "$942K", "📈", "#00A86B", row=1, col=4, height=2, width=3)
-dashboard.add_valuebox("Clientes Activos", "1,247", "👥", "#FF6B35", row=1, col=7, height=2, width=3)
-dashboard.add_valuebox("Tasa Conversión", "24.5%", "🎯", "#9B59B6", row=1, col=10, height=2, width=3)
+fig_bar = px.bar(
+    df.groupby("region")["revenue"].sum().reset_index().sort_values("revenue"),
+    x="revenue", y="region", orientation="h", color="region",
+    color_discrete_sequence=["#059669", "#10B981", "#34D399", "#6EE7B7"],
+)
+fig_bar.update_layout(showlegend=False)
 
-# Fila 2-5: Gráfico de líneas (ventas mensuales) - Método sencillo con datos
-dashboard.add_chart(
-    data=df_ventas,
-    chart_type="line",
-    x="Mes",
-    y="Ventas",
-    title="📈 Evolución de Ventas 2024",
-    row=3, col=1, height=10, width=6
+fig_line = px.line(
+    df.groupby("date")["revenue"].sum().reset_index(),
+    x="date", y="revenue", color_discrete_sequence=["#059669"],
 )
 
-# Fila 2-5: Gráfico de barras (productos) - Otro ejemplo sencillo
-dashboard.add_chart(
-    data=df_productos,
-    chart_type="bar",
-    x="Producto",
-    y="Ventas",
-    title="🏷️ Ventas por Producto",
-    row=3, col=7, height=10, width=6
+dash = HTML(
+    title="Manual Dashboard", theme="modern_green",
+    cols=12, rows=9, gap=14, padding=20,
+    navbar={"title": "Manual Dashboard",
+            "items": [{"label": "Home", "link": "#"}, {"label": "Analytics", "link": "#"}]},
+    authors=[{"name": "Data Team", "email": "data@acme.com"}],
+    data_button=True, df=df,
 )
 
-# 4. Generar el archivo
-dashboard.generate("mi_dashboard.html")
+dash.add_valuebox("Total Revenue", "$2.4M",  icon_key="dollar",  row=1, col=1,  height=2, width=3)
+dash.add_valuebox("Total Units",   "18.4K",  icon_key="box",     row=1, col=4,  height=2, width=3)
+dash.add_valuebox("Avg Rating",    "4.12",   icon_key="award",   row=1, col=7,  height=2, width=3)
+dash.add_valuebox("Return Rate",   "12%",    icon_key="percent", row=1, col=10, height=2, width=3)
 
+dash.add_infobox(df=df, variable="revenue",
+    info=["mean", "median", "std", "min", "max", "kurtosis", "skewness", "nulls"],
+    title="Revenue Stats", row=3, col=1, height=4, width=3)
+dash.add_chart(fig=fig_bar, title="Revenue by Region",
+    row=3, col=4, height=4, width=9, show_info_btn=True,
+    _info_stats={"Regions": "4", "Total": "$2.4M"})
+dash.add_chart(fig=fig_line, title="Daily Revenue Trend",
+    row=7, col=1, height=3, width=12, show_info_btn=True)
+
+dash.generate("demo6_manual.html")
 ```
 
 ![DashBoardViewX](https://raw.githubusercontent.com/GhostAnalyst30/ViewX/main/images_for_git/DashBoard_Example.png
@@ -347,10 +319,10 @@ report_path = dm.generate_report("demo_datamatrix_report.html", title="Análisis
 print(f"Reporte generado exitosamente en: {report_path}")
 ```
 
-## 🤝 Contribuciones
+## Contribuciones
 
 ¡Todas las ideas, mejoras y plantillas son bienvenidas!
 ViewX está diseñado para crecer y evolucionar con la comunidad.
 
-## 📬 Contacto:
+## Contacto:
 ascendraemmanuel@gmail.com
