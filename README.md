@@ -102,7 +102,7 @@ dashboard.generate("mi_dashboard.html")
 
 ```
 
-![DashBoardIris](https://raw.githubusercontent.com/GhostAnalyst30/ViewX/main/images_for_git/DashBoard_Example.png
+![DashBoardViewX](https://raw.githubusercontent.com/GhostAnalyst30/ViewX/main/images_for_git/DashBoard_Example.png
 )
 
 ### Crear una Presentacion
