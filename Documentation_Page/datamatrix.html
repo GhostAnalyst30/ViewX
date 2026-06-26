@@ -118,38 +118,37 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;backgro
   <aside class="sidebar">
     <div class="sidebar-title">Inicio</div>
     <div class="sidebar-links">
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/#overview" class="active">Descripcion general</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/#installation">Instalacion</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/#quickstart">Inicio rapido</a>
+      <a href="datamatrix.html#overview" class="active">Descripcion general</a>
+      <a href="datamatrix.html#installation">Instalacion</a>
+      <a href="datamatrix.html#quickstart">Inicio rapido</a>
     </div>
     <div class="sidebar-title">Clase DataMatrix</div>
     <div class="sidebar-links">
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/#constructor">Constructor</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/#clean_data">clean_data()</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/#generate_report">generate_report()</a>
-    </div>
-    <div class="sidebar-title">Internos</div>
-    <div class="sidebar-links">
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/#analyze_columns">_analyze_columns()</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/#get_column_type">_get_column_type()</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/#assemble_html">_assemble_html()</a>
+      <a href="datamatrix.html#constructor">Constructor</a>
+      <a href="datamatrix.html#analyze">analyze()</a>
+      <a href="datamatrix.html#summary">summary() / alerts() / highlights()</a>
+      <a href="datamatrix.html#clean_data">clean_data()</a>
+      <a href="datamatrix.html#filter_rows">filter_rows() / select_columns()</a>
+      <a href="datamatrix.html#generate_report">generate_report() / render_html()</a>
+      <a href="datamatrix.html#explore">Explore tab</a>
     </div>
   </aside>
 
   <main class="main-content">
     <div class="breadcrumb"><a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/index.html">ViewX</a> / DataMatrix</div>
     <h1 class="page-title">DataMatrix</h1>
-    <p class="page-desc">Clase para analisis exploratorio automatico de DataFrames. Genera reportes HTML interactivos con estadisticas, visualizaciones y alertas de calidad de datos.</p>
+    <p class="page-desc">Analisis exploratorio automatico (estilo ydata-profiling) con reporte HTML interactivo: filtra, visualiza y explora datos en el navegador.</p>
 
     <section class="section" id="overview">
       <h2>Descripcion general</h2>
-      <p>DataMatrix toma un DataFrame de pandas y genera automaticamente un reporte HTML completo con:</p>
+      <p>DataMatrix toma un DataFrame de pandas y genera un reporte HTML con pestanas:</p>
       <ul style="margin-left:1.5rem;color:var(--text-muted);">
-        <li>Resumen del dataset (filas, columnas, nulos, duplicados)</li>
-        <li>Analisis por variable (tipo, estadisticas, distribucion)</li>
-        <li>Alertas automaticas de calidad de datos</li>
-        <li>Visualizaciones interactivas con Plotly</li>
-        <li>Analisis bibliometrico opcional (si detecta columnas relevantes)</li>
+        <li><strong>Overview</strong> — KPIs, alertas y fortalezas del dataset</li>
+        <li><strong>Variables</strong> — perfil por columna con busqueda y graficos lazy</li>
+        <li><strong>Explore</strong> — filtrado interactivo, graficos en vivo y descarga CSV</li>
+        <li><strong>Correlations</strong> — pares numericos con mayor correlacion</li>
+        <li><strong>Bibliometrics</strong> — autores, journals, keywords (si aplica)</li>
+        <li><strong>Sample</strong> — muestra paginada del dataset</li>
       </ul>
     </section>
 
@@ -175,13 +174,14 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;backgro
         <pre><code class="language-python" id="quick-code">from viewx import DataMatrix
 from viewx.datasets import load_iris
 
-# Cargar datos
 df = load_iris()
 
-# Crear instancia y generar reporte
 dm = DataMatrix(df)
-dm.clean_data(drop_duplicates=True, fill_na=True)
-dm.generate_report("mi_reporte.html", title="Analisis Iris")</code></pre>
+dm.analyze()
+print(dm.summary(detailed=True))
+print("Alerts:", dm.alerts())
+print("Highlights:", dm.highlights())
+dm.generate_report("mi_reporte.html", title="Analisis Iris", theme="dark")</code></pre>
       </div>
     </section>
 
@@ -200,14 +200,39 @@ dm.generate_report("mi_reporte.html", title="Analisis Iris")</code></pre>
       </div>
     </section>
 
+    <section class="section" id="analyze">
+      <h2>analyze()</h2>
+      <div class="method-card">
+        <div class="method-name">analyze() &rarr; DataMatrix</div>
+        <div class="method-desc">Ejecuta el perfilado completo via AnalyzerEngine: tipos de columna, correlaciones, bibliometria y alertas. Retorna self para encadenamiento.</div>
+      </div>
+    </section>
+
+    <section class="section" id="summary">
+      <h2>summary() / alerts() / highlights()</h2>
+      <div class="method-card">
+        <div class="method-name">summary(detailed=False) &rarr; dict</div>
+        <div class="method-desc">Resumen del dataset. Con <code>detailed=True</code> incluye alertas, highlights, listas de columnas y correlaciones.</div>
+      </div>
+      <div class="method-card">
+        <div class="method-name">alerts() &rarr; List[str]</div>
+        <div class="method-desc">Advertencias de calidad: nulos, outliers, columnas constantes, duplicados, skewness.</div>
+      </div>
+      <div class="method-card">
+        <div class="method-name">highlights() &rarr; List[str]</div>
+        <div class="method-desc">Aspectos positivos del dataset: baja tasa de nulos, sin duplicados, correlaciones fuertes, cardinalidad usable.</div>
+      </div>
+    </section>
+
     <section class="section" id="clean_data">
       <h2>clean_data()</h2>
       <div class="method-card">
-        <div class="method-name">clean_data(drop_duplicates=True, fill_na=False)</div>
-        <div class="method-desc">Limpia el DataFrame eliminando duplicados y/o imputando valores faltantes. Los valores numericos se imputan con la mediana, los categoricos con la moda.</div>
+        <div class="method-name">clean_data(drop_duplicates=True, fill_na=False, na_strategy=None)</div>
+        <div class="method-desc">Limpia el DataFrame eliminando duplicados e imputando nulos. <code>na_strategy</code> permite reglas por columna: mean, median, mode, auto, drop.</div>
         <div class="param-list">
-          <div class="param"><span class="param-name">drop_duplicates</span> <span class="param-type">bool, default=True</span> - Si True, elimina filas duplicadas</div>
-          <div class="param"><span class="param-name">fill_na</span> <span class="param-type">bool, default=False</span> - Si True, imputa valores faltantes</div>
+          <div class="param"><span class="param-name">drop_duplicates</span> <span class="param-type">bool, default=True</span></div>
+          <div class="param"><span class="param-name">fill_na</span> <span class="param-type">bool | str, default=False</span> — True, "ffill" o "bfill"</div>
+          <div class="param"><span class="param-name">na_strategy</span> <span class="param-type">dict, optional</span> — estrategia por columna</div>
         </div>
       </div>
       <div class="code-block">
@@ -226,15 +251,37 @@ dm.clean_data(drop_duplicates=True, fill_na=True)</code></pre>
       </div>
     </section>
 
+    <section class="section" id="filter_rows">
+      <h2>filter_rows() / select_columns() / reset_data()</h2>
+      <div class="method-card">
+        <div class="method-name">filter_rows(query: str) &rarr; DataMatrix</div>
+        <div class="method-desc">Filtra filas con una expresion pandas <code>query()</code>. Invalida el analisis previo.</div>
+      </div>
+      <div class="method-card">
+        <div class="method-name">select_columns(columns: List[str]) &rarr; DataMatrix</div>
+        <div class="method-desc">Conserva solo las columnas indicadas.</div>
+      </div>
+      <div class="method-card">
+        <div class="method-name">reset_data() &rarr; DataMatrix</div>
+        <div class="method-desc">Restaura el DataFrame original antes de limpieza o filtros.</div>
+      </div>
+    </section>
+
     <section class="section" id="generate_report">
       <h2>generate_report()</h2>
       <div class="method-card">
-        <div class="method-name">generate_report(output_path="datamatrix_report.html", title="Viewx DataMatrix Report")</div>
-        <div class="method-desc">Genera el reporte HTML completo con todas las secciones: resumen general, analisis de variables, bibliometria (si aplica) y muestra de datos. Abre automaticamente el archivo en el navegador.</div>
+        <div class="method-name">generate_report(output_path, title, theme="dark", show=True, explorer_max_rows=5000)</div>
+        <div class="method-desc">Genera el reporte HTML completo y opcionalmente lo abre en el navegador.</div>
         <div class="param-list">
-          <div class="param"><span class="param-name">output_path</span> <span class="param-type">str</span> - Ruta del archivo HTML de salida</div>
-          <div class="param"><span class="param-name">title</span> <span class="param-type">str</span> - Titulo del reporte</div>
+          <div class="param"><span class="param-name">output_path</span> <span class="param-type">str</span></div>
+          <div class="param"><span class="param-name">title</span> <span class="param-type">str</span></div>
+          <div class="param"><span class="param-name">theme</span> <span class="param-type">str</span> — "dark" o "light"</div>
+          <div class="param"><span class="param-name">show</span> <span class="param-type">bool</span></div>
         </div>
+      </div>
+      <div class="method-card">
+        <div class="method-name">render_html(title, theme="dark", explorer_max_rows=5000) &rarr; str</div>
+        <div class="method-desc">Retorna el HTML como string sin escribir archivo.</div>
       </div>
       <div class="code-block">
         <div class="code-header">
@@ -251,39 +298,22 @@ print(f"Reporte generado: {path}")</code></pre>
       </div>
     </section>
 
-    <section class="section" id="analyze_columns">
-      <h2>_analyze_columns()</h2>
-      <div class="method-card">
-        <div class="method-name">_analyze_columns()</div>
-        <div class="method-desc">Metodo interno que analiza cada columna del DataFrame. Detecta el tipo de dato, calcula estadisticas descriptivas y genera alertas automaticas para problemas de calidad de datos.</div>
-      </div>
-      <p>Para columnas numericas calcula: mean, std, min, max, median. Genera alertas si:</p>
+    <section class="section" id="explore">
+      <h2>Explore tab (interactivo)</h2>
+      <p>La pestana <strong>Explore</strong> embebe un explorador client-side con:</p>
       <ul style="margin-left:1.5rem;color:var(--text-muted);">
-        <li>Una columna tiene mas del 50% de valores faltantes</li>
-        <li>Una columna tiene un solo valor constante</li>
+        <li>Filtros por columna (numericos, categoricos, fechas)</li>
+        <li>Constructor de graficos en vivo (bar, scatter, line, pie)</li>
+        <li>Tabla paginada con datos filtrados</li>
+        <li>Descarga CSV del subset activo</li>
       </ul>
-    </section>
-
-    <section class="section" id="get_column_type">
-      <h2>_get_column_type()</h2>
-      <div class="method-card">
-        <div class="method-name">_get_column_type(series) &rarr; str</div>
-        <div class="method-desc">Determina el tipo de una columna. Retorna: "numeric", "datetime", "boolean" o "categorical".</div>
-      </div>
-    </section>
-
-    <section class="section" id="assemble_html">
-      <h2>_assemble_html()</h2>
-      <div class="method-card">
-        <div class="method-name">_assemble_html(title, bib_results) &rarr; str</div>
-        <div class="method-desc">Ensambla el HTML final del reporte. Utiliza Bootstrap 5 para el layout y Plotly para los graficos interactivos. Incluye tabs para navegar entre secciones.</div>
-      </div>
+      <p>Los datos se serializan en JSON (hasta <code>explorer_max_rows</code> filas, default 5000).</p>
     </section>
   </main>
 </div>
 
 <footer>
-  <div class="footer-meta">ViewX &middot; Documentacion &middot; v2.3</div>
+  <div class="footer-meta">ViewX &middot; Documentacion &middot; v0.2.4</div>
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>

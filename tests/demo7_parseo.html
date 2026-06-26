@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Demo 7 · Parseo Automático de Strings</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <style>
+        
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        :root {
+            --vx-bg-page:       #F3F4F6;
+            --vx-bg-card:       #FFFFFF;
+            --vx-accent:        #0078D4;
+            --vx-text-primary:  #1A1A2E;
+            --vx-text-secondary:#6B7280;
+            --vx-card-radius:   14px;
+            --vx-shadow:        0 2px 12px rgba(0,120,212,0.08);
+            --vx-transition:    all 0.35s cubic-bezier(.16,1,.3,1);
+            --vx-ease:          cubic-bezier(0.32,0.72,0,1);
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--vx-bg-page);
+            color: var(--vx-text-primary);
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            overflow: hidden;
+            height: 100dvh; width: 100vw;
+        }
+        .vx-card {
+            background: var(--vx-bg-card);
+            border-radius: var(--vx-card-radius);
+            box-shadow: var(--vx-shadow);
+            transition: var(--vx-transition);
+            overflow: auto;
+            border: 1px solid rgba(128,128,128,0.08);
+            position: relative;
+        }
+        .vx-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--vx-accent), transparent);
+            opacity: 0;
+            transition: var(--vx-transition);
+        }
+        .vx-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(0,0,0,0.14);
+        }
+        .vx-card:hover::before { opacity: 1; }
+        .vx-card.vx-card-static:hover {
+            transform: none;
+            box-shadow: var(--vx-shadow);
+        }
+        .vx-card-header {
+            margin: 0; color: var(--vx-text-primary); font-weight: 600;
+            font-size: 0.88rem;
+            border-bottom: 2px solid rgba(128,128,128,0.12); padding-bottom: 6px;
+        }
+        .vx-kpi-body {
+            padding: 18px 20px; display: flex; align-items: center;
+            gap: 14px; height: 100%; position: relative; overflow: hidden;
+        }
+        .vx-sortable-table th { cursor: pointer; user-select: none; }
+        .vx-sortable-table th:hover { background: #0078D418; }
+        .plotly-graph-div, .js-plotly-plot, .plot-container {
+            width: 100% !important; height: 100% !important;
+        }
+        .vx-card::-webkit-scrollbar { width:5px; height:5px; }
+        .vx-card::-webkit-scrollbar-track { background: transparent; }
+        .vx-card::-webkit-scrollbar-thumb { background:#0078D455; border-radius:3px; }
+
+        /* ── Modal overlay ── */
+        .vx-modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7); z-index: 9000;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .vx-modal-overlay.open { display: flex; }
+        .vx-modal-box {
+            background: #FFFFFF;
+            border-radius: 16px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+            border: 1px solid #0078D433;
+            width: min(92vw, 1100px);
+            max-height: 88vh;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            animation: vxModalIn .22s cubic-bezier(.16,1,.3,1);
+        }
+        @keyframes vxModalIn {
+            from { opacity:0; transform: scale(.96) translateY(12px); }
+            to   { opacity:1; transform: scale(1) translateY(0); }
+        }
+        .vx-modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 24px 14px;
+            border-bottom: 1px solid #0078D422;
+            flex-shrink: 0;
+        }
+        .vx-modal-header h3 {
+            font-size: 1.05rem; font-weight: 700; color: var(--vx-text-primary);
+        }
+        .vx-modal-close {
+            background: none; border: none; cursor: pointer;
+            color: var(--vx-text-secondary); border-radius: 8px;
+            width:32px; height:32px; display:flex; align-items:center; justify-content:center;
+            transition: var(--vx-transition);
+        }
+        .vx-modal-close:hover { background:#0078D422; color:#0078D4; }
+        .vx-modal-body {
+            flex: 1; overflow: auto; padding: 20px 24px 24px;
+        }
+
+        /* ── Info FAB button on charts ── */
+        .vx-chart-info-btn {
+            position: absolute; bottom: 10px; right: 10px;
+            width: 32px; height: 32px; border-radius: 50%;
+            background: #0078D4EE; border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            transition: var(--vx-transition); z-index: 10;
+            opacity: 0.75;
+        }
+        .vx-chart-info-btn:hover { opacity:1; transform: scale(1.12); }
+        .vx-chart-info-btn svg { pointer-events: none; }
+
+        /* ── Data button ── */
+        .vx-data-fab {
+            position: fixed; bottom: 22px; right: 22px;
+            background: #0078D4; color: #fff;
+            border: none; border-radius: 50px;
+            padding: 10px 20px; font-weight: 700; font-size: 0.82rem;
+            cursor: pointer; z-index: 8000;
+            display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 18px #0078D455;
+            transition: var(--vx-transition); letter-spacing: 0.3px;
+        }
+        .vx-data-fab:hover { transform: translateY(-2px); box-shadow: 0 8px 28px #0078D466; }
+        
+        .dashboard-container {
+            padding: 74px 20px 20px;
+            height: 100vh; width: 100vw;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .vx-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-template-rows: repeat(7, 1fr);
+            gap: 14px;
+            flex: 1; min-height: 0;
+        }
+        .c1_1cb9ea { grid-area: 1 / 1 / 3 / 5; }
+.c2_5f2f70 { grid-area: 1 / 5 / 3 / 9; }
+.c3_9505d5 { grid-area: 1 / 9 / 3 / 13; }
+.c4_8864a5 { grid-area: 3 / 1 / 8 / 7; }
+.c5_e8612b { grid-area: 3 / 7 / 8 / 13; }
+        .vx-card { animation: vxCardIn .4s cubic-bezier(0.32,0.72,0,1) both; }
+        @keyframes vxCardIn {
+            from { opacity:0; transform:translateY(18px) scale(0.98); filter:blur(2px); }
+            to   { opacity:1; transform:translateY(0) scale(1); filter:blur(0); }
+        }
+        .vx-valuebox { animation: vxValueIn .5s cubic-bezier(0.32,0.72,0,1) both; }
+        @keyframes vxValueIn {
+            from { opacity:0; transform:translateY(12px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        .vx-card:nth-child(1){animation-delay:0.0s}
+.vx-card:nth-child(2){animation-delay:0.05s}
+.vx-card:nth-child(3){animation-delay:0.1s}
+.vx-card:nth-child(4){animation-delay:0.15000000000000002s}
+.vx-card:nth-child(5){animation-delay:0.2s}
+        @media(max-width:768px){
+            .vx-grid { display:flex; flex-direction:column; overflow-y:auto; }
+            .vx-card { min-height:220px; flex-shrink:0; }
+            body { overflow-y:auto; }
+        }
+    </style>
+</head>
+<body>
+    
+        <style>
+        .vx-navbar {
+            position:fixed; top:0; left:0; right:0; height:54px;
+            background:#FFFFFFF5; display:flex; align-items:center;
+            justify-content:space-between; padding:0 24px; z-index:1000;
+            box-shadow:0 1px 0 rgba(128,128,128,.12);
+            border-bottom:2px solid #0078D4;
+            backdrop-filter:blur(8px);
+        }
+        .nav-brand-wrap { display:flex; flex-direction:column; gap:1px; }
+        .nav-brand {
+            font-weight:800; font-size:1.1rem; color:#0078D4;
+            text-decoration:none; letter-spacing:-.4px;
+            display:flex; align-items:center; gap:7px;
+        }
+        .nav-author-wrap { font-size:.7rem; color:var(--vx-text-secondary); font-weight:500; }
+        .nav-author { font-size:.7rem; color:var(--vx-text-secondary); }
+        .nav-alink { color:#0078D4; text-decoration:none; }
+        .nav-alink:hover { text-decoration:underline; }
+        .nav-links { display:flex; gap:18px; }
+        .nav-link {
+            color:var(--vx-text-primary); text-decoration:none;
+            font-weight:600; font-size:.82rem; opacity:.75;
+            transition:var(--vx-transition);
+        }
+        .nav-link:hover { opacity:1; color:#0078D4; }
+        </style>
+        <nav class="vx-navbar">
+            <div class="nav-brand-wrap">
+                <a href="#" class="nav-brand"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0078D4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Demo 7 · Parseo Automático de Strings</a>
+                
+            </div>
+            <div class="nav-links"></div>
+        </nav>
+    <div class="dashboard-container">
+        <div class="vx-grid">
+            
+        <style>
+        .vb-c1_1cb9ea {
+            padding: 18px 20px; display: flex; align-items: center;
+            gap: 14px; border-left: 5px solid #0078D4;
+            height: 100%; position: relative; overflow: hidden;
+        }
+        .vb-c1_1cb9ea::after {
+            content:''; position:absolute; right:-18px; top:-18px;
+            width:80px; height:80px; border-radius:50%;
+            background:#0078D40D;
+        }
+        .vb-icon-c1_1cb9ea {
+            width: 48px; height: 48px; border-radius: 12px;
+            background: #0078D415;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .vb-label-c1_1cb9ea {
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.6px;
+            text-transform: uppercase; color: var(--vx-text-secondary);
+            margin-bottom: 5px;
+        }
+        .vb-val-c1_1cb9ea {
+            font-size: 1.75rem; font-weight: 800;
+            color: var(--vx-text-primary); line-height: 1; letter-spacing: -0.5px;
+        }
+        </style>
+        <div class="vx-card vb-c1_1cb9ea c1_1cb9ea vx-valuebox" id="c1_1cb9ea">
+            <div class="vb-icon-c1_1cb9ea"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0078D4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+            <div>
+                <div class="vb-label-c1_1cb9ea">ingresos</div>
+                <div class="vb-val-c1_1cb9ea">81.6K</div>
+            </div>
+        </div>
+        <style>
+        .vb-c2_5f2f70 {
+            padding: 18px 20px; display: flex; align-items: center;
+            gap: 14px; border-left: 5px solid #0078D4;
+            height: 100%; position: relative; overflow: hidden;
+        }
+        .vb-c2_5f2f70::after {
+            content:''; position:absolute; right:-18px; top:-18px;
+            width:80px; height:80px; border-radius:50%;
+            background:#0078D40D;
+        }
+        .vb-icon-c2_5f2f70 {
+            width: 48px; height: 48px; border-radius: 12px;
+            background: #0078D415;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .vb-label-c2_5f2f70 {
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.6px;
+            text-transform: uppercase; color: var(--vx-text-secondary);
+            margin-bottom: 5px;
+        }
+        .vb-val-c2_5f2f70 {
+            font-size: 1.75rem; font-weight: 800;
+            color: var(--vx-text-primary); line-height: 1; letter-spacing: -0.5px;
+        }
+        </style>
+        <div class="vx-card vb-c2_5f2f70 c2_5f2f70 vx-valuebox" id="c2_5f2f70">
+            <div class="vb-icon-c2_5f2f70"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0078D4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <div>
+                <div class="vb-label-c2_5f2f70">costos</div>
+                <div class="vb-val-c2_5f2f70">56.1K</div>
+            </div>
+        </div>
+        <style>
+        .vb-c3_9505d5 {
+            padding: 18px 20px; display: flex; align-items: center;
+            gap: 14px; border-left: 5px solid #0078D4;
+            height: 100%; position: relative; overflow: hidden;
+        }
+        .vb-c3_9505d5::after {
+            content:''; position:absolute; right:-18px; top:-18px;
+            width:80px; height:80px; border-radius:50%;
+            background:#0078D40D;
+        }
+        .vb-icon-c3_9505d5 {
+            width: 48px; height: 48px; border-radius: 12px;
+            background: #0078D415;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .vb-label-c3_9505d5 {
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.6px;
+            text-transform: uppercase; color: var(--vx-text-secondary);
+            margin-bottom: 5px;
+        }
+        .vb-val-c3_9505d5 {
+            font-size: 1.75rem; font-weight: 800;
+            color: var(--vx-text-primary); line-height: 1; letter-spacing: -0.5px;
+        }
+        </style>
+        <div class="vx-card vb-c3_9505d5 c3_9505d5 vx-valuebox" id="c3_9505d5">
+            <div class="vb-icon-c3_9505d5"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0078D4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg></div>
+            <div>
+                <div class="vb-label-c3_9505d5">margen%</div>
+                <div class="vb-val-c3_9505d5">185.00</div>
+            </div>
+        </div>
+        <style>
+        .pc-c4_8864a5 {
+            padding: 12px 14px; display: grid;
+            grid-template-rows: auto 1fr; height: 100%;
+            width: 100%; overflow: hidden; gap: 6px; position: relative;
+        }
+        .pc-c4_8864a5 h4 {
+            margin: 0; color: var(--vx-text-primary); font-weight: 600;
+            font-size: 0.88rem;
+            border-bottom: 2px solid #0078D428; padding-bottom: 6px;
+        }
+        .pcc-c4_8864a5 { position:relative; width:100%; height:100%; min-height:0; overflow:hidden; }
+        .pcc-c4_8864a5 .plotly-graph-div { width:100%!important; height:100%!important; }
+        </style>
+        <div class="vx-card pc-c4_8864a5 c4_8864a5 vx-card-static" id="c4_8864a5">
+            <h4 class="vx-card-header">ingresos vs costos</h4>
+            <div class="pcc-c4_8864a5">
+                <div>                            <div id="7be867e6-7c29-4779-abfa-73796cfe2ff5" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("7be867e6-7c29-4779-abfa-73796cfe2ff5")) {                    Plotly.newPlot(                        "7be867e6-7c29-4779-abfa-73796cfe2ff5",                        [{"hovertemplate":"ingresos=%{x}\u003cbr\u003ecostos=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"","marker":{"color":"#0078D4","opacity":0.65,"symbol":"circle"},"mode":"markers","name":"","orientation":"v","showlegend":false,"x":{"dtype":"i2","bdata":"1DBIJmA7+CrgR2w5"},"xaxis":"x","y":{"dtype":"i2","bdata":"NCEgHEgmpB\u002fgLgQp"},"yaxis":"y","type":"scatter","line":{"color":"#0078D4"}}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"ingresos"},"gridcolor":"rgba(0,120,212,0.1)","zerolinecolor":"rgba(0,120,212,0.1)","showgrid":true},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"costos"},"gridcolor":"rgba(0,120,212,0.1)","zerolinecolor":"rgba(0,120,212,0.1)","showgrid":true},"legend":{"tracegroupgap":0,"font":{"size":11}},"margin":{"t":24,"l":36,"r":18,"b":28},"title":{"text":""},"colorway":["#0078D4","#00B4D8","#48CAE4","#90E0EF","#ADE8F4"],"font":{"color":"#1A1A2E","family":"'Inter','Segoe UI',sans-serif"},"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","autosize":true,"hovermode":"closest"},                        {"displaylogo": false, "responsive": true, "autosizable": true}                    )                };            </script>        </div>
+                
+            <button class="vx-chart-info-btn" onclick="vxOpenModal('modal_c4_8864a5')"
+                    title="Chart details" aria-label="Open chart details">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </button>
+            </div>
+        </div>
+        
+            <div id="modal_c4_8864a5" class="vx-modal-overlay" role="dialog" aria-modal="true"
+                 aria-labelledby="modal_c4_8864a5-title">
+                <div class="vx-modal-box" style="max-width:520px">
+                    <div class="vx-modal-header">
+                        <h3 id="modal_c4_8864a5-title">ingresos vs costos</h3>
+                        <button class="vx-modal-close" aria-label="Close dialog"
+                                onclick="vxCloseModal('modal_c4_8864a5')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                    </div>
+                    <div class="vx-modal-body"><table style='width:100%;border-collapse:collapse'><tr><td style='padding:6px 10px;color:var(--vx-text-secondary);font-size:.8rem'>Pearson r</td><td style='padding:6px 10px;font-weight:600;font-size:.82rem'>0.981</td></tr><tr><td style='padding:6px 10px;color:var(--vx-text-secondary);font-size:.8rem'>ingresos mean</td><td style='padding:6px 10px;font-weight:600;font-size:.82rem'>13.6K</td></tr><tr><td style='padding:6px 10px;color:var(--vx-text-secondary);font-size:.8rem'>costos mean</td><td style='padding:6px 10px;font-weight:600;font-size:.82rem'>9.3K</td></tr></table></div>
+                </div>
+            </div>
+        <script>
+    (function(){
+        var cont = document.querySelector('.pcc-c4_8864a5');
+        var t;
+        function resize(){
+            var d = cont ? cont.querySelector('.plotly-graph-div') : null;
+            if(d && window.Plotly){
+                var w = cont.clientWidth, h = cont.clientHeight;
+                if(w>0&&h>0) Plotly.relayout(d,{width:w,height:h});
+            }
+        }
+        if(window.ResizeObserver && cont)
+            new ResizeObserver(function(){clearTimeout(t);t=setTimeout(resize,50);}).observe(cont);
+        window.addEventListener('resize',function(){clearTimeout(t);t=setTimeout(resize,100);});
+        (function wait(n){
+            var d=cont?cont.querySelector('.plotly-graph-div'):null;
+            if(d&&window.Plotly) resize();
+            else if(n>0) setTimeout(function(){wait(n-1);},120);
+        })(18);
+    })();
+    </script>
+        <style>
+        .pc-c5_e8612b {
+            padding: 12px 14px; display: grid;
+            grid-template-rows: auto 1fr; height: 100%;
+            width: 100%; overflow: hidden; gap: 6px; position: relative;
+        }
+        .pc-c5_e8612b h4 {
+            margin: 0; color: var(--vx-text-primary); font-weight: 600;
+            font-size: 0.88rem;
+            border-bottom: 2px solid #0078D428; padding-bottom: 6px;
+        }
+        .pcc-c5_e8612b { position:relative; width:100%; height:100%; min-height:0; overflow:hidden; }
+        .pcc-c5_e8612b .plotly-graph-div { width:100%!important; height:100%!important; }
+        </style>
+        <div class="vx-card pc-c5_e8612b c5_e8612b vx-card-static" id="c5_e8612b">
+            <h4 class="vx-card-header">ingresos vs margen%</h4>
+            <div class="pcc-c5_e8612b">
+                <div>                            <div id="e15484df-cc39-48c0-810c-413d65a0dda4" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("e15484df-cc39-48c0-810c-413d65a0dda4")) {                    Plotly.newPlot(                        "e15484df-cc39-48c0-810c-413d65a0dda4",                        [{"hovertemplate":"ingresos=%{x}\u003cbr\u003emargen%=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"","marker":{"color":"#0078D4","opacity":0.65,"symbol":"circle"},"mode":"markers","name":"","orientation":"v","showlegend":false,"x":{"dtype":"i2","bdata":"1DBIJmA7+CrgR2w5"},"xaxis":"x","y":{"dtype":"i1","bdata":"IBskGiMd"},"yaxis":"y","type":"scatter","line":{"color":"#0078D4"}}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"ingresos"},"gridcolor":"rgba(0,120,212,0.1)","zerolinecolor":"rgba(0,120,212,0.1)","showgrid":true},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"margen%"},"gridcolor":"rgba(0,120,212,0.1)","zerolinecolor":"rgba(0,120,212,0.1)","showgrid":true},"legend":{"tracegroupgap":0,"font":{"size":11}},"margin":{"t":24,"l":36,"r":18,"b":28},"title":{"text":""},"colorway":["#0078D4","#00B4D8","#48CAE4","#90E0EF","#ADE8F4"],"font":{"color":"#1A1A2E","family":"'Inter','Segoe UI',sans-serif"},"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","autosize":true,"hovermode":"closest"},                        {"displaylogo": false, "responsive": true, "autosizable": true}                    )                };            </script>        </div>
+                
+            <button class="vx-chart-info-btn" onclick="vxOpenModal('modal_c5_e8612b')"
+                    title="Chart details" aria-label="Open chart details">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </button>
+            </div>
+        </div>
+        
+            <div id="modal_c5_e8612b" class="vx-modal-overlay" role="dialog" aria-modal="true"
+                 aria-labelledby="modal_c5_e8612b-title">
+                <div class="vx-modal-box" style="max-width:520px">
+                    <div class="vx-modal-header">
+                        <h3 id="modal_c5_e8612b-title">ingresos vs margen%</h3>
+                        <button class="vx-modal-close" aria-label="Close dialog"
+                                onclick="vxCloseModal('modal_c5_e8612b')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                    </div>
+                    <div class="vx-modal-body"><table style='width:100%;border-collapse:collapse'><tr><td style='padding:6px 10px;color:var(--vx-text-secondary);font-size:.8rem'>Pearson r</td><td style='padding:6px 10px;font-weight:600;font-size:.82rem'>0.797</td></tr><tr><td style='padding:6px 10px;color:var(--vx-text-secondary);font-size:.8rem'>ingresos mean</td><td style='padding:6px 10px;font-weight:600;font-size:.82rem'>13.6K</td></tr><tr><td style='padding:6px 10px;color:var(--vx-text-secondary);font-size:.8rem'>margen% mean</td><td style='padding:6px 10px;font-weight:600;font-size:.82rem'>30.83</td></tr></table></div>
+                </div>
+            </div>
+        <script>
+    (function(){
+        var cont = document.querySelector('.pcc-c5_e8612b');
+        var t;
+        function resize(){
+            var d = cont ? cont.querySelector('.plotly-graph-div') : null;
+            if(d && window.Plotly){
+                var w = cont.clientWidth, h = cont.clientHeight;
+                if(w>0&&h>0) Plotly.relayout(d,{width:w,height:h});
+            }
+        }
+        if(window.ResizeObserver && cont)
+            new ResizeObserver(function(){clearTimeout(t);t=setTimeout(resize,50);}).observe(cont);
+        window.addEventListener('resize',function(){clearTimeout(t);t=setTimeout(resize,100);});
+        (function wait(n){
+            var d=cont?cont.querySelector('.plotly-graph-div'):null;
+            if(d&&window.Plotly) resize();
+            else if(n>0) setTimeout(function(){wait(n-1);},120);
+        })(18);
+    })();
+    </script>
+        </div>
+    </div>
+    
+    <script>
+    (function(){
+        function closeModal(el){ if(el) el.classList.remove('open'); }
+        document.addEventListener('keydown', function(e){
+            if(e.key !== 'Escape') return;
+            document.querySelectorAll('.vx-modal-overlay.open').forEach(function(m){
+                m.classList.remove('open');
+            });
+        });
+        window.vxOpenModal = function(id){
+            var m = document.getElementById(id);
+            if(m) m.classList.add('open');
+        };
+        window.vxCloseModal = function(id){
+            closeModal(document.getElementById(id));
+        };
+        document.querySelectorAll('.vx-modal-overlay').forEach(function(overlay){
+            overlay.addEventListener('click', function(e){
+                if(e.target === overlay) overlay.classList.remove('open');
+            });
+        });
+        var search = document.getElementById('vx-data-search');
+        if(search){
+            search.addEventListener('input', function(){
+                var q = search.value.toLowerCase();
+                document.querySelectorAll('.vx-prev-tbl tbody tr').forEach(function(row){
+                    row.style.display = row.textContent.toLowerCase().indexOf(q) >= 0 ? '' : 'none';
+                });
+            });
+        }
+    })();
+    </script>
+    <script>
+    (function(){
+        document.querySelectorAll('.vx-sortable-table').forEach(function(table){
+            table.querySelectorAll('th').forEach(function(th, colIdx){
+                th.style.cursor = 'pointer';
+                th.title = 'Click to sort';
+                th.addEventListener('click', function(){
+                    var tbody = table.querySelector('tbody');
+                    if(!tbody) return;
+                    var rows = Array.from(tbody.querySelectorAll('tr'));
+                    var asc = th.dataset.sortDir !== 'asc';
+                    table.querySelectorAll('th').forEach(function(h){ delete h.dataset.sortDir; });
+                    th.dataset.sortDir = asc ? 'asc' : 'desc';
+                    rows.sort(function(a, b){
+                        var av = (a.children[colIdx] || {}).textContent || '';
+                        var bv = (b.children[colIdx] || {}).textContent || '';
+                        var an = parseFloat(av.replace(/[^0-9.-]/g, ''));
+                        var bn = parseFloat(bv.replace(/[^0-9.-]/g, ''));
+                        var cmp = (!isNaN(an) && !isNaN(bn)) ? (an - bn) : av.localeCompare(bv);
+                        return asc ? cmp : -cmp;
+                    });
+                    rows.forEach(function(r){ tbody.appendChild(r); });
+                });
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

@@ -25,6 +25,7 @@ from .components import (
 )
 from .charts import AreaPlot, BarPlot, DonutPlot, LinePlot, PiePlot, PlotlyChart, ScatterPlot
 
+
 __all__ = [
     "Presentation",
     "Slide",

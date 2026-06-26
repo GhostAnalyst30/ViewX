@@ -1,30 +1,21 @@
-"""
-ViewX Dashboard Engine  ·  v3.0
-================================
-A Python-to-HTML dashboard builder powered by Plotly.
-
-Features
---------
-- ThemeManager  : 6 built-in themes + custom palette support
-- HTML class    : manual grid layout with add_valuebox / add_chart /
-                  add_table / add_text / add_infobox
-- auto_generate : smart one-liner that inspects any DataFrame and
-                  builds a fully wired dashboard automatically
-- data_button   : floating button → modal with data preview + describe()
-- info button   : every chart has a ⓘ button that opens a detail modal
-- SVG icons     : no emoji — professional Heroicon-style SVG icons
-"""
-
 from __future__ import annotations
 
 import json
 import os
 import uuid
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union, Literal
 
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+
+from viewx.shared import (
+    fig_to_html,
+    html_modal_runtime_js,
+    html_plotly_resize_js,
+    html_table_sort_js,
+    plotly_script_tag,
+)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -39,26 +30,28 @@ def _svg(path_d: str, size: int = 20, color: str = "currentColor") -> str:
     )
 
 
-ICONS_SVG = {
-    "chart-bar":    _svg('<rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/>'),
-    "trending-up":  _svg('<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>'),
-    "dollar":       _svg('<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'),
-    "hash":         _svg('<line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/>'),
-    "target":       _svg('<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>'),
-    "zap":          _svg('<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>'),
-    "box":          _svg('<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>'),
-    "award":        _svg('<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>'),
-    "users":        _svg('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'),
-    "activity":     _svg('<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>'),
-    "percent":      _svg('<line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>'),
-    "clock":        _svg('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'),
-    "info":         _svg('<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'),
-    "database":     _svg('<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>'),
-    "eye":          _svg('<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'),
-    "grid":         _svg('<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>'),
-    "maximize":     _svg('<path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>'),
-    "close":        _svg('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'),
+ICON_PATHS = {
+    "chart-bar":    '<rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/>',
+    "trending-up":  '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+    "dollar":       '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+    "hash":         '<line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/>',
+    "target":       '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+    "zap":          '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+    "box":          '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
+    "award":        '<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>',
+    "users":        '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    "activity":     '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+    "percent":      '<line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
+    "clock":        '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+    "info":         '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+    "database":     '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>',
+    "eye":          '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+    "grid":         '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
+    "maximize":     '<path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>',
+    "close":        '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
 }
+
+ICONS_SVG = {k: _svg(v) for k, v in ICON_PATHS.items()}
 
 # Cycle of icons for auto KPIs
 _KPI_ICON_CYCLE = [
@@ -69,13 +62,12 @@ _KPI_ICON_CYCLE = [
 
 def _kpi_icon(index: int, size: int = 22) -> str:
     key = _KPI_ICON_CYCLE[index % len(_KPI_ICON_CYCLE)]
-    path_d = ICONS_SVG[key]
-    # re-render at requested size
-    return _svg(
-        path_d.split('">')[1].rstrip("</svg>"),
-        size=size,
-    )
+    return _svg(ICON_PATHS[key], size=size)
 
+ThemeName = Literal[
+    "corporate_blue", "dark_enterprise", "modern_green",
+    "void_indigo", "glass_ocean", "cyberpunk_neon"
+]
 
 # ──────────────────────────────────────────────────────────────────────────────
 # THEME MANAGER
@@ -150,13 +142,13 @@ class ThemeManager:
         },
     }
 
-    def __init__(self, theme: Union[int, str, dict] = "corporate_blue"):
+    def __init__(self, theme: Union[int, ThemeName, dict] = "corporate_blue"):
         self._id_map = {t["id"]: k for k, t in self.BUILT_IN.items()}
         self.custom = False
         self.set_theme(theme)
 
     # ------------------------------------------------------------------
-    def set_theme(self, theme: Union[int, str, dict]):
+    def set_theme(self, theme: Union[int, ThemeName, dict]):
         if isinstance(theme, dict):
             self.current_theme_name = "custom"
             base = {
@@ -207,7 +199,8 @@ class ThemeManager:
             --vx-text-secondary:{text_secondary};
             --vx-card-radius:   14px;
             --vx-shadow:        {shadow};
-            --vx-transition:    all 0.28s cubic-bezier(.16,1,.3,1);
+            --vx-transition:    all 0.35s cubic-bezier(.16,1,.3,1);
+            --vx-ease:          cubic-bezier(0.32,0.72,0,1);
         }}
         *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
         body {{
@@ -215,7 +208,7 @@ class ThemeManager:
             color: var(--vx-text-primary);
             font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
             overflow: hidden;
-            height: 100vh; width: 100vw;
+            height: 100dvh; width: 100vw;
         }}
         .vx-card {{
             background: var(--vx-bg-card);
@@ -224,8 +217,37 @@ class ThemeManager:
             transition: var(--vx-transition);
             overflow: auto;
             border: 1px solid rgba(128,128,128,0.08);
+            position: relative;
         }}
-        .vx-card:hover {{ transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.14); }}
+        .vx-card::before {{
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--vx-accent), transparent);
+            opacity: 0;
+            transition: var(--vx-transition);
+        }}
+        .vx-card:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(0,0,0,0.14);
+        }}
+        .vx-card:hover::before {{ opacity: 1; }}
+        .vx-card.vx-card-static:hover {{
+            transform: none;
+            box-shadow: var(--vx-shadow);
+        }}
+        .vx-card-header {{
+            margin: 0; color: var(--vx-text-primary); font-weight: 600;
+            font-size: 0.88rem;
+            border-bottom: 2px solid rgba(128,128,128,0.12); padding-bottom: 6px;
+        }}
+        .vx-kpi-body {{
+            padding: 18px 20px; display: flex; align-items: center;
+            gap: 14px; height: 100%; position: relative; overflow: hidden;
+        }}
+        .vx-sortable-table th {{ cursor: pointer; user-select: none; }}
+        .vx-sortable-table th:hover {{ background: {accent}18; }}
         .plotly-graph-div, .js-plotly-plot, .plot-container {{
             width: 100% !important; height: 100% !important;
         }}
@@ -339,7 +361,7 @@ class HTML:
     def __init__(
         self,
         title: str = "ViewX Dashboard",
-        theme: Union[int, str, dict] = "corporate_blue",
+        theme: Union[int, ThemeName, dict] = "corporate_blue",
         cols: int = 12,
         rows: int = 12,
         gap: int = 16,
@@ -348,6 +370,7 @@ class HTML:
         authors: Union[str, List] = None,
         data_button: bool = False,
         df: pd.DataFrame = None,
+        verbose: bool = False,
     ):
         self.title = title
         self.theme_manager = ThemeManager(theme)
@@ -358,6 +381,8 @@ class HTML:
         self.navbar = navbar
         self.data_button = data_button
         self._df = df
+        self.verbose = verbose
+        self._needs_plotly = False
 
         if isinstance(authors, list):
             self.authors = [a if isinstance(a, dict) else {"name": a, "email": None} for a in authors]
@@ -369,6 +394,41 @@ class HTML:
         self.grid_css: List[str] = []
         self.components_html: List[str] = []
         self._component_counter = 0
+
+        if not self.title:
+            self.title = "Interactive Dashboard - ViewX"
+
+        self._log("HTML DASHBOARD")
+        self._log(f" - Title: {self.title}")
+        self._log(f" - Theme: {self.theme_manager.current_theme_name}")
+        self._log(f" - Layout: {self.cols} x {self.rows}")
+
+        if self.navbar:
+            self._log("\nNAVBAR CONFIGURATION:")
+            for key, value in self.navbar.items():
+                if key == "items":
+                    self._log(f" - {key}:")
+                    for item in value:
+                        dest = item.get("anchor") or item.get("link", "")
+                        self._log(f"    - {item['label']} -> {dest}")
+                else:
+                    self._log(f" - {key}: {value}")
+
+        if self.authors:
+            self._log("\nAUTHORS:")
+            for author in self.authors:
+                if author.get("email"):
+                    self._log(f" - {author['name']} ({author['email']})")
+                else:
+                    self._log(f" - {author['name']}")
+
+        if self._df is not None:
+            self._log(f"\nShape of DataFrame: {self._df.shape[0]} rows x {self._df.shape[1]} columns")
+
+    def _log(self, msg: str):
+        if self.verbose:
+            print(msg)
+
 
     # ── helpers ───────────────────────────────────────────────────────────────
     def _uid(self) -> str:
@@ -406,10 +466,16 @@ class HTML:
         box_color = color or accent
 
         # Build SVG icon
-        icon_svg = ICONS_SVG.get(icon_key, ICONS_SVG["chart-bar"])
-        # Rebuild at 24px with box_color stroke
-        svg_content = icon_svg.split('">')[1].rstrip("</svg>")
-        icon_rendered = _svg(svg_content, size=24, color=box_color)
+        icon_path = ICON_PATHS.get(icon_key, ICON_PATHS["chart-bar"])
+        icon_rendered = _svg(icon_path, size=24, color=box_color)
+
+        self._log("Adding ValueBox:")
+        self._log(f" - Title: {title}")
+        self._log(f" - Value: {value}")
+        self._log(f" - Icon: {icon_key}")
+        self._log(f" - Color: {box_color}")
+        self._log(f" - Position: (row {row}, col {col}), (height {height}, width {width})")
+    
 
         html = f"""
         <style>
@@ -439,7 +505,7 @@ class HTML:
             color: var(--vx-text-primary); line-height: 1; letter-spacing: -0.5px;
         }}
         </style>
-        <div class="vx-card vb-{uid} {uid}">
+        <div class="vx-card vb-{uid} {uid} vx-valuebox" id="{uid}">
             <div class="vb-icon-{uid}">{icon_rendered}</div>
             <div>
                 <div class="vb-label-{uid}">{title}</div>
@@ -500,6 +566,13 @@ class HTML:
             "nunique":  ("Unique",   f"{series.nunique():,}"),
         }
 
+        self._log("Adding InfoBox:")
+        self._log(f" - Title: {card_title}")
+        self._log(f" - Variable: {variable}")
+        self._log(f" - Stats: {', '.join(info)}")
+        self._log(f" - Color: {box_color}")
+        self._log(f" - Position: (row {row}, col {col}), (height {height}, width {width})")
+
         rows_html = ""
         for key in info:
             if key not in stat_map:
@@ -533,7 +606,7 @@ class HTML:
             font-size: 0.82rem; font-weight: 700; color: var(--vx-text-primary);
         }}
         </style>
-        <div class="vx-card ib-card-{uid} {uid}">
+        <div class="vx-card ib-card-{uid} {uid}" id="{uid}">
             <div class="ib-title-{uid}">{card_title}</div>
             <div class="ib-rows-{uid}">{rows_html}</div>
         </div>"""
@@ -541,10 +614,15 @@ class HTML:
         return self
 
     # ── add_chart ─────────────────────────────────────────────────────────────
+    ChartType = Literal[
+        "line", "bar", "bar_h", "scatter", "area",
+        "pie", "donut", "histogram", "box", "violin",
+        "heatmap", "funnel", "treemap", "bubble"
+    ]
     def add_chart(
         self,
         data=None, fig=None,
-        chart_type: str = "line",
+        chart_type: ChartType = "line",
         x=None, y=None, z=None,
         title: str = "",
         row: int = 1, col: int = 1, height: int = 6, width: int = 6,
@@ -559,16 +637,64 @@ class HTML:
 
         if fig is not None:
             chart_fig = fig
+            # ← NUEVO: aplicar paleta y fondo del tema
+            chart_fig.update_layout(
+                colorway=colors,
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font_color=text,
+                font_family="'Inter','Segoe UI',sans-serif",
+            )
+            first_trace = chart_fig.data[0] if chart_fig.data else None
+            if first_trace and hasattr(first_trace, "line") and first_trace.line.color is None:
+                chart_fig.update_traces(
+                    selector=dict(type="scatter"),
+                    line=dict(color=colors[0]),
+                )
         elif data is not None and x is not None and y is not None:
             kw = dict(color_discrete_sequence=colors)
+            
             if chart_type == "bar":
-                chart_fig = px.bar(data, x=x, y=y, title=title, **kw)
+                chart_fig = px.bar(data, x=x, y=y, title=title, **kw  )
+            elif chart_type == "bar_h":
+                chart_fig = px.bar(data, x=y, y=x, orientation="h", title=title, **kw)
             elif chart_type == "scatter":
                 chart_fig = px.scatter(data, x=x, y=y, color=z, title=title, **kw)
             elif chart_type == "area":
                 chart_fig = px.area(data, x=x, y=y, title=title, **kw)
-            else:
+            elif chart_type == "line":
                 chart_fig = px.line(data, x=x, y=y, title=title, **kw)
+            elif chart_type == "pie":
+                chart_fig = px.pie(data, names=x, values=y, title=title,
+                                color_discrete_sequence=colors)
+            elif chart_type == "donut":
+                chart_fig = px.pie(data, names=x, values=y, hole=0.45, title=title,
+                                color_discrete_sequence=colors)
+            elif chart_type == "histogram":
+                chart_fig = px.histogram(data, x=x, title=title, **kw)
+            elif chart_type == "box":
+                chart_fig = px.box(data, x=x, y=y, title=title, **kw)
+            elif chart_type == "violin":
+                chart_fig = px.violin(data, x=x, y=y, title=title, box=True, **kw)
+            elif chart_type == "heatmap":
+                # x=columna categoria fila, y=columna categoria col, z=valor numérico
+                pivot = data.pivot_table(index=x, columns=y, values=z, aggfunc="sum")
+                chart_fig = go.Figure(go.Heatmap(
+                    z=pivot.values, x=list(pivot.columns),
+                    y=list(pivot.index), colorscale=colors[::-1],
+                ))
+            elif chart_type == "funnel":
+                chart_fig = px.funnel(data, x=y, y=x, title=title, **kw)
+            elif chart_type == "treemap":
+                # x=path (lista de cols categoricas), y=values
+                path_cols = x if isinstance(x, list) else [x]
+                chart_fig = px.treemap(data, path=path_cols, values=y,
+                                    title=title, color_discrete_sequence=colors)
+            elif chart_type == "bubble":
+                # x, y normales; z=tamaño de burbuja
+                chart_fig = px.scatter(data, x=x, y=y, size=z, title=title, **kw)
+            else:
+                raise ValueError(f"chart_type '{chart_type}' no reconocido.")
         else:
             raise ValueError("Provide fig or (data + x + y)")
 
@@ -589,10 +715,19 @@ class HTML:
         chart_fig.update_xaxes(gridcolor=grid_color, zerolinecolor=grid_color, showgrid=True)
         chart_fig.update_yaxes(gridcolor=grid_color, zerolinecolor=grid_color, showgrid=True)
 
-        plot_html = chart_fig.to_html(
-            full_html=False, include_plotlyjs="cdn",
-            config={"displaylogo": False, "responsive": True, "autosizable": True},
-        )
+        self._needs_plotly = True
+        plot_html = fig_to_html(chart_fig, include_js=False)
+
+        self._log("Adding Chart:")
+        self._log(f" - Title: {title}")
+        if chart_fig:
+            self._log(f" - Type: {chart_fig.data[0].type if chart_fig.data else 'empty'}")
+        if data is not None:
+            self._log(f" - Data: {data.shape[0]} rows x {data.shape[1]} cols")
+            self._log(f"   - x: {x}, y: {y}, z: {z}")
+        self._log(f" - Position: (row {row}, col {col}), (height {height}, width {width})")
+        if fig is not None and chart_fig:
+            self._log(" - Figure provided directly")
 
         # Info button + modal
         info_btn_html = ""
@@ -609,23 +744,23 @@ class HTML:
             else:
                 stats_content = "<p style='color:var(--vx-text-secondary);font-size:.85rem'>No additional statistics available.</p>"
 
-            close_icon = ICONS_SVG["close"].split('">')[1].rstrip("</svg>")
-            close_svg = _svg(close_icon, size=16)
-            info_icon_svg = ICONS_SVG["info"].split('">')[1].rstrip("</svg>")
-            info_svg = _svg(info_icon_svg, size=14, color="#fff")
+            close_svg = _svg(ICON_PATHS["close"], size=16)
+            info_svg = _svg(ICON_PATHS["info"], size=14, color="#fff")
 
             info_btn_html = f"""
-            <button class="vx-chart-info-btn" onclick="document.getElementById('{modal_id}').classList.add('open')"
-                    title="Variable info">
+            <button class="vx-chart-info-btn" onclick="vxOpenModal('{modal_id}')"
+                    title="Chart details" aria-label="Open chart details">
                 {info_svg}
             </button>"""
 
             info_modal_html = f"""
-            <div id="{modal_id}" class="vx-modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+            <div id="{modal_id}" class="vx-modal-overlay" role="dialog" aria-modal="true"
+                 aria-labelledby="{modal_id}-title">
                 <div class="vx-modal-box" style="max-width:520px">
                     <div class="vx-modal-header">
-                        <h3>{title or "Chart Details"}</h3>
-                        <button class="vx-modal-close" onclick="document.getElementById('{modal_id}').classList.remove('open')">{close_svg}</button>
+                        <h3 id="{modal_id}-title">{title or "Chart Details"}</h3>
+                        <button class="vx-modal-close" aria-label="Close dialog"
+                                onclick="vxCloseModal('{modal_id}')">{close_svg}</button>
                     </div>
                     <div class="vx-modal-body">{stats_content}</div>
                 </div>
@@ -646,37 +781,54 @@ class HTML:
         .pcc-{uid} {{ position:relative; width:100%; height:100%; min-height:0; overflow:hidden; }}
         .pcc-{uid} .plotly-graph-div {{ width:100%!important; height:100%!important; }}
         </style>
-        <div class="vx-card pc-{uid} {uid}">
-            {f'<h4>{title}</h4>' if title else '<div></div>'}
+        <div class="vx-card pc-{uid} {uid} vx-card-static" id="{uid}">
+            {f'<h4 class="vx-card-header">{title}</h4>' if title else '<div></div>'}
             <div class="pcc-{uid}">
                 {plot_html}
                 {info_btn_html}
             </div>
         </div>
         {info_modal_html}
-        <script>
-        (function(){{
-            var cont = document.querySelector('.pcc-{uid}');
-            var t;
-            function resize(){{
-                var d = cont ? cont.querySelector('.plotly-graph-div') : null;
-                if(d && window.Plotly){{
-                    var w = cont.clientWidth, h = cont.clientHeight;
-                    if(w>0&&h>0) Plotly.relayout(d,{{width:w,height:h}});
-                }}
-            }}
-            if(window.ResizeObserver && cont)
-                new ResizeObserver(()=>{{clearTimeout(t);t=setTimeout(resize,50);}}).observe(cont);
-            window.addEventListener('resize',()=>{{clearTimeout(t);t=setTimeout(resize,100);}});
-            (function wait(n){{
-                var d=cont?cont.querySelector('.plotly-graph-div'):null;
-                if(d&&window.Plotly) resize();
-                else if(n>0) setTimeout(()=>wait(n-1),120);
-            }})(18);
-        }})();
-        </script>"""
+        <script>{html_plotly_resize_js(f'pcc-{uid}')}</script>"""
         self.components_html.append(html)
         return self
+
+    """
+    # line / area
+    dash.add_chart(data=df, chart_type="line",  x="fecha",     y="ventas",    ...)
+    dash.add_chart(data=df, chart_type="area",  x="mes",       y="ingresos",  ...)
+
+    # bar / bar_h
+    dash.add_chart(data=df, chart_type="bar",   x="region",    y="unidades",  ...)
+    dash.add_chart(data=df, chart_type="bar_h", x="producto",  y="ventas",    ...)
+
+    # scatter con color por categoría
+    dash.add_chart(data=df, chart_type="scatter", x="precio", y="margen", z="categoria", ...)
+
+    # bubble — z es el tamaño de la burbuja
+    dash.add_chart(data=df, chart_type="bubble", x="precio", y="margen", z="volumen", ...)
+
+    # histogram — solo x
+    dash.add_chart(data=df, chart_type="histogram", x="edad", ...)
+
+    # box / violin — x puede ser None si no hay categoría
+    dash.add_chart(data=df, chart_type="box",    x="region", y="salario", ...)
+    dash.add_chart(data=df, chart_type="violin", x="region", y="salario", ...)
+
+    # pie / donut
+    dash.add_chart(data=df["pais"].value_counts().reset_index(),
+                chart_type="donut", x="pais", y="count", ...)
+
+    # funnel
+    dash.add_chart(data=df, chart_type="funnel", x="etapa", y="usuarios", ...)
+
+    # treemap — x puede ser lista para jerarquía
+    dash.add_chart(data=df, chart_type="treemap", x=["continente","pais"], y="poblacion", ...)
+
+    # heatmap — necesita los tres
+    pivot_df = df  # debe tener cols para fila, columna y valor
+    dash.add_chart(data=df, chart_type="heatmap", x="mes", y="region", z="ventas", ...)
+    """
 
     # ── add_table ─────────────────────────────────────────────────────────────
     def add_table(
@@ -686,7 +838,17 @@ class HTML:
         uid = self._uid()
         self._register_block(uid, row, col, height, width)
         _, _, accent, _ = self.theme_manager.get_colors()
-        table_html = df.to_html(classes=f"vxt-{uid}", border=0, index=False, max_rows=200)
+        table_html = df.to_html(
+            classes=f"vxt-{uid} vx-sortable-table",
+            border=0,
+            index=False,
+            max_rows=200,
+        )
+
+        self._log("Adding Table:")
+        self._log(f" - Title: {title}")
+        self._log(f" - DataFrame: {df.shape[0]} rows x {df.shape[1]} cols")
+        self._log(f" - Position: (row {row}, col {col}), (height {height}, width {width})")
 
         html = f"""
         <style>
@@ -702,8 +864,8 @@ class HTML:
         .vxt-{uid} td {{ padding:7px 8px; border-bottom:1px solid rgba(128,128,128,.1); color:var(--vx-text-primary); }}
         .vxt-{uid} tr:hover {{ background:{accent}07; }}
         </style>
-        <div class="vx-card tc-{uid} {uid}">
-            {f'<h4>{title}</h4>' if title else ""}
+        <div class="vx-card tc-{uid} {uid} vx-card-static" id="{uid}">
+            {f'<h4 class="vx-card-header">{title}</h4>' if title else ""}
             <div class="tcc-{uid}">{table_html}</div>
         </div>"""
         self.components_html.append(html)
@@ -718,12 +880,16 @@ class HTML:
         self._register_block(uid, row, col, height, width)
         _, _, accent, _ = self.theme_manager.get_colors()
 
+        self._log("Adding Text:")
+        self._log(f" - Content: {content[:100]}{'...' if len(content)>100 else content}")
+        self._log(f" - Position: (row {row}, col {col}), (height {height}, width {width})")
+
         html = f"""
         <style>
         .txc-{uid} {{ padding:20px; line-height:1.6; color:var(--vx-text-primary); height:100%; overflow:auto; font-size:.88rem; }}
         .txc-{uid} h2,.txc-{uid} h3 {{ color:{accent}; margin-top:0; font-weight:700; }}
         </style>
-        <div class="vx-card txc-{uid} {uid}">{content}</div>"""
+        <div class="vx-card txc-{uid} {uid}" id="{uid}">{content}</div>"""
         self.components_html.append(html)
         return self
 
@@ -732,22 +898,38 @@ class HTML:
         if not self.navbar:
             return ""
         _, bg_card, accent, _ = self.theme_manager.get_colors()
-        items_html = "".join(
-            f'<a href="{i["link"]}" class="nav-link">{i["label"]}</a>'
-            for i in self.navbar.get("items", [])
-        )
+        items_html = ""
+        for i in self.navbar.get("items", []):
+            anchor = i.get("anchor")
+            if anchor:
+                href = f"#{anchor}"
+                onclick = f"onclick=\"event.preventDefault();document.getElementById('{anchor}')?.scrollIntoView({{behavior:'smooth',block:'start'}})\""
+                items_html += f'<a href="{href}" class="nav-link" {onclick}>{i["label"]}</a>'
+            else:
+                items_html += f'<a href="{i.get("link", "#")}" class="nav-link">{i["label"]}</a>'
         author_block = ""
         if self.authors:
             parts = []
             for a in self.authors:
-                if a["email"]:
-                    parts.append(f'<a href="mailto:{a["email"]}" class="nav-author nav-alink">{a["name"]}</a>')
+
+                if isinstance(a, str):
+                    parts.append(f'<span class="nav-author">{a}</span>')
+                    continue
+
+                name = a.get("name", "Unknown")
+                email = a.get("email")
+
+                if email:
+                    parts.append(
+                        f'<a href="mailto:{email}" class="nav-author nav-alink">{name}</a>'
+                    )
                 else:
-                    parts.append(f'<span class="nav-author">{a["name"]}</span>')
+                    parts.append(
+                        f'<span class="nav-author">{name}</span>'
+                    )
             author_block = f'<div class="nav-author-wrap">by {", ".join(parts)}</div>'
 
-        grid_icon = ICONS_SVG["grid"].split('">')[1].rstrip("</svg>")
-        brand_icon = _svg(grid_icon, size=18, color=accent)
+        brand_icon = _svg(ICON_PATHS["grid"], size=18, color=accent)
 
         return f"""
         <style>
@@ -799,10 +981,8 @@ class HTML:
         # Data preview (first 100 rows)
         preview_html = df.head(100).to_html(border=0, index=False, classes="vx-prev-tbl")
 
-        close_icon = ICONS_SVG["close"].split('">')[1].rstrip("</svg>")
-        close_svg = _svg(close_icon, size=16)
-        db_icon = ICONS_SVG["database"].split('">')[1].rstrip("</svg>")
-        db_svg = _svg(db_icon, size=16, color="#fff")
+        close_svg = _svg(ICON_PATHS["close"], size=16)
+        db_svg = _svg(ICON_PATHS["database"], size=16, color="#fff")
 
         n_rows, n_cols_total = df.shape
         numerics_count = len(df.select_dtypes(include="number").columns)
@@ -846,18 +1026,23 @@ class HTML:
         @media(max-width:700px){{ .vx-dm-layout{{ grid-template-columns:1fr; }} }}
         </style>
 
-        <div id="vx-data-modal" class="vx-modal-overlay"
-             onclick="if(event.target===this)this.classList.remove('open')">
-            <div class="vx-modal-box">
+        <div id="vx-data-modal" class="vx-modal-overlay" role="dialog" aria-modal="true"
+             aria-labelledby="vx-data-modal-title">
+            <div class="vx-modal-box" style="width: min(98vw, 1600px); max-height: 95vh;">
                 <div class="vx-modal-header">
-                    <h3>Dataset Overview</h3>
-                    <button class="vx-modal-close"
-                            onclick="document.getElementById('vx-data-modal').classList.remove('open')">
+                    <h3 id="vx-data-modal-title">Dataset Overview</h3>
+                    <button class="vx-modal-close" aria-label="Close dialog"
+                            onclick="vxCloseModal('vx-data-modal')">
                         {close_svg}
                     </button>
                 </div>
                 <div class="vx-modal-body">
                     {summary_badge}
+                    <div style="margin-bottom:12px">
+                        <input id="vx-data-search" type="search" placeholder="Filter preview rows..."
+                               aria-label="Filter preview rows"
+                               style="width:100%;max-width:360px;padding:8px 12px;border-radius:8px;border:1px solid {accent}33;background:transparent;color:var(--vx-text-primary);font-size:.82rem"/>
+                    </div>
                     <div class="vx-dm-layout">
                         <div class="vx-dm-pane">
                             <div class="vx-dm-pane-title">Data Preview</div>
@@ -872,15 +1057,16 @@ class HTML:
             </div>
         </div>
 
-        <button class="vx-data-fab"
-                onclick="document.getElementById('vx-data-modal').classList.add('open')">
+        <button class="vx-data-fab" aria-label="View dataset"
+                onclick="vxOpenModal('vx-data-modal')">
             {db_svg} View Data
         </button>"""
 
     # ── generate ──────────────────────────────────────────────────────────────
-    def generate(self, filename: str = "dashboard.html") -> str:
+    def generate(self, filename: str = "dashboard.html", show: bool = True) -> str:
         _, _, accent, _ = self.theme_manager.get_colors()
         nav_offset = self.padding + 54 if self.navbar else self.padding
+        plotly_head = plotly_script_tag() if self._needs_plotly else ""
 
         full_html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -888,6 +1074,7 @@ class HTML:
     <title>{self.title}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    {plotly_head}
     <style>
         {self.theme_manager.get_global_css()}
         .dashboard-container {{
@@ -903,12 +1090,17 @@ class HTML:
             flex: 1; min-height: 0;
         }}
         {chr(10).join(self.grid_css)}
-        .vx-card {{ animation: vxFadeUp .35s ease-out both; }}
-        @keyframes vxFadeUp {{
-            from {{ opacity:0; transform:translateY(10px); }}
+        .vx-card {{ animation: vxCardIn .4s cubic-bezier(0.32,0.72,0,1) both; }}
+        @keyframes vxCardIn {{
+            from {{ opacity:0; transform:translateY(18px) scale(0.98); filter:blur(2px); }}
+            to   {{ opacity:1; transform:translateY(0) scale(1); filter:blur(0); }}
+        }}
+        .vx-valuebox {{ animation: vxValueIn .5s cubic-bezier(0.32,0.72,0,1) both; }}
+        @keyframes vxValueIn {{
+            from {{ opacity:0; transform:translateY(12px); }}
             to   {{ opacity:1; transform:translateY(0); }}
         }}
-        {chr(10).join([f".vx-card:nth-child({i+1}){{animation-delay:{i*.04}s}}" for i in range(len(self.components_html))])}
+        {chr(10).join([f".vx-card:nth-child({i+1}){{animation-delay:{i*0.05}s}}" for i in range(len(self.components_html))])}
         @media(max-width:768px){{
             .vx-grid {{ display:flex; flex-direction:column; overflow-y:auto; }}
             .vx-card {{ min-height:220px; flex-shrink:0; }}
@@ -924,14 +1116,21 @@ class HTML:
         </div>
     </div>
     {self._build_data_modal()}
+    <script>{html_modal_runtime_js()}</script>
+    <script>{html_table_sort_js()}</script>
 </body>
 </html>"""
 
         with open(filename, "w", encoding="utf-8") as f:
             f.write(full_html)
-        print(f"✅  Dashboard → {os.path.abspath(filename)}")
-        import webbrowser
-        webbrowser.open(filename)
+
+        if show:
+            import webbrowser
+            webbrowser.open(filename)
+
+        self._log("Dashboard generated successfully.")
+        self._log(f" - Total components: {len(self.components_html)}")
+        self._log(f" - Filename: {filename}")
         return filename
 
     # ── auto_generate ─────────────────────────────────────────────────────────
@@ -945,33 +1144,22 @@ class HTML:
         filename: str = "auto_dashboard.html",
         navbar: dict = None,
         authors=None,
-        method_valuebox: str = "sum",
+        method_valuebox: Literal["sum","mean","median","max","min"] = "sum",
         data_button: bool = False,
         color_palette: List[str] = None,
-        layout=None,   # legacy compat, ignored
+        layout=None,
+        show: bool = True,
+        verbose: bool = False,
     ) -> str:
         """
-        Builds a professional dashboard from any DataFrame using a single
-        intelligent layout template.
+        Builds a professional dashboard from any DataFrame using intelligent layout.
 
-        The engine first runs a statistical study of the data:
-          - Selects the most complete numeric variables (fewest nulls, highest variance)
-          - Finds the 2 pairs with highest absolute Pearson correlation → scatter
-          - Picks the most informative categorical column (best cardinality)
-          - Then assembles everything in a proportional, non-elongated grid
-
-        Parameters
-        ----------
-        data            : source DataFrame
-        columns         : column subset (None = all)
-        template        : theme name / id / custom dict
-        title           : dashboard title
-        filename        : output HTML path
-        navbar          : dict {"title":..., "items":[{"label":..,"link":..}]}
-        authors         : str | list[str | dict{"name","email"}]
-        method_valuebox : "sum"|"mean"|"median"|"max"|"min"
-        data_button     : floating "View Data" button with modal preview
-        color_palette   : list of hex colors to override theme palette
+        layout options:
+          - None / "default": standard KPI strip + charts
+          - "kpi_focus": taller KPI row, fewer charts
+          - "chart_focus": compact KPIs, charts dominate
+          - "table_first": data table on main grid
+          - list[dict]: custom placement with type kpi/chart/table + row/col/height/width
         """
 
         # ── 1. Column selection ───────────────────────────────────────────────
@@ -1005,8 +1193,8 @@ class HTML:
             new = str(df[col].dtype)
             if old != new:
                 coerced[col] = f"{old} → {new}"
-        if coerced:
-            print("🔄  Auto coercion:", ", ".join(f"{k}: {v}" for k, v in coerced.items()))
+        if coerced and verbose:
+            print("Auto coercion:", ", ".join(f"{k}: {v}" for k, v in coerced.items()))
 
         # ── 3. Classify columns ───────────────────────────────────────────────
         def _classify(s: pd.Series) -> str:
@@ -1024,8 +1212,9 @@ class HTML:
         for c in all_dt:
             df[c] = pd.to_datetime(df[c])
 
-        print(f"📊  Detected → numeric:{len(all_num)}  categorical:{len(all_cat)}  "
-              f"datetime:{len(all_dt)}  boolean:{len(all_bool)}")
+        if verbose:
+            print(f"Detected -> numeric:{len(all_num)}  categorical:{len(all_cat)}  "
+                  f"datetime:{len(all_dt)}  boolean:{len(all_bool)}")
 
         # ── 4. Statistical study: rank & select best variables ────────────────
         #
@@ -1063,15 +1252,16 @@ class HTML:
                     scatter_pairs.append((r, ranked_num[i], ranked_num[j]))
             scatter_pairs.sort(reverse=True)
 
-        print("📈  Variable scores:")
-        for col in ranked_num[:6]:
-            sc = _score_numeric(col)
-            null_pct = df[col].isna().mean() * 100
-            print(f"    {col:25s}  score={sc:.3f}  nulls={null_pct:.1f}%")
-        if scatter_pairs:
-            print("🔗  Top correlations:")
-            for r, a, b in scatter_pairs[:3]:
-                print(f"    {a} × {b}  r={r:.3f}")
+        if verbose:
+            print("Variable scores:")
+            for col in ranked_num[:6]:
+                sc = _score_numeric(col)
+                null_pct = df[col].isna().mean() * 100
+                print(f"    {col:25s}  score={sc:.3f}  nulls={null_pct:.1f}%")
+            if scatter_pairs:
+                print("Top correlations:")
+                for r, a, b in scatter_pairs[:3]:
+                    print(f"    {a} x {b}  r={r:.3f}")
 
         # ── 5. Palette & theme setup ──────────────────────────────────────────
         tm_tmp = ThemeManager(template)
@@ -1110,8 +1300,26 @@ class HTML:
         MAX_KPIS   = 4
         MAX_CHARTS = 4
         COLS       = 12
-        KPI_H      = 2    # grid rows for KPI strip
-        CHART_H    = 5    # grid rows per chart row
+        KPI_H      = 2
+        CHART_H    = 5
+        layout_preset = layout if isinstance(layout, str) else "default"
+        add_main_table = False
+        table_slot = None
+        custom_layout = layout if isinstance(layout, list) else None
+
+        if layout_preset == "kpi_focus":
+            KPI_H = 3
+            MAX_CHARTS = 2
+            CHART_H = 4
+        elif layout_preset == "chart_focus":
+            KPI_H = 1
+            MAX_KPIS = 2
+            CHART_H = 5
+        elif layout_preset == "table_first":
+            add_main_table = True
+            table_slot = (8, 1, 4, COLS)
+            CHART_H = 4
+            MAX_CHARTS = 2
 
         # --- KPIs (top 4 numeric, best scores) ---
         kpi_cols   = ranked_num[:MAX_KPIS]
@@ -1239,7 +1447,8 @@ class HTML:
         n_charts = min(len(charts), MAX_CHARTS)
         charts   = charts[:n_charts]
 
-        print(f"🗂   Layout → {n_kpis} KPIs, {n_charts} charts")
+        if verbose:
+            print(f"Layout -> {n_kpis} KPIs, {n_charts} charts, preset={layout_preset}")
 
         # ── 8. Single-template layout ─────────────────────────────────────────
         #
@@ -1310,6 +1519,8 @@ class HTML:
         if chart_slots:
             last_r, _, last_h, _ = max(chart_slots, key=lambda x: x[0] + x[2])
             total_rows = last_r + last_h - 1
+        elif add_main_table and table_slot:
+            total_rows = table_slot[0] + table_slot[2] - 1
         elif has_kpis:
             total_rows = kpi_row_start + KPI_H - 1
         else:
@@ -1333,7 +1544,33 @@ class HTML:
             authors=authors,
             data_button=data_button,
             df=df if data_button else None,
+            verbose=verbose,
         )
+
+        if custom_layout:
+            for item in custom_layout:
+                t = item.get("type")
+                r, c, h, w = item["row"], item["col"], item["height"], item["width"]
+                if t == "kpi":
+                    idx = item.get("index", 0)
+                    if idx < len(planned_kpis):
+                        col_name, val, icon_key = planned_kpis[idx]
+                        dash.add_valuebox(
+                            title=col_name, value=val, icon_key=icon_key,
+                            row=r, col=c, height=h, width=w,
+                        )
+                elif t == "chart":
+                    idx = item.get("index", 0)
+                    if idx < len(charts):
+                        fig, chart_title, stats = charts[idx]
+                        dash.add_chart(
+                            fig=fig, title=chart_title,
+                            row=r, col=c, height=h, width=w,
+                            show_info_btn=True, _info_stats=stats,
+                        )
+                elif t == "table":
+                    dash.add_table(df, title=item.get("title", "Data"), row=r, col=c, height=h, width=w)
+            return dash.generate(filename=filename, show=show)
 
         # Place KPIs
         for i, (col_name, val, icon_key) in enumerate(planned_kpis):
@@ -1352,4 +1589,8 @@ class HTML:
                 show_info_btn=True, _info_stats=stats,
             )
 
-        return dash.generate(filename=filename)
+        if add_main_table and table_slot:
+            tr, tc, th, tw = table_slot
+            dash.add_table(df, title="Data Preview", row=tr, col=tc, height=th, width=tw)
+
+        return dash.generate(filename=filename, show=show)

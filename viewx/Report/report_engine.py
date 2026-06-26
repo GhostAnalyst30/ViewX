@@ -244,3 +244,32 @@ class Report:
                 except:
                     pass
             raise
+
+    @classmethod
+    def auto_generate(
+        cls,
+        df,
+        title: str = "Dataset Quality Report",
+        author: str = "ViewX",
+        filename: str = "auto_report",
+        outdir: str = "output",
+        columns=None,
+        include_plots: bool = True,
+        show_warnings: bool = True,
+        show_highlights: bool = True,
+    ) -> str:
+        """Build an automatic PDF quality report from a DataFrame."""
+        from .auto_builder import build_auto_report
+
+        return build_auto_report(
+            df,
+            cls,
+            title=title,
+            author=author,
+            filename=filename,
+            outdir=outdir,
+            columns=columns,
+            include_plots=include_plots,
+            show_warnings=show_warnings,
+            show_highlights=show_highlights,
+        )

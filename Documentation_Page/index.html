@@ -162,7 +162,7 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;text-align:center;ba
     <div class="shape shape-2"></div>
   </div>
   <div class="hero-content">
-    <div class="hero-badge">Python &middot; Visualizacion &middot; v2.3</div>
+    <div class="hero-badge">Python &middot; Visualizacion &middot; v0.2.4</div>
     <h1>Crea reportes <span class="gradient">visuales</span> desde Python</h1>
     <p class="hero-sub">Dashboards interactivos, presentaciones HTML, reportes PDF y analisis exploratorio automatico. Todo con una API simple y elegante.</p>
     <div class="pip-block" onclick="copyText('pip install viewx')">
@@ -301,27 +301,30 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;text-align:center;ba
         <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
         <button class="code-copy" onclick="copyCode('example-code')">Copiar</button>
       </div>
-      <pre><code class="language-python" id="example-code">from viewx import DataMatrix, HTML
+      <pre><code class="language-python" id="example-code">from viewx import DataMatrix, HTML, Report, Presentation
+from viewx.Slides import Slides
 from viewx.datasets import load_iris
-import pandas as pd
 
-# Analisis exploratorio automatico
 df = load_iris()
-dm = DataMatrix(df)
-dm.generate_report("reporte_iris.html")
 
-# Dashboard interactivo
-dash = HTML(title="Mi Dashboard", theme="dark_enterprise")
-dash.add_valuebox("Total", len(df), icon_key="hash", row=1, col=1)
-dash.add_chart(fig=my_chart, title="Tendencia", row=1, col=4)
-dash.generate("dashboard.html")</code></pre>
+# EDA interactivo
+DataMatrix(df).analyze().generate_report("report.html")
+
+# Dashboard auto
+HTML.auto_generate(df, title="Dashboard")
+
+# Slides auto
+Slides(df, auto=True, title="Overview")
+
+# PDF auto (requiere pdflatex)
+Report.auto_generate(df, filename="quality_report")</code></pre>
     </div>
   </div>
 </section>
 
 <footer>
   <div class="footer-logo">ViewX</div>
-  <div class="footer-meta">Desarrollado por Emmanuel Ascendra &middot; v2.3</div>
+  <div class="footer-meta">Desarrollado por Emmanuel Ascendra &middot; v0.2.4</div>
   <div class="footer-links">
     <a href="https://github.com/GhostAnalyst30/ViewX" target="_blank">GitHub</a>
     <a href="https://pypi.org/project/viewx/" target="_blank">PyPI</a>

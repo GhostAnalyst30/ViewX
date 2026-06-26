@@ -121,9 +121,9 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;backgro
   <aside class="sidebar">
     <div class="sidebar-title">Inicio</div>
     <div class="sidebar-links">
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/#overview" class="active">Descripcion general</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/#themes">Temas disponibles</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/#quickstart">Inicio rapido</a>
+      <a href="HTML.html#overview" class="active">Descripcion general</a>
+      <a href="HTML.html#themes">Temas disponibles</a>
+      <a href="HTML.html#quickstart">Inicio rapido</a>
     </div>
     <div class="sidebar-title">ThemeManager</div>
     <div class="sidebar-links">
@@ -360,18 +360,25 @@ dash = HTML(title="Mi Dashboard", theme=custom)</code></pre>
           <span class="code-lang">Python</span>
           <button class="code-copy" onclick="copyCode('auto-code')">Copiar</button>
         </div>
-        <pre><code class="language-python" id="auto-code">from viewx.html_engine import auto_generate
-from viewx.datasets import load_iris
+        <pre><code class="language-python" id="auto-code">from viewx import HTML
+from viewx.datasets import load_dataset
 
-df = load_iris()
-auto_generate(df, title="Iris Dashboard", theme="glass_ocean", filename="iris_dash.html")</code></pre>
+df = load_dataset("iris")
+HTML.auto_generate(
+    df,
+    title="Iris Dashboard",
+    template="glass_ocean",
+    filename="iris_dash.html",
+    layout="chart_focus",
+    show=False,
+)</code></pre>
       </div>
     </section>
   </main>
 </div>
 
 <footer>
-  <div class="footer-meta">ViewX &middot; Documentacion &middot; v2.3</div>
+  <div class="footer-meta">ViewX &middot; Documentacion &middot; v0.2.4</div>
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>

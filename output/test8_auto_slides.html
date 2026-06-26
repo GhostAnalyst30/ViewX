@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iris Dataset Overview</title>
+
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+@keyframes slideInLeft { from { opacity:0; transform:translateX(-80px) var(--vx-transform, none); } to { opacity:1; transform:translateX(0) var(--vx-transform, none); } }
+@keyframes slideInRight { from { opacity:0; transform:translateX(80px) var(--vx-transform, none); } to { opacity:1; transform:translateX(0) var(--vx-transform, none); } }
+@keyframes slideInUp { from { opacity:0; transform:translateY(60px) var(--vx-transform, none); } to { opacity:1; transform:translateY(0) var(--vx-transform, none); } }
+@keyframes slideInDown { from { opacity:0; transform:translateY(-60px) var(--vx-transform, none); } to { opacity:1; transform:translateY(0) var(--vx-transform, none); } }
+@keyframes zoomIn { from { opacity:0; transform:scale(.55) var(--vx-transform, none); } to { opacity:1; transform:scale(1) var(--vx-transform, none); } }
+@keyframes zoomOut { from { opacity:0; transform:scale(1.35) var(--vx-transform, none); } to { opacity:1; transform:scale(1) var(--vx-transform, none); } }
+@keyframes bounce { 0% { opacity:0; transform:translateY(0); } 45% { opacity:1; transform:translateY(-22px) var(--vx-bounce,); } 70% { transform:translateY(7px); } 100% { opacity:1; transform:translateY(0); } }
+@keyframes flip { from { opacity:0; transform:rotateX(-90deg) var(--vx-transform, none); } to { opacity:1; transform:rotateX(0) var(--vx-transform, none); } }
+@keyframes spin { from { opacity:0; transform:rotate(-180deg) scale(.5) var(--vx-transform, none); } to { opacity:1; transform:rotate(0) scale(1) var(--vx-transform, none); } }
+@keyframes shake { 0%,100% { transform:translateX(0); } 20% { transform:translateX(-10px); } 40% { transform:translateX(10px); } 60% { transform:translateX(-6px); } 80% { transform:translateX(6px); } }
+@keyframes pulse { 0%,100% { transform:scale(1); opacity:1; } 50% { transform:scale(1.12); opacity:.86; } }
+@keyframes glow { 0%,100% { filter:drop-shadow(0 0 4px currentColor); } 50% { filter:drop-shadow(0 0 22px currentColor); } }
+@keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-16px); } }
+@keyframes floatX { 0%,100% { transform:translateX(0); } 50% { transform:translateX(18px); } }
+@keyframes rotate { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+@keyframes orbit { from { transform:rotate(0deg) translateX(70px) rotate(0deg); } to { transform:rotate(360deg) translateX(70px) rotate(-360deg); } }
+@keyframes drift { 0%,100% { transform:translate(0,0); } 25% { transform:translate(28px,-18px); } 50% { transform:translate(-18px,28px); } 75% { transform:translate(18px,12px); } }
+@keyframes wave { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-28px); } }
+@keyframes heartbeat { 0%,100% { transform:scale(1); } 50% { transform:scale(1.26); } }
+@keyframes shimmer { from { background-position:-200% 0; } to { background-position:200% 0; } }
+@keyframes morphIn { from { opacity:0; clip-path:circle(0% at 50% 50%); } to { opacity:1; clip-path:circle(100% at 50% 50%); } }
+@keyframes blurIn { from { opacity:0; filter:blur(12px); transform:scale(.96); } to { opacity:1; filter:blur(0); transform:scale(1); } }
+@keyframes revealUp { from { opacity:0; transform:translateY(40px) scale(.97); clip-path:inset(0 0 100% 0); } to { opacity:1; transform:translateY(0) scale(1); clip-path:inset(0 0 0 0); } }
+@keyframes skewIn { from { opacity:0; transform:translateX(-40px) skewX(8deg); } to { opacity:1; transform:translateX(0) skewX(0); } }
+
+:root{--vx-bg:#07172f;--vx-surface:#102544;--vx-primary:#64ffda;--vx-accent:#48cae4;--vx-text:#dbeafe;--vx-muted:#93a4bd;--vx-border:rgba(100,255,218,.18);--vx-shadow:rgba(0,0,0,.35);--vx-font:'Helvetica Neue',Arial,sans-serif;--vx-ease: cubic-bezier(0.32,0.72,0,1);--vx-ease-out: cubic-bezier(0.16,1,0.3,1);}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--vx-bg);color:var(--vx-text);font-family:var(--vx-font);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+body{background:radial-gradient(circle at top right, color-mix(in srgb, var(--vx-accent) 22%, transparent), transparent 34%), radial-gradient(circle at bottom left, color-mix(in srgb, var(--vx-primary) 12%, transparent), transparent 28%), var(--vx-bg);}
+#vx-deck{width:100vw;height:100vh;position:relative;overflow:hidden;perspective:1200px;}
+.vx-slide{position:absolute;inset:0;display:none;overflow:hidden;background:var(--vx-bg);will-change:transform,opacity,filter;}
+.vx-slide.active{display:block;animation:blurIn .55s var(--vx-ease) both;}
+.vx-slide[data-transition="fade"].active{animation:fadeIn .5s var(--vx-ease) both;}
+.vx-slide[data-transition="slide"].active{animation:slideInUp .55s var(--vx-ease) both;}
+.vx-slide[data-transition="zoom"].active{animation:zoomIn .55s var(--vx-ease) both;}
+.vx-slide[data-transition="morph"].active{animation:morphIn .6s var(--vx-ease) both;}
+.vx-slide.exit{display:block;animation:blurIn .3s var(--vx-ease) reverse both;pointer-events:none;}
+.vx-slide[data-transition="fade"].exit{animation:fadeIn .25s var(--vx-ease) reverse both;}
+.vx-slide[data-transition="slide"].exit{animation:slideInUp .3s var(--vx-ease) reverse both;}
+.vx-slide[data-transition="zoom"].exit{animation:zoomIn .3s var(--vx-ease) reverse both;}
+.vx-layer{position:absolute;inset:0;z-index:2;}
+.vx-slide-overlay{position:absolute;inset:0;z-index:1;}
+.vx-component{position:absolute;max-width:100%;color:var(--vx-text);will-change:transform,opacity;}
+.vx-grid .vx-component{position:relative;left:auto!important;top:auto!important;right:auto!important;bottom:auto!important;}
+.vx-card{background:linear-gradient(180deg, color-mix(in srgb, var(--vx-surface) 94%, white), var(--vx-surface));border:1px solid var(--vx-border);border-radius:22px;box-shadow:0 18px 55px var(--vx-shadow);transition:transform .45s var(--vx-ease), box-shadow .45s var(--vx-ease);}
+.vx-card:hover{transform:translateY(-3px);box-shadow:0 28px 72px var(--vx-shadow);}
+.vx-title{font-size:clamp(42px,6vw,86px);font-weight:800;letter-spacing:-.055em;line-height:.98;}
+.vx-title::after{content:'';display:block;width:clamp(60px,8vw,120px);height:4px;border-radius:2px;background:linear-gradient(90deg,var(--vx-primary),var(--vx-accent));margin-top:clamp(16px,2vw,28px);}
+.vx-subtitle{font-size:clamp(22px,3vw,42px);font-weight:600;color:var(--vx-muted);line-height:1.18;margin-top:clamp(10px,1vw,18px);}
+.vx-text{font-size:clamp(17px,1.6vw,24px);line-height:1.58;}
+.vx-bullets{font-size:clamp(18px,1.7vw,25px);line-height:1.55;padding-left:1.2em;}
+.vx-bullets li{margin:.36em 0;transition:transform .3s var(--vx-ease);}
+.vx-bullets li:hover{transform:translateX(6px);}
+.vx-button{display:inline-flex;align-items:center;justify-content:center;gap:.55em;text-decoration:none;border:0;border-radius:999px;padding:14px 28px;background:linear-gradient(135deg,var(--vx-primary),var(--vx-accent));color:white;font-weight:800;cursor:pointer;box-shadow:0 12px 28px var(--vx-shadow);transition:transform .35s var(--vx-ease), filter .35s var(--vx-ease), box-shadow .35s var(--vx-ease);position:relative;overflow:hidden;}
+.vx-button::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 40%,rgba(255,255,255,.15) 50%,transparent 60%);transform:translateX(-100%);transition:transform .6s var(--vx-ease);}
+.vx-button:hover{transform:translateY(-3px) scale(1.02);filter:brightness(1.08);box-shadow:0 18px 40px var(--vx-shadow);}
+.vx-button:hover::before{transform:translateX(100%);}
+.vx-button:active{transform:translateY(-1px) scale(.98);}
+.vx-link{color:var(--vx-accent);text-decoration:none;font-weight:700;border-bottom:1px solid currentColor;transition:border-color .25s var(--vx-ease);}
+.vx-link:hover{border-bottom-color:transparent;}
+.vx-media{object-fit:cover;border-radius:22px;box-shadow:0 18px 48px var(--vx-shadow);transition:transform .45s var(--vx-ease), box-shadow .45s var(--vx-ease);}
+.vx-media:hover{transform:scale(1.02);box-shadow:0 28px 64px var(--vx-shadow);}
+.vx-iconstat{text-align:center;padding:28px 32px;transition:transform .35s var(--vx-ease);}
+.vx-iconstat:hover{transform:scale(1.04);}
+.vx-iconstat .icon{font-size:48px;display:block;margin-bottom:12px;}
+.vx-iconstat .value{font-size:54px;font-weight:900;color:var(--vx-primary);line-height:1;letter-spacing:-.03em;}
+.vx-iconstat .label{font-size:15px;color:var(--vx-muted);margin-top:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;}
+.vx-plot{background:var(--vx-surface);border:1px solid var(--vx-border);border-radius:22px;padding:12px;box-shadow:0 18px 55px var(--vx-shadow);}
+.vx-slide-number{position:absolute;right:24px;bottom:22px;color:var(--vx-muted);font-size:13px;z-index:8;opacity:.5;font-weight:500;letter-spacing:.04em;}
+#vx-progress{position:fixed;left:0;top:0;height:3px;width:0;background:linear-gradient(90deg,var(--vx-primary),var(--vx-accent));z-index:99;transition:width .55s var(--vx-ease);box-shadow:0 0 12px var(--vx-primary);}
+#vx-controls{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:100;display:flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid var(--vx-border);border-radius:999px;background:rgba(0,0,0,.55);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);opacity:0;transition:opacity .35s var(--vx-ease), transform .35s var(--vx-ease);transform-origin:bottom center;}
+body:hover #vx-controls{opacity:1;}
+#vx-controls button{border:0;background:transparent;color:white;font-size:16px;cursor:pointer;padding:8px 12px;border-radius:999px;transition:background .2s var(--vx-ease), transform .2s var(--vx-ease);}
+#vx-controls button:hover{background:rgba(255,255,255,.12);transform:scale(1.1);}
+#vx-controls button:active{transform:scale(.95);}
+#vx-counter{min-width:54px;text-align:center;font-size:12px;color:#fff;opacity:.7;font-weight:500;letter-spacing:.03em;}
+#vx-dots{position:fixed;left:50%;bottom:82px;transform:translateX(-50%);display:flex;gap:6px;z-index:100;opacity:0;transition:opacity .35s var(--vx-ease);}
+body:hover #vx-dots{opacity:1;}
+.vx-dot{width:6px;height:6px;border-radius:99px;background:rgba(255,255,255,.25);cursor:pointer;transition:all .45s var(--vx-ease);position:relative;}
+.vx-dot::after{content:'';position:absolute;inset:-4px;border-radius:99px;}
+.vx-dot:hover{background:rgba(255,255,255,.45);transform:scale(1.2);}
+.vx-dot.active{width:28px;background:var(--vx-primary);box-shadow:0 0 8px var(--vx-primary);}
+#vx-notes{display:none;position:fixed;left:0;right:0;bottom:0;z-index:101;max-height:34vh;overflow:auto;padding:22px 28px;background:rgba(0,0,0,.92);border-top:2px solid var(--vx-primary);color:#fff;font-size:14px;line-height:1.6;backdrop-filter:blur(8px);}
+#vx-notes.visible{display:block;animation:slideInUp .3s var(--vx-ease) both;}
+#vx-logo{position:fixed;top:20px;left:22px;max-height:40px;z-index:80;opacity:.85;transition:opacity .3s var(--vx-ease);}
+#vx-logo:hover{opacity:1;}
+@media print{#vx-controls,#vx-dots,#vx-progress,#vx-notes{display:none!important}.vx-slide{display:block!important;position:relative;page-break-after:always;width:100vw;height:100vh;animation:none!important;}}
+
+</style>
+
+</head>
+<body>
+
+
+<div id="vx-progress"></div>
+<div id="vx-deck"><section class="vx-slide" id="slide-1" data-title="Cover" data-notes="Auto-generated dataset overview." style=""><div class="vx-layer"><div class="vx-component vx-text vx-title" style="position:absolute;left:50%;top:18%;z-index:3;width:86%;transform:translateX(-50%);animation:zoomIn 1.0s ease 0.0s 1 both;">Iris Dataset Overview</div><div class="vx-component vx-text vx-subtitle" style="position:absolute;left:50%;top:34%;z-index:3;width:82%;transform:translateX(-50%);animation:fadeIn 0.65s ease 0.2s 1 both;">150 rows × 5 columns · 13.5 KB</div><div class="vx-component vx-text" style="position:absolute;left:50%;top:48%;z-index:3;color:#9ca3af;transform:translateX(-50%);width:60%;text-align:center;animation:fadeIn 0.65s ease 0.35s 1 both;">Generated automatically by ViewX Slides</div></div><div class="vx-slide-number">1 / 8</div></section>
+<section class="vx-slide" id="slide-2" data-title="Key Metrics" data-notes="Dataset dimensions and quality KPIs." style=""><div class="vx-layer"><div class="vx-component vx-text vx-title" style="position:absolute;left:6%;top:8%;z-index:3;width:86%;animation:slideInLeft 0.65s ease 0.0s 1 both;">Key Metrics</div><div class="vx-grid" style="position:absolute;display:grid;grid-template-columns:repeat(4, 1fr);grid-template-rows:auto;gap:16px;left:6%;top:28%;width:88%;"><div class="vx-component vx-iconstat vx-card" style="position:absolute;left:8%;top:12%;z-index:3;padding:24px;width:230px;"><span class="icon">&#128451;</span><div class="value">150</div><div class="label">Rows</div></div><div class="vx-component vx-iconstat vx-card" style="position:absolute;left:8%;top:12%;z-index:3;padding:24px;width:230px;"><span class="icon">grid</span><div class="value">5</div><div class="label">Columns</div></div><div class="vx-component vx-iconstat vx-card" style="position:absolute;left:8%;top:12%;z-index:3;padding:24px;width:230px;"><span class="icon">percent</span><div class="value">100%</div><div class="label">Complete</div></div><div class="vx-component vx-iconstat vx-card" style="position:absolute;left:8%;top:12%;z-index:3;padding:24px;width:230px;"><span class="icon">&#128101;</span><div class="value">3</div><div class="label">Duplicates</div></div></div></div><div class="vx-slide-number">2 / 8</div></section>
+<section class="vx-slide" id="slide-3" data-title="Data Quality" data-notes="Warnings and strengths." style=""><div class="vx-layer"><div class="vx-component vx-text vx-title" style="position:absolute;left:6%;top:8%;z-index:3;width:86%;animation:slideInLeft 0.65s ease 0.0s 1 both;">Data Quality</div><ul class="vx-component vx-bullets" style="position:absolute;left:8%;top:26%;z-index:3;width:84%;animation:fadeIn 0.65s ease 0.2s 1 both;"><li>Warning: Column &#x27;sepal_width&#x27;: 4 outliers detected</li><li>Warning: Found 3 duplicate rows</li><li>Strength: Low global missing rate (0.0%)</li><li>Strength: Diverse column mix: 4 numeric, 1 categorical, 0 datetime, 0 boolean</li><li>Strength: Strong correlation: petal_length vs petal_width (r=0.96)</li><li>Strength: Strong correlation: sepal_length vs petal_length (r=0.87)</li><li>Strength: Strong correlation: sepal_length vs petal_width (r=0.82)</li><li>Strength: All columns have &gt;95% completeness</li></ul></div><div class="vx-slide-number">3 / 8</div></section>
+<section class="vx-slide" id="slide-4" data-title="Numeric: petal_width" data-notes="Distribution of petal_width." style=""><div class="vx-layer"><div class="vx-component vx-text vx-title" style="position:absolute;left:6%;top:8%;z-index:3;width:86%;animation:zoomIn 0.65s ease 0.0s 1 both;">petal_width</div><div class="vx-component vx-text" style="position:absolute;left:7%;top:20%;z-index:3;width:40%;">Numeric distribution · mean=1.20, std=0.76</div><div class="vx-component vx-plot" style="position:absolute;left:8%;top:32%;z-index:3;width:84%;height:52%;"><div id="vx_plot_aae045c0f55a4f64b41b7fc6bfee14d1" style="width:100%;height:100%;"></div><script>window.addEventListener('DOMContentLoaded',function(){if(window.Plotly){Plotly.newPlot('vx_plot_aae045c0f55a4f64b41b7fc6bfee14d1', [{"type": "bar", "x": ["0.1-0.3", "0.3-0.5", "0.5-0.7", "0.7-0.9", "0.9-1.1", "1.1-1.3", "1.3-1.5", "1.5-1.7", "1.7-1.9", "1.9-2.1", "2.1-2.3", "2.3-2.5"], "y": [41, 8, 1, 0, 7, 21, 20, 6, 17, 6, 17, 6], "name": "", "marker": {"color": "#4f46e5"}}], {"paper_bgcolor": "rgba(0,0,0,0)", "plot_bgcolor": "rgba(0,0,0,0)", "font": {"color": "#dbeafe", "family": "Inter, Segoe UI, sans-serif"}, "margin": {"l": 48, "r": 26, "t": 48, "b": 48}, "autosize": true, "title": {"text": "petal_width", "x": 0.03, "xanchor": "left"}}, {"displayModeBar": false, "responsive": true});}});</script></div></div><div class="vx-slide-number">4 / 8</div></section>
+<section class="vx-slide" id="slide-5" data-title="Categorical: species" data-notes="Top categories in species." style=""><div class="vx-layer"><div class="vx-component vx-text vx-title" style="position:absolute;left:6%;top:8%;z-index:3;width:86%;animation:slideInRight 0.65s ease 0.0s 1 both;">species</div><div class="vx-component vx-plot" style="position:absolute;left:10%;top:24%;z-index:3;width:80%;height:58%;"><div id="vx_plot_4035d192b0be4ce898524e40d9c3bf47" style="width:100%;height:100%;"></div><script>window.addEventListener('DOMContentLoaded',function(){if(window.Plotly){Plotly.newPlot('vx_plot_4035d192b0be4ce898524e40d9c3bf47', [{"type": "pie", "labels": ["setosa", "versicolor", "virginica"], "values": [50, 50, 50], "hole": 0.35, "marker": {"colors": ["#4f46e5", "#06b6d4", "#22c55e", "#f97316", "#e11d48", "#a855f7", "#14b8a6", "#facc15"]}, "textinfo": "label+percent"}], {"paper_bgcolor": "rgba(0,0,0,0)", "plot_bgcolor": "rgba(0,0,0,0)", "font": {"color": "#dbeafe", "family": "Inter, Segoe UI, sans-serif"}, "margin": {"l": 48, "r": 26, "t": 48, "b": 48}, "autosize": true, "title": {"text": "species", "x": 0.03, "xanchor": "left"}, "showlegend": true}, {"displayModeBar": false, "responsive": true});}});</script></div></div><div class="vx-slide-number">5 / 8</div></section>
+<section class="vx-slide" id="slide-6" data-title="Correlations" data-notes="Strongest numeric correlation pair." style=""><div class="vx-layer"><div class="vx-component vx-text vx-title" style="position:absolute;left:6%;top:8%;z-index:3;width:86%;animation:zoomIn 0.65s ease 0.0s 1 both;">Top Correlation</div><div class="vx-component vx-text" style="position:absolute;left:7%;top:22%;z-index:3;width:40%;">petal_length vs petal_width · r = 0.963</div><div class="vx-component vx-plot" style="position:absolute;left:8%;top:32%;z-index:3;width:84%;height:52%;"><div id="vx_plot_e1395f36f72e45c6821ca21566f5826a" style="width:100%;height:100%;"></div><script>window.addEventListener('DOMContentLoaded',function(){if(window.Plotly){Plotly.newPlot('vx_plot_e1395f36f72e45c6821ca21566f5826a', [{"type": "scatter", "mode": "markers", "x": [1.4, 1.4, 1.3, 1.5, 1.4, 1.7, 1.4, 1.5, 1.4, 1.5, 1.5, 1.6, 1.4, 1.1, 1.2, 1.5, 1.3, 1.4, 1.7, 1.5, 1.7, 1.5, 1.0, 1.7, 1.9, 1.6, 1.6, 1.5, 1.4, 1.6, 1.6, 1.5, 1.5, 1.4, 1.5, 1.2, 1.3, 1.5, 1.3, 1.5, 1.3, 1.3, 1.3, 1.6, 1.9, 1.4, 1.6, 1.4, 1.5, 1.4, 4.7, 4.5, 4.9, 4.0, 4.6, 4.5, 4.7, 3.3, 4.6, 3.9, 3.5, 4.2, 4.0, 4.7, 3.6, 4.4, 4.5, 4.1, 4.5, 3.9, 4.8, 4.0, 4.9, 4.7, 4.3, 4.4, 4.8, 5.0, 4.5, 3.5, 3.8, 3.7, 3.9, 5.1, 4.5, 4.5, 4.7, 4.4, 4.1, 4.0, 4.4, 4.6, 4.0, 3.3, 4.2, 4.2, 4.2, 4.3, 3.0, 4.1, 6.0, 5.1, 5.9, 5.6, 5.8, 6.6, 4.5, 6.3, 5.8, 6.1, 5.1, 5.3, 5.5, 5.0, 5.1, 5.3, 5.5, 6.7, 6.9, 5.0, 5.7, 4.9, 6.7, 4.9, 5.7, 6.0, 4.8, 4.9, 5.6, 5.8, 6.1, 6.4, 5.6, 5.1, 5.6, 6.1, 5.6, 5.5, 4.8, 5.4, 5.6, 5.1, 5.1, 5.9, 5.7, 5.2, 5.0, 5.2, 5.4, 5.1], "y": [0.2, 0.2, 0.2, 0.2, 0.2, 0.4, 0.3, 0.2, 0.2, 0.1, 0.2, 0.2, 0.1, 0.1, 0.2, 0.4, 0.4, 0.3, 0.3, 0.3, 0.2, 0.4, 0.2, 0.5, 0.2, 0.2, 0.4, 0.2, 0.2, 0.2, 0.2, 0.4, 0.1, 0.2, 0.1, 0.2, 0.2, 0.1, 0.2, 0.2, 0.3, 0.3, 0.2, 0.6, 0.4, 0.3, 0.2, 0.2, 0.2, 0.2, 1.4, 1.5, 1.5, 1.3, 1.5, 1.3, 1.6, 1.0, 1.3, 1.4, 1.0, 1.5, 1.0, 1.4, 1.3, 1.4, 1.5, 1.0, 1.5, 1.1, 1.8, 1.3, 1.5, 1.2, 1.3, 1.4, 1.4, 1.7, 1.5, 1.0, 1.1, 1.0, 1.2, 1.6, 1.5, 1.6, 1.5, 1.3, 1.3, 1.3, 1.2, 1.4, 1.2, 1.0, 1.3, 1.2, 1.3, 1.3, 1.1, 1.3, 2.5, 1.9, 2.1, 1.8, 2.2, 2.1, 1.7, 1.8, 1.8, 2.5, 2.0, 1.9, 2.1, 2.0, 2.4, 2.3, 1.8, 2.2, 2.3, 1.5, 2.3, 2.0, 2.0, 1.8, 2.1, 1.8, 1.8, 1.8, 2.1, 1.6, 1.9, 2.0, 2.2, 1.5, 1.4, 2.3, 2.4, 1.8, 1.8, 2.1, 2.4, 2.3, 1.9, 2.3, 2.5, 2.3, 1.9, 2.0, 2.3, 1.8], "name": "", "marker": {"color": "#22c55e", "size": 12, "opacity": 0.84}}], {"paper_bgcolor": "rgba(0,0,0,0)", "plot_bgcolor": "rgba(0,0,0,0)", "font": {"color": "#dbeafe", "family": "Inter, Segoe UI, sans-serif"}, "margin": {"l": 48, "r": 26, "t": 48, "b": 48}, "autosize": true, "title": {"text": "petal_length vs petal_width", "x": 0.03, "xanchor": "left"}}, {"displayModeBar": false, "responsive": true});}});</script></div></div><div class="vx-slide-number">6 / 8</div></section>
+<section class="vx-slide" id="slide-7" data-title="Column Profiles" data-notes="Summary of column profiles." style=""><div class="vx-layer"><div class="vx-component vx-text vx-title" style="position:absolute;left:6%;top:8%;z-index:3;width:86%;animation:slideInLeft 0.65s ease 0.0s 1 both;">Column Profiles</div><ul class="vx-component vx-bullets" style="position:absolute;left:8%;top:24%;z-index:3;width:84%;animation:fadeIn 0.65s ease 0.15s 1 both;"><li>sepal_length (numeric): 0.0% missing, 35 unique</li><li>sepal_width (numeric): 0.0% missing, 23 unique · 1 alert(s)</li><li>petal_length (numeric): 0.0% missing, 43 unique</li><li>petal_width (numeric): 0.0% missing, 22 unique</li><li>species (categorical): 0.0% missing, 3 unique</li></ul></div><div class="vx-slide-number">7 / 8</div></section>
+<section class="vx-slide" id="slide-8" data-title="Sample Data" data-notes="First rows of the dataset." style=""><div class="vx-layer"><div class="vx-component vx-text vx-title" style="position:absolute;left:6%;top:8%;z-index:3;width:86%;animation:fadeIn 0.65s ease 0.0s 1 both;">Sample Data</div><div class="vx-component vx-text" style="position:absolute;left:7%;top:20%;z-index:3;width:88%;">Columns: sepal_length | sepal_width | petal_length | petal_width | species</div><ul class="vx-component vx-bullets" style="position:absolute;left:8%;top:30%;z-index:3;width:88%;"><li>5.1 | 3.5 | 1.4 | 0.2 | setosa</li><li>4.9 | 3.0 | 1.4 | 0.2 | setosa</li><li>4.7 | 3.2 | 1.3 | 0.2 | setosa</li><li>4.6 | 3.1 | 1.5 | 0.2 | setosa</li><li>5.0 | 3.6 | 1.4 | 0.2 | setosa</li><li>5.4 | 3.9 | 1.7 | 0.4 | setosa</li></ul></div><div class="vx-slide-number">8 / 8</div></section></div>
+<div id="vx-dots"><button class="vx-dot" type="button" onclick="goToSlide(0)" title="Slide 1"></button><button class="vx-dot" type="button" onclick="goToSlide(1)" title="Slide 2"></button><button class="vx-dot" type="button" onclick="goToSlide(2)" title="Slide 3"></button><button class="vx-dot" type="button" onclick="goToSlide(3)" title="Slide 4"></button><button class="vx-dot" type="button" onclick="goToSlide(4)" title="Slide 5"></button><button class="vx-dot" type="button" onclick="goToSlide(5)" title="Slide 6"></button><button class="vx-dot" type="button" onclick="goToSlide(6)" title="Slide 7"></button><button class="vx-dot" type="button" onclick="goToSlide(7)" title="Slide 8"></button></div>
+
+<div id="vx-controls">
+  <button type="button" onclick="prevSlide()" title="Anterior">&#8592;</button>
+  <button type="button" onclick="toggleFullscreen()" title="Pantalla completa">&#9974;</button>
+  <span id="vx-counter">1 / 1</span>
+  <button type="button" onclick="toggleNotes()" title="Notas">N</button>
+  <button type="button" onclick="nextSlide()" title="Siguiente">&#8594;</button>
+</div>
+
+<div id="vx-notes"></div>
+<script>
+const slides = Array.from(document.querySelectorAll('.vx-slide'));
+const dots = Array.from(document.querySelectorAll('.vx-dot'));
+const progress = document.getElementById('vx-progress');
+const counter = document.getElementById('vx-counter');
+const notesPanel = document.getElementById('vx-notes');
+const titles = ["Cover", "Key Metrics", "Data Quality", "Numeric: petal_width", "Categorical: species", "Correlations", "Column Profiles", "Sample Data"];
+let current = 0;
+let isTransitioning = false;
+function restartAnimations(slide) {
+  slide.querySelectorAll('[style*=animation]').forEach(el => { const a = el.style.animation; el.style.animation = 'none'; void el.offsetWidth; el.style.animation = a; });
+  slide.querySelectorAll('.js-plotly-plot').forEach(el => { if (window.Plotly) Plotly.Plots.resize(el); });
+}
+function updateUI(direction) {
+  slides.forEach((s,i) => {
+    s.classList.toggle('active', i===current);
+    s.classList.remove('exit');
+  });
+  dots.forEach((d,i)=>d.classList.toggle('active', i===current));
+  if(progress) progress.style.width = ((current+1)/slides.length*100)+'%';
+  if(counter) counter.textContent = (current+1)+' / '+slides.length;
+  if(notesPanel && notesPanel.classList.contains('visible')) notesPanel.innerHTML = slides[current].dataset.notes || '<em>Sin notas.</em>';
+  setTimeout(()=>{ restartAnimations(slides[current]); isTransitioning = false; }, 80);
+}
+function goToSlide(i) {
+  if(isTransitioning || i < 0 || i >= slides.length || i === current) return;
+  isTransitioning = true;
+  slides[current].classList.add('exit');
+  current = i;
+  setTimeout(() => updateUI(), 300);
+}
+function nextSlide() { goToSlide(current+1); }
+function prevSlide() { goToSlide(current-1); }
+function toggleFullscreen() { if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+function toggleNotes() { notesPanel.classList.toggle('visible'); notesPanel.innerHTML = slides[current].dataset.notes || '<em>Sin notas.</em>'; if(notesPanel.classList.contains('visible')) setTimeout(()=>notesPanel.scrollTop=0,50); }
+document.addEventListener('keydown', e => {
+  if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+  if(e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); nextSlide(); }
+  if(e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prevSlide(); }
+  if(e.key === 'Home') goToSlide(0);
+  if(e.key === 'End') goToSlide(slides.length-1);
+  if(e.key.toLowerCase() === 'f') toggleFullscreen();
+  if(e.key.toLowerCase() === 'n') toggleNotes();
+});
+let touchX = 0, touchY = 0;
+document.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; touchY = e.touches[0].clientY; });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchX;
+  const dy = e.changedTouches[0].clientY - touchY;
+  if(Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) { if(dx < -50) nextSlide(); if(dx > 50) prevSlide(); }
+});
+let wheelTimeout;
+document.addEventListener('wheel', e => {
+  if(e.target.closest('.js-plotly-plot, .vx-plot')) return;
+  if(wheelTimeout) return;
+  wheelTimeout = setTimeout(()=>{ wheelTimeout = null; }, 600);
+  if(e.deltaY > 20) nextSlide();
+  else if(e.deltaY < -20) prevSlide();
+}, {passive:true});
+document.querySelectorAll('[data-vx-slide]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); goToSlide(parseInt(a.dataset.vxSlide, 10)-1); }));
+updateUI();
+
+</script>
+</body>
+</html>

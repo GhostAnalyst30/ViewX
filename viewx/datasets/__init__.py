@@ -222,7 +222,7 @@ def generate_dataset(n_rows, schema, seed=None, save: Optional[bool] = False, fi
         elif dist == "lognormal":
             values = np.random.lognormal(
                 mean=config.get("mean", 0),
-                sigma=config.get("std", 1),
+                sigma=config.get("sigma", config.get("std", 1)),
                 size=n_rows
             )
 
@@ -240,12 +240,20 @@ def generate_dataset(n_rows, schema, seed=None, save: Optional[bool] = False, fi
             )
 
         elif dist == "categorical":
-            if "choices" not in config:
-                raise ValueError(f"'choices' es requerido para categorical ({col})")
-            values = np.random.choice(
-                config["choices"],
-                size=n_rows
-            )
+            choices = config.get("choices") or config.get("labels")
+            if not choices:
+                raise ValueError(
+                    f"'choices' o 'labels' es requerido para categorical ({col})"
+                )
+            probs = config.get("probs")
+            if probs is not None:
+                if len(probs) != len(choices):
+                    raise ValueError(
+                        f"'probs' debe tener la misma longitud que las opciones ({col})"
+                    )
+                values = np.random.choice(choices, size=n_rows, p=probs)
+            else:
+                values = np.random.choice(choices, size=n_rows)
             data[col] = values
             continue
 
@@ -268,11 +276,9 @@ def generate_dataset(n_rows, schema, seed=None, save: Optional[bool] = False, fi
 
         data[col] = values
 
-    if save and filename:
-        df = pd.DataFrame(data)
-        df.to_csv(f"{filename}.csv", index=False)
-    else:
-        df = pd.DataFrame(data)
-        df.to_csv("dataset.csv", index=False)
+    df = pd.DataFrame(data)
+    if save:
+        out = f"{filename}.csv" if filename else "dataset.csv"
+        df.to_csv(out, index=False)
 
-    return pd.DataFrame(data)
+    return df

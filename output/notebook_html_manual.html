@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Iris Manual</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    
+    <style>
+        
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        :root {
+            --vx-bg-page:       #0D0D0D;
+            --vx-bg-card:       #161616;
+            --vx-accent:        #3B82F6;
+            --vx-text-primary:  #F0F0F0;
+            --vx-text-secondary:#9CA3AF;
+            --vx-card-radius:   14px;
+            --vx-shadow:        0 4px 24px rgba(0,0,0,0.5);
+            --vx-transition:    all 0.35s cubic-bezier(.16,1,.3,1);
+            --vx-ease:          cubic-bezier(0.32,0.72,0,1);
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--vx-bg-page);
+            color: var(--vx-text-primary);
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            overflow: hidden;
+            height: 100dvh; width: 100vw;
+        }
+        .vx-card {
+            background: var(--vx-bg-card);
+            border-radius: var(--vx-card-radius);
+            box-shadow: var(--vx-shadow);
+            transition: var(--vx-transition);
+            overflow: auto;
+            border: 1px solid rgba(128,128,128,0.08);
+            position: relative;
+        }
+        .vx-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--vx-accent), transparent);
+            opacity: 0;
+            transition: var(--vx-transition);
+        }
+        .vx-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(0,0,0,0.14);
+        }
+        .vx-card:hover::before { opacity: 1; }
+        .vx-card.vx-card-static:hover {
+            transform: none;
+            box-shadow: var(--vx-shadow);
+        }
+        .vx-card-header {
+            margin: 0; color: var(--vx-text-primary); font-weight: 600;
+            font-size: 0.88rem;
+            border-bottom: 2px solid rgba(128,128,128,0.12); padding-bottom: 6px;
+        }
+        .vx-kpi-body {
+            padding: 18px 20px; display: flex; align-items: center;
+            gap: 14px; height: 100%; position: relative; overflow: hidden;
+        }
+        .vx-sortable-table th { cursor: pointer; user-select: none; }
+        .vx-sortable-table th:hover { background: #3B82F618; }
+        .plotly-graph-div, .js-plotly-plot, .plot-container {
+            width: 100% !important; height: 100% !important;
+        }
+        .vx-card::-webkit-scrollbar { width:5px; height:5px; }
+        .vx-card::-webkit-scrollbar-track { background: transparent; }
+        .vx-card::-webkit-scrollbar-thumb { background:#3B82F655; border-radius:3px; }
+
+        /* ── Modal overlay ── */
+        .vx-modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7); z-index: 9000;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .vx-modal-overlay.open { display: flex; }
+        .vx-modal-box {
+            background: #161616;
+            border-radius: 16px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+            border: 1px solid #3B82F633;
+            width: min(92vw, 1100px);
+            max-height: 88vh;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            animation: vxModalIn .22s cubic-bezier(.16,1,.3,1);
+        }
+        @keyframes vxModalIn {
+            from { opacity:0; transform: scale(.96) translateY(12px); }
+            to   { opacity:1; transform: scale(1) translateY(0); }
+        }
+        .vx-modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 24px 14px;
+            border-bottom: 1px solid #3B82F622;
+            flex-shrink: 0;
+        }
+        .vx-modal-header h3 {
+            font-size: 1.05rem; font-weight: 700; color: var(--vx-text-primary);
+        }
+        .vx-modal-close {
+            background: none; border: none; cursor: pointer;
+            color: var(--vx-text-secondary); border-radius: 8px;
+            width:32px; height:32px; display:flex; align-items:center; justify-content:center;
+            transition: var(--vx-transition);
+        }
+        .vx-modal-close:hover { background:#3B82F622; color:#3B82F6; }
+        .vx-modal-body {
+            flex: 1; overflow: auto; padding: 20px 24px 24px;
+        }
+
+        /* ── Info FAB button on charts ── */
+        .vx-chart-info-btn {
+            position: absolute; bottom: 10px; right: 10px;
+            width: 32px; height: 32px; border-radius: 50%;
+            background: #3B82F6EE; border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            transition: var(--vx-transition); z-index: 10;
+            opacity: 0.75;
+        }
+        .vx-chart-info-btn:hover { opacity:1; transform: scale(1.12); }
+        .vx-chart-info-btn svg { pointer-events: none; }
+
+        /* ── Data button ── */
+        .vx-data-fab {
+            position: fixed; bottom: 22px; right: 22px;
+            background: #3B82F6; color: #fff;
+            border: none; border-radius: 50px;
+            padding: 10px 20px; font-weight: 700; font-size: 0.82rem;
+            cursor: pointer; z-index: 8000;
+            display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 18px #3B82F655;
+            transition: var(--vx-transition); letter-spacing: 0.3px;
+        }
+        .vx-data-fab:hover { transform: translateY(-2px); box-shadow: 0 8px 28px #3B82F666; }
+        
+        .dashboard-container {
+            padding: 22px 22px 22px;
+            height: 100vh; width: 100vw;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .vx-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            gap: 16px;
+            flex: 1; min-height: 0;
+        }
+        .c1_99b8fe { grid-area: 1 / 1 / 3 / 4; }
+.c2_a5b5e8 { grid-area: 1 / 4 / 3 / 8; }
+.c3_6ba435 { grid-area: 3 / 1 / 7 / 13; }
+        .vx-card { animation: vxCardIn .4s cubic-bezier(0.32,0.72,0,1) both; }
+        @keyframes vxCardIn {
+            from { opacity:0; transform:translateY(18px) scale(0.98); filter:blur(2px); }
+            to   { opacity:1; transform:translateY(0) scale(1); filter:blur(0); }
+        }
+        .vx-valuebox { animation: vxValueIn .5s cubic-bezier(0.32,0.72,0,1) both; }
+        @keyframes vxValueIn {
+            from { opacity:0; transform:translateY(12px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        .vx-card:nth-child(1){animation-delay:0.0s}
+.vx-card:nth-child(2){animation-delay:0.05s}
+.vx-card:nth-child(3){animation-delay:0.1s}
+        @media(max-width:768px){
+            .vx-grid { display:flex; flex-direction:column; overflow-y:auto; }
+            .vx-card { min-height:220px; flex-shrink:0; }
+            body { overflow-y:auto; }
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="dashboard-container">
+        <div class="vx-grid">
+            
+        <style>
+        .vb-c1_99b8fe {
+            padding: 18px 20px; display: flex; align-items: center;
+            gap: 14px; border-left: 5px solid #3B82F6;
+            height: 100%; position: relative; overflow: hidden;
+        }
+        .vb-c1_99b8fe::after {
+            content:''; position:absolute; right:-18px; top:-18px;
+            width:80px; height:80px; border-radius:50%;
+            background:#3B82F60D;
+        }
+        .vb-icon-c1_99b8fe {
+            width: 48px; height: 48px; border-radius: 12px;
+            background: #3B82F615;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .vb-label-c1_99b8fe {
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.6px;
+            text-transform: uppercase; color: var(--vx-text-secondary);
+            margin-bottom: 5px;
+        }
+        .vb-val-c1_99b8fe {
+            font-size: 1.75rem; font-weight: 800;
+            color: var(--vx-text-primary); line-height: 1; letter-spacing: -0.5px;
+        }
+        </style>
+        <div class="vx-card vb-c1_99b8fe c1_99b8fe vx-valuebox" id="c1_99b8fe">
+            <div class="vb-icon-c1_99b8fe"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
+            <div>
+                <div class="vb-label-c1_99b8fe">Filas</div>
+                <div class="vb-val-c1_99b8fe">150</div>
+            </div>
+        </div>
+        <style>
+        .ib-card-c2_a5b5e8 {
+            padding: 16px 18px; display: flex; flex-direction: column;
+            height: 100%; border-top: 4px solid #3B82F6;
+        }
+        .ib-title-c2_a5b5e8 {
+            font-size: 0.78rem; font-weight: 700; letter-spacing: 0.5px;
+            text-transform: uppercase; color: #3B82F6; margin-bottom: 12px;
+        }
+        .ib-rows-c2_a5b5e8 { display: flex; flex-direction: column; gap: 7px; flex: 1; overflow: auto; }
+        .ib-row-c2_a5b5e8 {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 5px 8px; border-radius: 7px; background: #3B82F609;
+        }
+        .ib-label-c2_a5b5e8 {
+            font-size: 0.73rem; color: var(--vx-text-secondary); font-weight: 500;
+        }
+        .ib-val-c2_a5b5e8 {
+            font-size: 0.82rem; font-weight: 700; color: var(--vx-text-primary);
+        }
+        </style>
+        <div class="vx-card ib-card-c2_a5b5e8 c2_a5b5e8" id="c2_a5b5e8">
+            <div class="ib-title-c2_a5b5e8">species</div>
+            <div class="ib-rows-c2_a5b5e8">
+            <div class="ib-row-c2_a5b5e8">
+                <span class="ib-label-c2_a5b5e8">Mean</span>
+                <span class="ib-val-c2_a5b5e8">—</span>
+            </div>
+            <div class="ib-row-c2_a5b5e8">
+                <span class="ib-label-c2_a5b5e8">Median</span>
+                <span class="ib-val-c2_a5b5e8">—</span>
+            </div>
+            <div class="ib-row-c2_a5b5e8">
+                <span class="ib-label-c2_a5b5e8">Std Dev</span>
+                <span class="ib-val-c2_a5b5e8">—</span>
+            </div>
+            <div class="ib-row-c2_a5b5e8">
+                <span class="ib-label-c2_a5b5e8">Min</span>
+                <span class="ib-val-c2_a5b5e8">setosa</span>
+            </div>
+            <div class="ib-row-c2_a5b5e8">
+                <span class="ib-label-c2_a5b5e8">Max</span>
+                <span class="ib-val-c2_a5b5e8">virginica</span>
+            </div>
+            <div class="ib-row-c2_a5b5e8">
+                <span class="ib-label-c2_a5b5e8">Count</span>
+                <span class="ib-val-c2_a5b5e8">150</span>
+            </div></div>
+        </div>
+        <style>
+        .tc-c3_6ba435 { padding:14px 16px; display:flex; flex-direction:column; height:100%; }
+        .tc-c3_6ba435 h4 { color:var(--vx-text-primary); margin:0 0 10px; font-weight:600; font-size:.88rem; flex-shrink:0; }
+        .tcc-c3_6ba435 { overflow:auto; flex:1; scrollbar-width:thin; }
+        .vxt-c3_6ba435 { width:100%; border-collapse:collapse; font-size:.78rem; }
+        .vxt-c3_6ba435 th {
+            background:#3B82F612; color:#3B82F6; padding:9px 8px;
+            text-align:left; font-weight:700; position:sticky; top:0;
+            border-bottom:2px solid #3B82F633; font-size:.75rem; letter-spacing:.3px;
+        }
+        .vxt-c3_6ba435 td { padding:7px 8px; border-bottom:1px solid rgba(128,128,128,.1); color:var(--vx-text-primary); }
+        .vxt-c3_6ba435 tr:hover { background:#3B82F607; }
+        </style>
+        <div class="vx-card tc-c3_6ba435 c3_6ba435 vx-card-static" id="c3_6ba435">
+            <h4 class="vx-card-header">Muestra</h4>
+            <div class="tcc-c3_6ba435"><table class="dataframe vxt-c3_6ba435 vx-sortable-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>sepal_length</th>
+      <th>sepal_width</th>
+      <th>petal_length</th>
+      <th>petal_width</th>
+      <th>species</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>5.1</td>
+      <td>3.5</td>
+      <td>1.4</td>
+      <td>0.2</td>
+      <td>setosa</td>
+    </tr>
+    <tr>
+      <td>4.9</td>
+      <td>3.0</td>
+      <td>1.4</td>
+      <td>0.2</td>
+      <td>setosa</td>
+    </tr>
+    <tr>
+      <td>4.7</td>
+      <td>3.2</td>
+      <td>1.3</td>
+      <td>0.2</td>
+      <td>setosa</td>
+    </tr>
+    <tr>
+      <td>4.6</td>
+      <td>3.1</td>
+      <td>1.5</td>
+      <td>0.2</td>
+      <td>setosa</td>
+    </tr>
+    <tr>
+      <td>5.0</td>
+      <td>3.6</td>
+      <td>1.4</td>
+      <td>0.2</td>
+      <td>setosa</td>
+    </tr>
+    <tr>
+      <td>5.4</td>
+      <td>3.9</td>
+      <td>1.7</td>
+      <td>0.4</td>
+      <td>setosa</td>
+    </tr>
+    <tr>
+      <td>4.6</td>
+      <td>3.4</td>
+      <td>1.4</td>
+      <td>0.3</td>
+      <td>setosa</td>
+    </tr>
+    <tr>
+      <td>5.0</td>
+      <td>3.4</td>
+      <td>1.5</td>
+      <td>0.2</td>
+      <td>setosa</td>
+    </tr>
+    <tr>
+      <td>4.4</td>
+      <td>2.9</td>
+      <td>1.4</td>
+      <td>0.2</td>
+      <td>setosa</td>
+    </tr>
+    <tr>
+      <td>4.9</td>
+      <td>3.1</td>
+      <td>1.5</td>
+      <td>0.1</td>
+      <td>setosa</td>
+    </tr>
+  </tbody>
+</table></div>
+        </div>
+        </div>
+    </div>
+    
+    <script>
+    (function(){
+        function closeModal(el){ if(el) el.classList.remove('open'); }
+        document.addEventListener('keydown', function(e){
+            if(e.key !== 'Escape') return;
+            document.querySelectorAll('.vx-modal-overlay.open').forEach(function(m){
+                m.classList.remove('open');
+            });
+        });
+        window.vxOpenModal = function(id){
+            var m = document.getElementById(id);
+            if(m) m.classList.add('open');
+        };
+        window.vxCloseModal = function(id){
+            closeModal(document.getElementById(id));
+        };
+        document.querySelectorAll('.vx-modal-overlay').forEach(function(overlay){
+            overlay.addEventListener('click', function(e){
+                if(e.target === overlay) overlay.classList.remove('open');
+            });
+        });
+        var search = document.getElementById('vx-data-search');
+        if(search){
+            search.addEventListener('input', function(){
+                var q = search.value.toLowerCase();
+                document.querySelectorAll('.vx-prev-tbl tbody tr').forEach(function(row){
+                    row.style.display = row.textContent.toLowerCase().indexOf(q) >= 0 ? '' : 'none';
+                });
+            });
+        }
+    })();
+    </script>
+    <script>
+    (function(){
+        document.querySelectorAll('.vx-sortable-table').forEach(function(table){
+            table.querySelectorAll('th').forEach(function(th, colIdx){
+                th.style.cursor = 'pointer';
+                th.title = 'Click to sort';
+                th.addEventListener('click', function(){
+                    var tbody = table.querySelector('tbody');
+                    if(!tbody) return;
+                    var rows = Array.from(tbody.querySelectorAll('tr'));
+                    var asc = th.dataset.sortDir !== 'asc';
+                    table.querySelectorAll('th').forEach(function(h){ delete h.dataset.sortDir; });
+                    th.dataset.sortDir = asc ? 'asc' : 'desc';
+                    rows.sort(function(a, b){
+                        var av = (a.children[colIdx] || {}).textContent || '';
+                        var bv = (b.children[colIdx] || {}).textContent || '';
+                        var an = parseFloat(av.replace(/[^0-9.-]/g, ''));
+                        var bn = parseFloat(bv.replace(/[^0-9.-]/g, ''));
+                        var cmp = (!isNaN(an) && !isNaN(bn)) ? (an - bn) : av.localeCompare(bv);
+                        return asc ? cmp : -cmp;
+                    });
+                    rows.forEach(function(r){ tbody.appendChild(r); });
+                });
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

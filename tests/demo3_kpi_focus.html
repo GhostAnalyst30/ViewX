@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Demo 3 · KPI Focus</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <style>
+        
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        :root {
+            --vx-bg-page:       #07080F;
+            --vx-bg-card:       #0F1117;
+            --vx-accent:        #6366F1;
+            --vx-text-primary:  #E2E5FF;
+            --vx-text-secondary:#9CA3AF;
+            --vx-card-radius:   14px;
+            --vx-shadow:        0 8px 32px rgba(99,102,241,0.15);
+            --vx-transition:    all 0.35s cubic-bezier(.16,1,.3,1);
+            --vx-ease:          cubic-bezier(0.32,0.72,0,1);
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--vx-bg-page);
+            color: var(--vx-text-primary);
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            overflow: hidden;
+            height: 100dvh; width: 100vw;
+        }
+        .vx-card {
+            background: var(--vx-bg-card);
+            border-radius: var(--vx-card-radius);
+            box-shadow: var(--vx-shadow);
+            transition: var(--vx-transition);
+            overflow: auto;
+            border: 1px solid rgba(128,128,128,0.08);
+            position: relative;
+        }
+        .vx-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--vx-accent), transparent);
+            opacity: 0;
+            transition: var(--vx-transition);
+        }
+        .vx-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(0,0,0,0.14);
+        }
+        .vx-card:hover::before { opacity: 1; }
+        .vx-card.vx-card-static:hover {
+            transform: none;
+            box-shadow: var(--vx-shadow);
+        }
+        .vx-card-header {
+            margin: 0; color: var(--vx-text-primary); font-weight: 600;
+            font-size: 0.88rem;
+            border-bottom: 2px solid rgba(128,128,128,0.12); padding-bottom: 6px;
+        }
+        .vx-kpi-body {
+            padding: 18px 20px; display: flex; align-items: center;
+            gap: 14px; height: 100%; position: relative; overflow: hidden;
+        }
+        .vx-sortable-table th { cursor: pointer; user-select: none; }
+        .vx-sortable-table th:hover { background: #6366F118; }
+        .plotly-graph-div, .js-plotly-plot, .plot-container {
+            width: 100% !important; height: 100% !important;
+        }
+        .vx-card::-webkit-scrollbar { width:5px; height:5px; }
+        .vx-card::-webkit-scrollbar-track { background: transparent; }
+        .vx-card::-webkit-scrollbar-thumb { background:#6366F155; border-radius:3px; }
+
+        /* ── Modal overlay ── */
+        .vx-modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7); z-index: 9000;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .vx-modal-overlay.open { display: flex; }
+        .vx-modal-box {
+            background: #0F1117;
+            border-radius: 16px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+            border: 1px solid #6366F133;
+            width: min(92vw, 1100px);
+            max-height: 88vh;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            animation: vxModalIn .22s cubic-bezier(.16,1,.3,1);
+        }
+        @keyframes vxModalIn {
+            from { opacity:0; transform: scale(.96) translateY(12px); }
+            to   { opacity:1; transform: scale(1) translateY(0); }
+        }
+        .vx-modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 24px 14px;
+            border-bottom: 1px solid #6366F122;
+            flex-shrink: 0;
+        }
+        .vx-modal-header h3 {
+            font-size: 1.05rem; font-weight: 700; color: var(--vx-text-primary);
+        }
+        .vx-modal-close {
+            background: none; border: none; cursor: pointer;
+            color: var(--vx-text-secondary); border-radius: 8px;
+            width:32px; height:32px; display:flex; align-items:center; justify-content:center;
+            transition: var(--vx-transition);
+        }
+        .vx-modal-close:hover { background:#6366F122; color:#6366F1; }
+        .vx-modal-body {
+            flex: 1; overflow: auto; padding: 20px 24px 24px;
+        }
+
+        /* ── Info FAB button on charts ── */
+        .vx-chart-info-btn {
+            position: absolute; bottom: 10px; right: 10px;
+            width: 32px; height: 32px; border-radius: 50%;
+            background: #6366F1EE; border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            transition: var(--vx-transition); z-index: 10;
+            opacity: 0.75;
+        }
+        .vx-chart-info-btn:hover { opacity:1; transform: scale(1.12); }
+        .vx-chart-info-btn svg { pointer-events: none; }
+
+        /* ── Data button ── */
+        .vx-data-fab {
+            position: fixed; bottom: 22px; right: 22px;
+            background: #6366F1; color: #fff;
+            border: none; border-radius: 50px;
+            padding: 10px 20px; font-weight: 700; font-size: 0.82rem;
+            cursor: pointer; z-index: 8000;
+            display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 18px #6366F155;
+            transition: var(--vx-transition); letter-spacing: 0.3px;
+        }
+        .vx-data-fab:hover { transform: translateY(-2px); box-shadow: 0 8px 28px #6366F166; }
+        
+        .dashboard-container {
+            padding: 74px 20px 20px;
+            height: 100vh; width: 100vw;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .vx-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-template-rows: repeat(7, 1fr);
+            gap: 14px;
+            flex: 1; min-height: 0;
+        }
+        .c1_196302 { grid-area: 1 / 1 / 4 / 5; }
+.c2_3fa6ff { grid-area: 1 / 5 / 4 / 9; }
+.c3_34a872 { grid-area: 1 / 9 / 4 / 13; }
+.c4_87a14f { grid-area: 4 / 1 / 8 / 7; }
+.c5_ef1a95 { grid-area: 4 / 7 / 8 / 13; }
+        .vx-card { animation: vxCardIn .4s cubic-bezier(0.32,0.72,0,1) both; }
+        @keyframes vxCardIn {
+            from { opacity:0; transform:translateY(18px) scale(0.98); filter:blur(2px); }
+            to   { opacity:1; transform:translateY(0) scale(1); filter:blur(0); }
+        }
+        .vx-valuebox { animation: vxValueIn .5s cubic-bezier(0.32,0.72,0,1) both; }
+        @keyframes vxValueIn {
+            from { opacity:0; transform:translateY(12px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        .vx-card:nth-child(1){animation-delay:0.0s}
+.vx-card:nth-child(2){animation-delay:0.05s}
+.vx-card:nth-child(3){animation-delay:0.1s}
+.vx-card:nth-child(4){animation-delay:0.15000000000000002s}
+.vx-card:nth-child(5){animation-delay:0.2s}
+        @media(max-width:768px){
+            .vx-grid { display:flex; flex-direction:column; overflow-y:auto; }
+            .vx-card { min-height:220px; flex-shrink:0; }
+            body { overflow-y:auto; }
+        }
+    </style>
+</head>
+<body>
+    
+        <style>
+        .vx-navbar {
+            position:fixed; top:0; left:0; right:0; height:54px;
+            background:#0F1117F5; display:flex; align-items:center;
+            justify-content:space-between; padding:0 24px; z-index:1000;
+            box-shadow:0 1px 0 rgba(128,128,128,.12);
+            border-bottom:2px solid #6366F1;
+            backdrop-filter:blur(8px);
+        }
+        .nav-brand-wrap { display:flex; flex-direction:column; gap:1px; }
+        .nav-brand {
+            font-weight:800; font-size:1.1rem; color:#6366F1;
+            text-decoration:none; letter-spacing:-.4px;
+            display:flex; align-items:center; gap:7px;
+        }
+        .nav-author-wrap { font-size:.7rem; color:var(--vx-text-secondary); font-weight:500; }
+        .nav-author { font-size:.7rem; color:var(--vx-text-secondary); }
+        .nav-alink { color:#6366F1; text-decoration:none; }
+        .nav-alink:hover { text-decoration:underline; }
+        .nav-links { display:flex; gap:18px; }
+        .nav-link {
+            color:var(--vx-text-primary); text-decoration:none;
+            font-weight:600; font-size:.82rem; opacity:.75;
+            transition:var(--vx-transition);
+        }
+        .nav-link:hover { opacity:1; color:#6366F1; }
+        </style>
+        <nav class="vx-navbar">
+            <div class="nav-brand-wrap">
+                <a href="#" class="nav-brand"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Demo 3 · KPI Focus</a>
+                <div class="nav-author-wrap">by <span class="nav-author">Carlos Méndez</span></div>
+            </div>
+            <div class="nav-links"></div>
+        </nav>
+    <div class="dashboard-container">
+        <div class="vx-grid">
+            
+        <style>
+        .vb-c1_196302 {
+            padding: 18px 20px; display: flex; align-items: center;
+            gap: 14px; border-left: 5px solid #6366F1;
+            height: 100%; position: relative; overflow: hidden;
+        }
+        .vb-c1_196302::after {
+            content:''; position:absolute; right:-18px; top:-18px;
+            width:80px; height:80px; border-radius:50%;
+            background:#6366F10D;
+        }
+        .vb-icon-c1_196302 {
+            width: 48px; height: 48px; border-radius: 12px;
+            background: #6366F115;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .vb-label-c1_196302 {
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.6px;
+            text-transform: uppercase; color: var(--vx-text-secondary);
+            margin-bottom: 5px;
+        }
+        .vb-val-c1_196302 {
+            font-size: 1.75rem; font-weight: 800;
+            color: var(--vx-text-primary); line-height: 1; letter-spacing: -0.5px;
+        }
+        </style>
+        <div class="vx-card vb-c1_196302 c1_196302 vx-valuebox" id="c1_196302">
+            <div class="vb-icon-c1_196302"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+            <div>
+                <div class="vb-label-c1_196302">utilidad</div>
+                <div class="vb-val-c1_196302">270.3K</div>
+            </div>
+        </div>
+        <style>
+        .vb-c2_3fa6ff {
+            padding: 18px 20px; display: flex; align-items: center;
+            gap: 14px; border-left: 5px solid #6366F1;
+            height: 100%; position: relative; overflow: hidden;
+        }
+        .vb-c2_3fa6ff::after {
+            content:''; position:absolute; right:-18px; top:-18px;
+            width:80px; height:80px; border-radius:50%;
+            background:#6366F10D;
+        }
+        .vb-icon-c2_3fa6ff {
+            width: 48px; height: 48px; border-radius: 12px;
+            background: #6366F115;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .vb-label-c2_3fa6ff {
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.6px;
+            text-transform: uppercase; color: var(--vx-text-secondary);
+            margin-bottom: 5px;
+        }
+        .vb-val-c2_3fa6ff {
+            font-size: 1.75rem; font-weight: 800;
+            color: var(--vx-text-primary); line-height: 1; letter-spacing: -0.5px;
+        }
+        </style>
+        <div class="vx-card vb-c2_3fa6ff c2_3fa6ff vx-valuebox" id="c2_3fa6ff">
+            <div class="vb-icon-c2_3fa6ff"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <div>
+                <div class="vb-label-c2_3fa6ff">unidades</div>
+                <div class="vb-val-c2_3fa6ff">5.0K</div>
+            </div>
+        </div>
+        <style>
+        .vb-c3_34a872 {
+            padding: 18px 20px; display: flex; align-items: center;
+            gap: 14px; border-left: 5px solid #6366F1;
+            height: 100%; position: relative; overflow: hidden;
+        }
+        .vb-c3_34a872::after {
+            content:''; position:absolute; right:-18px; top:-18px;
+            width:80px; height:80px; border-radius:50%;
+            background:#6366F10D;
+        }
+        .vb-icon-c3_34a872 {
+            width: 48px; height: 48px; border-radius: 12px;
+            background: #6366F115;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .vb-label-c3_34a872 {
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.6px;
+            text-transform: uppercase; color: var(--vx-text-secondary);
+            margin-bottom: 5px;
+        }
+        .vb-val-c3_34a872 {
+            font-size: 1.75rem; font-weight: 800;
+            color: var(--vx-text-primary); line-height: 1; letter-spacing: -0.5px;
+        }
+        </style>
+        <div class="vx-card vb-c3_34a872 c3_34a872 vx-valuebox" id="c3_34a872">
+            <div class="vb-icon-c3_34a872"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg></div>
+            <div>
+                <div class="vb-label-c3_34a872">ventas</div>
+                <div class="vb-val-c3_34a872">1.09M</div>
+            </div>
+        </div>
+        <style>
+        .pc-c4_87a14f {
+            padding: 12px 14px; display: grid;
+            grid-template-rows: auto 1fr; height: 100%;
+            width: 100%; overflow: hidden; gap: 6px; position: relative;
+        }
+        .pc-c4_87a14f h4 {
+            margin: 0; color: var(--vx-text-primary); font-weight: 600;
+            font-size: 0.88rem;
+            border-bottom: 2px solid #6366F128; padding-bottom: 6px;
+        }
+        .pcc-c4_87a14f { position:relative; width:100%; height:100%; min-height:0; overflow:hidden; }
+        .pcc-c4_87a14f .plotly-graph-div { width:100%!important; height:100%!important; }
+        </style>
+        <div class="vx-card pc-c4_87a14f c4_87a14f vx-card-static" id="c4_87a14f">
+            <h4 class="vx-card-header">utilidad by region</h4>
+            <div class="pcc-c4_87a14f">
+                <div>                            <div id="1e997b97-84d7-4899-8d6c-df10810ed0bb" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("1e997b97-84d7-4899-8d6c-df10810ed0bb")) {                    Plotly.newPlot(                        "1e997b97-84d7-4899-8d6c-df10810ed0bb",                        [{"hovertemplate":"region=%{y}\u003cbr\u003eutilidad=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"Centro","marker":{"color":"#6366F1","pattern":{"shape":""}},"name":"Centro","orientation":"h","showlegend":true,"textposition":"auto","x":{"dtype":"i4","bdata":"tZkAAA=="},"xaxis":"x","y":["Centro"],"yaxis":"y","type":"bar"},{"hovertemplate":"region=%{y}\u003cbr\u003eutilidad=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"Sur","marker":{"color":"#818CF8","pattern":{"shape":""}},"name":"Sur","orientation":"h","showlegend":true,"textposition":"auto","x":{"dtype":"i4","bdata":"c9EAAA=="},"xaxis":"x","y":["Sur"],"yaxis":"y","type":"bar"},{"hovertemplate":"region=%{y}\u003cbr\u003eutilidad=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"Este","marker":{"color":"#A5B4FC","pattern":{"shape":""}},"name":"Este","orientation":"h","showlegend":true,"textposition":"auto","x":{"dtype":"i4","bdata":"5tkAAA=="},"xaxis":"x","y":["Este"],"yaxis":"y","type":"bar"},{"hovertemplate":"region=%{y}\u003cbr\u003eutilidad=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"Oeste","marker":{"color":"#C7D2FE","pattern":{"shape":""}},"name":"Oeste","orientation":"h","showlegend":true,"textposition":"auto","x":{"dtype":"i4","bdata":"r+gAAA=="},"xaxis":"x","y":["Oeste"],"yaxis":"y","type":"bar"},{"hovertemplate":"region=%{y}\u003cbr\u003eutilidad=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"Norte","marker":{"color":"#4F46E5","pattern":{"shape":""}},"name":"Norte","orientation":"h","showlegend":true,"textposition":"auto","x":{"dtype":"i4","bdata":"IvIAAA=="},"xaxis":"x","y":["Norte"],"yaxis":"y","type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"utilidad"},"gridcolor":"rgba(99,102,241,0.1)","zerolinecolor":"rgba(99,102,241,0.1)","showgrid":true},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"region"},"categoryorder":"array","categoryarray":["Norte","Oeste","Este","Sur","Centro"],"tickfont":{"size":11},"gridcolor":"rgba(99,102,241,0.1)","zerolinecolor":"rgba(99,102,241,0.1)","showgrid":true},"legend":{"title":{"text":"region"},"tracegroupgap":0,"font":{"size":11}},"margin":{"t":24,"l":36,"r":18,"b":28},"barmode":"relative","title":{"text":""},"colorway":["#6366F1","#818CF8","#A5B4FC","#C7D2FE","#4F46E5"],"showlegend":false,"font":{"color":"#E2E5FF","family":"'Inter','Segoe UI',sans-serif"},"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","autosize":true,"hovermode":"closest"},                        {"displaylogo": false, "responsive": true, "autosizable": true}                    )                };            </script>        </div>
+                
+            <button class="vx-chart-info-btn" onclick="vxOpenModal('modal_c4_87a14f')"
+                    title="Chart details" aria-label="Open chart details">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </button>
+            </div>
+        </div>
+        
+            <div id="modal_c4_87a14f" class="vx-modal-overlay" role="dialog" aria-modal="true"
+                 aria-labelledby="modal_c4_87a14f-title">
+                <div class="vx-modal-box" style="max-width:520px">
+                    <div class="vx-modal-header">
+                        <h3 id="modal_c4_87a14f-title">utilidad by region</h3>
+                        <button class="vx-modal-close" aria-label="Close dialog"
+                                onclick="vxCloseModal('modal_c4_87a14f')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                    </div>
+                    <div class="vx-modal-body"><table style='width:100%;border-collapse:collapse'><tr><td style='padding:6px 10px;color:var(--vx-text-secondary);font-size:.8rem'>Categories</td><td style='padding:6px 10px;font-weight:600;font-size:.82rem'>5</td></tr><tr><td style='padding:6px 10px;color:var(--vx-text-secondary);font-size:.8rem'>Top</td><td style='padding:6px 10px;font-weight:600;font-size:.82rem'>Oeste</td></tr><tr><td style='padding:6px 10px;color:var(--vx-text-secondary);font-size:.8rem'>Total utilidad</td><td style='padding:6px 10px;font-weight:600;font-size:.82rem'>270.3K</td></tr></table></div>
+                </div>
+            </div>
+        <script>
+    (function(){
+        var cont = document.querySelector('.pcc-c4_87a14f');
+        var t;
+        function resize(){
+            var d = cont ? cont.querySelector('.plotly-graph-div') : null;
+            if(d && window.Plotly){
+                var w = cont.clientWidth, h = cont.clientHeight;
+                if(w>0&&h>0) Plotly.relayout(d,{width:w,height:h});
+            }
+        }
+        if(window.ResizeObserver && cont)
+            new ResizeObserver(function(){clearTimeout(t);t=setTimeout(resize,50);}).observe(cont);
+        window.addEventListener('resize',function(){clearTimeout(t);t=setTimeout(resize,100);});
+        (function wait(n){
+            var d=cont?cont.querySelector('.plotly-graph-div'):null;
+            if(d&&window.Plotly) resize();
+            else if(n>0) setTimeout(function(){wait(n-1);},120);
+        })(18);
+    })();
+    </script>
+        <style>
+        .pc-c5_ef1a95 {
+            padding: 12px 14px; display: grid;
+            grid-template-rows: auto 1fr; height: 100%;
+            width: 100%; overflow: hidden; gap: 6px; position: relative;
+        }
+        .pc-c5_ef1a95 h4 {
+            margin: 0; color: var(--vx-text-primary); font-weight: 600;
+            font-size: 0.88rem;
+            border-bottom: 2px solid #6366F128; padding-bottom: 6px;
+        }
+        .pcc-c5_ef1a95 { position:relative; width:100%; height:100%; min-height:0; overflow:hidden; }
+        .pcc-c5_ef1a95 .plotly-graph-div { width:100%!important; height:100%!important; }
+        </style>
+        <div class="vx-card pc-c5_ef1a95 c5_ef1a95 vx-card-static" id="c5_ef1a95">
+            <h4 class="vx-card-header">utilidad vs ventas</h4>
+            <div class="pcc-c5_ef1a95">
+                <div>                            <div id="f18b3fc7-b226-4077-b45d-ea9748b6ab3f" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("f18b3fc7-b226-4077-b45d-ea9748b6ab3f")) {                    Plotly.newPlot(                        "f18b3fc7-b226-4077-b45d-ea9748b6ab3f",                        [{"hovertemplate":"region=Oeste\u003cbr\u003eutilidad=%{x}\u003cbr\u003eventas=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"Oeste","marker":{"color":"#6366F1","opacity":0.65,"symbol":"circle"},"mode":"markers","name":"Oeste","orientation":"v","showlegend":true,"x":{"dtype":"i2","bdata":"bwFUBJYDnAP7AhQGGAMXAsUBiALjBZsCJQQoA5EBSgHWCpsALwYpApQILgYLBHEGOAv4Ag0GiARsApIA9QgJChcDswwRBAAFZQF0B7UEPgZBDAcBagApATgH3wVtDMcB9AM="},"xaxis":"x","y":{"dtype":"i4","bdata":"gwgAAPEeAAAVDQAA7RwAAPcTAADqGAAAbwsAAJQRAACmDAAAWBgAAP8RAAAhDwAAXCQAAHoRAAC3DgAALQUAAGsfAADMBAAAWBkAAFYGAADFFQAA5BUAAFwVAAARGQAARyQAAD8SAADIFwAAKBAAAB0WAACtBQAAoRYAAJ0aAAAQGgAA8iMAAO8eAACSDwAABgkAALAbAABfDQAAvSQAAC0mAAArBQAAeQIAADAJAAAiFQAA9g4AAFkjAACPBAAArQwAAA=="},"yaxis":"y","type":"scatter","line":{"color":"#6366F1"}},{"hovertemplate":"region=Centro\u003cbr\u003eutilidad=%{x}\u003cbr\u003eventas=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"Centro","marker":{"color":"#818CF8","opacity":0.65,"symbol":"circle"},"mode":"markers","name":"Centro","orientation":"v","showlegend":true,"x":{"dtype":"i2","bdata":"0AJBAigJ8gSGCT0EwAsjBkkCTQG\u002fB6cCmgfoA2cEoAHgBowBTAMcAj0EaAJHBLkB9gQTBIQCZwOQAh0DbwdzAcECFwNHBUQE"},"xaxis":"x","y":{"dtype":"i4","bdata":"pg8AAKwMAADPJgAASBsAAO0YAACtCwAAQyMAAJQXAAAeBgAAlQMAAOgfAAC8CwAAihwAALEeAACqEAAAzAQAAIATAACuBAAAaBUAAGAKAACWHgAA3hIAAN8LAACbBgAADh0AAG0MAAD4BwAAmRcAACAHAAA5DgAAzxsAAOwDAAAiGgAAgwwAALsVAAB7EAAA"},"yaxis":"y","type":"scatter","line":{"color":"#6366F1"}},{"hovertemplate":"region=Este\u003cbr\u003eutilidad=%{x}\u003cbr\u003eventas=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"Este","marker":{"color":"#A5B4FC","opacity":0.65,"symbol":"circle"},"mode":"markers","name":"Este","orientation":"v","showlegend":true,"x":{"dtype":"i2","bdata":"TQblATUGRANgArYB3AFoAjYKmgWGCDMFXwINA9sFrAqrBgAGKAcqDokEvAizAwoKBAH9Ct8CdgkVCvsCXwEeAg4I2whiCRQGJAY="},"xaxis":"x","y":{"dtype":"i4","bdata":"SR4AAFEKAADNGwAAowsAAFgTAABHBQAAiwgAALAVAAA2IQAAPREAAGUYAAD8EgAAugsAANIMAABGFQAAgyIAAKggAACtFgAAgRsAAHgmAADKFgAAhRwAAIQdAAC1JgAASQcAAOcjAACpFgAAzyYAAHIlAAD0DQAA7wcAAJQFAADYFgAAARgAAL4dAABoEwAAbSYAAA=="},"yaxis":"y","type":"scatter","line":{"color":"#6366F1"}},{"hovertemplate":"region=Sur\u003cbr\u003eutilidad=%{x}\u003cbr\u003eventas=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"Sur","marker":{"color":"#C7D2FE","opacity":0.65,"symbol":"circle"},"mode":"markers","name":"Sur","orientation":"v","showlegend":true,"x":{"dtype":"i2","bdata":"bwJMBpQL6QL9CQ8G9QXEAZcEQAtVDBoKIgqKBL4DogZOAuQEpQVfCVsEFgEfCCcEcgYlCg0CxQTeB3UJIQL8BWQD4gEYBQ=="},"xaxis":"x","y":{"dtype":"i4","bdata":"OBYAAP0bAADSHgAACw0AAKUcAAAQEwAA5SQAABYKAABQHAAAZiIAAJcfAADwHQAAlyQAAIsNAADWDAAA4xEAABcIAABkDwAAABgAAFYeAAB\u002fEwAAgwYAAD4hAAA\u002fHAAAPR4AADofAADMEgAAThIAAIwfAACgGgAAQxIAAPQPAABpIQAAPQcAAIsfAAA="},"yaxis":"y","type":"scatter","line":{"color":"#6366F1"}},{"hovertemplate":"region=Norte\u003cbr\u003eutilidad=%{x}\u003cbr\u003eventas=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"Norte","marker":{"color":"#4F46E5","opacity":0.65,"symbol":"circle"},"mode":"markers","name":"Norte","orientation":"v","showlegend":true,"x":{"dtype":"i2","bdata":"EArQDqkF0QLZCDAFvgavAAED+QS7AZkDZQDVCNgGPQElBeIKegwdAjkEOwdLBToC7gciBYIEOwQoBoYE3AmGBeMBNQIiAvgDfAQeAgsGPwRXC6gLLAk="},"xaxis":"x","y":{"dtype":"i4","bdata":"6yUAAHMlAACTGgAA\u002fxYAAB8gAABSGAAA+yQAAJADAABTCgAAVg0AAEkHAAAGHgAAfwMAANweAACGIQAAwQQAAGIXAAAMHgAA1x8AABoGAABtFAAA0CQAAOIUAAD6BwAAdyYAAE0ZAACgEgAAgBQAAOUUAABxEAAAuyMAAHYbAACyBgAAmRUAAC0KAAAfEAAA1iYAANwGAAAkDwAAkg8AAMojAACsIQAAlxwAAA=="},"yaxis":"y","type":"scatter","line":{"color":"#6366F1"}}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"utilidad"},"gridcolor":"rgba(99,102,241,0.1)","zerolinecolor":"rgba(99,102,241,0.1)","showgrid":true},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"ventas"},"gridcolor":"rgba(99,102,241,0.1)","zerolinecolor":"rgba(99,102,241,0.1)","showgrid":true},"legend":{"title":{"text":"region"},"tracegroupgap":0,"font":{"size":11}},"margin":{"t":24,"l":36,"r":18,"b":28},"title":{"text":""},"colorway":["#6366F1","#818CF8","#A5B4FC","#C7D2FE","#4F46E5"],"font":{"color":"#E2E5FF","family":"'Inter','Segoe UI',sans-serif"},"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","autosize":true,"hovermode":"closest"},                        {"displaylogo": false, "responsive": true, "autosizable": true}                    )                };            </script>        </div>
+                
+            <button class="vx-chart-info-btn" onclick="vxOpenModal('modal_c5_ef1a95')"
+                    title="Chart details" aria-label="Open chart details">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </button>
+            </div>
+        </div>
+        
+            <div id="modal_c5_ef1a95" class="vx-modal-overlay" role="dialog" aria-modal="true"
+                 aria-labelledby="modal_c5_ef1a95-title">
+                <div class="vx-modal-box" style="max-width:520px">
+                    <div class="vx-modal-header">
+                        <h3 id="modal_c5_ef1a95-title">utilidad vs ventas</h3>
+                        <button class="vx-modal-close" aria-label="Close dialog"
+                                onclick="vxCloseModal('modal_c5_ef1a95')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                    </div>
+                    <div class="vx-modal-body"><table style='width:100%;border-collapse:collapse'><tr><td style='padding:6px 10px;color:var(--vx-text-secondary);font-size:.8rem'>Pearson r</td><td style='padding:6px 10px;font-weight:600;font-size:.82rem'>0.790</td></tr><tr><td style='padding:6px 10px;color:var(--vx-text-secondary);font-size:.8rem'>utilidad mean</td><td style='padding:6px 10px;font-weight:600;font-size:.82rem'>1.4K</td></tr><tr><td style='padding:6px 10px;color:var(--vx-text-secondary);font-size:.8rem'>ventas mean</td><td style='padding:6px 10px;font-weight:600;font-size:.82rem'>5.5K</td></tr></table></div>
+                </div>
+            </div>
+        <script>
+    (function(){
+        var cont = document.querySelector('.pcc-c5_ef1a95');
+        var t;
+        function resize(){
+            var d = cont ? cont.querySelector('.plotly-graph-div') : null;
+            if(d && window.Plotly){
+                var w = cont.clientWidth, h = cont.clientHeight;
+                if(w>0&&h>0) Plotly.relayout(d,{width:w,height:h});
+            }
+        }
+        if(window.ResizeObserver && cont)
+            new ResizeObserver(function(){clearTimeout(t);t=setTimeout(resize,50);}).observe(cont);
+        window.addEventListener('resize',function(){clearTimeout(t);t=setTimeout(resize,100);});
+        (function wait(n){
+            var d=cont?cont.querySelector('.plotly-graph-div'):null;
+            if(d&&window.Plotly) resize();
+            else if(n>0) setTimeout(function(){wait(n-1);},120);
+        })(18);
+    })();
+    </script>
+        </div>
+    </div>
+    
+    <script>
+    (function(){
+        function closeModal(el){ if(el) el.classList.remove('open'); }
+        document.addEventListener('keydown', function(e){
+            if(e.key !== 'Escape') return;
+            document.querySelectorAll('.vx-modal-overlay.open').forEach(function(m){
+                m.classList.remove('open');
+            });
+        });
+        window.vxOpenModal = function(id){
+            var m = document.getElementById(id);
+            if(m) m.classList.add('open');
+        };
+        window.vxCloseModal = function(id){
+            closeModal(document.getElementById(id));
+        };
+        document.querySelectorAll('.vx-modal-overlay').forEach(function(overlay){
+            overlay.addEventListener('click', function(e){
+                if(e.target === overlay) overlay.classList.remove('open');
+            });
+        });
+        var search = document.getElementById('vx-data-search');
+        if(search){
+            search.addEventListener('input', function(){
+                var q = search.value.toLowerCase();
+                document.querySelectorAll('.vx-prev-tbl tbody tr').forEach(function(row){
+                    row.style.display = row.textContent.toLowerCase().indexOf(q) >= 0 ? '' : 'none';
+                });
+            });
+        }
+    })();
+    </script>
+    <script>
+    (function(){
+        document.querySelectorAll('.vx-sortable-table').forEach(function(table){
+            table.querySelectorAll('th').forEach(function(th, colIdx){
+                th.style.cursor = 'pointer';
+                th.title = 'Click to sort';
+                th.addEventListener('click', function(){
+                    var tbody = table.querySelector('tbody');
+                    if(!tbody) return;
+                    var rows = Array.from(tbody.querySelectorAll('tr'));
+                    var asc = th.dataset.sortDir !== 'asc';
+                    table.querySelectorAll('th').forEach(function(h){ delete h.dataset.sortDir; });
+                    th.dataset.sortDir = asc ? 'asc' : 'desc';
+                    rows.sort(function(a, b){
+                        var av = (a.children[colIdx] || {}).textContent || '';
+                        var bv = (b.children[colIdx] || {}).textContent || '';
+                        var an = parseFloat(av.replace(/[^0-9.-]/g, ''));
+                        var bn = parseFloat(bv.replace(/[^0-9.-]/g, ''));
+                        var cmp = (!isNaN(an) && !isNaN(bn)) ? (an - bn) : av.localeCompare(bv);
+                        return asc ? cmp : -cmp;
+                    });
+                    rows.forEach(function(r){ tbody.appendChild(r); });
+                });
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

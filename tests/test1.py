@@ -35,6 +35,7 @@ HTML.auto_generate(
     df,
     title    = "Demo 1 · Auto Layout",
     filename = "demo1_auto.html",
+    show     = False,
 )
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -49,7 +50,8 @@ HTML.auto_generate(
     authors  = [
         {"name": "Ana García",  "email": "ana@empresa.com"},
         {"name": "Luis Torres", "email": "luis@empresa.com"},
-    ]
+    ],
+    show     = False,
 )
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -63,6 +65,7 @@ HTML.auto_generate(
     filename = "demo3_kpi_focus.html",
     layout   = "kpi_focus",
     authors  = "Carlos Méndez",
+    show     = False,
 )
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -75,6 +78,7 @@ HTML.auto_generate(
     title    = "Demo 4 · Chart Focus",
     filename = "demo4_chart_focus.html",
     layout   = "chart_focus",
+    show     = False,
 )
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -87,14 +91,11 @@ HTML.auto_generate(
     title    = "Demo 5 · Table First",
     filename = "demo5_table_first.html",
     layout   = "table_first",
+    show     = False,
 )
 
 # ════════════════════════════════════════════════════════════════════════════
 # DEMO 6 — Layout 100% personalizado
-#   Diseño:
-#   [KPI ventas] [KPI utilidad] [KPI unidades] | [Chart barras región]
-#   [Chart línea temporal (ventas)            ] | [Chart scatter        ]
-#   [Tabla completa                                                      ]
 # ════════════════════════════════════════════════════════════════════════════
 HTML.auto_generate(
     df,
@@ -104,19 +105,15 @@ HTML.auto_generate(
     filename = "demo6_custom.html",
     authors  = [{"name": "Equipo BI", "email": "bi@empresa.com"}],
     layout   = [
-        # Fila 1: 3 KPIs a la izquierda + 1 chart a la derecha
         {"type": "kpi",   "index": 0, "row": 1, "col": 1,  "height": 2, "width": 3},
         {"type": "kpi",   "index": 1, "row": 1, "col": 4,  "height": 2, "width": 3},
         {"type": "kpi",   "index": 2, "row": 1, "col": 7,  "height": 2, "width": 3},
-        {"type": "chart", "index": 1, "row": 1, "col": 10, "height": 7, "width": 3},  # barras región
-
-        # Fila 2: línea temporal grande + scatter
-        {"type": "chart", "index": 0, "row": 3, "col": 1,  "height": 5, "width": 6},  # línea tiempo
-        {"type": "chart", "index": 2, "row": 3, "col": 7,  "height": 5, "width": 3},  # scatter
-
-        # Fila 3: tabla completa
+        {"type": "chart", "index": 1, "row": 1, "col": 10, "height": 7, "width": 3},
+        {"type": "chart", "index": 0, "row": 3, "col": 1,  "height": 5, "width": 6},
+        {"type": "chart", "index": 2, "row": 3, "col": 7,  "height": 5, "width": 3},
         {"type": "table",             "row": 8, "col": 1,  "height": 4, "width": 12},
-    ]
+    ],
+    show     = False,
 )
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -135,9 +132,10 @@ HTML.auto_generate(
     template = "corporate_blue",
     title    = "Demo 7 · Parseo Automático de Strings",
     filename = "demo7_parseo.html",
+    show     = False,
 )
 
-print("\n✅ Todos los dashboards generados:")
+print("\nTodos los dashboards generados:")
 for i, name in enumerate([
     "demo1_auto.html",
     "demo2_cols.html",

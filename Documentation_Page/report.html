@@ -364,11 +364,42 @@ report.add_plot(x, y, caption="Tendencia mensual")</code></pre>
 report.build("mi_reporte")</code></pre>
       </div>
     </section>
+
+    <section class="section" id="auto_generate">
+      <h2>auto_generate()</h2>
+      <div class="method-card">
+        <div class="method-name">Report.auto_generate(df, title, author, filename, outdir, include_plots=True) &rarr; str</div>
+        <div class="method-desc">Genera un PDF automatico con resumen ejecutivo, advertencias, fortalezas, perfiles de columnas, correlaciones, graficos y muestra de datos. Requiere pdflatex.</div>
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="code-lang">Python</span>
+          <button class="code-copy" onclick="copyCode('auto-code')">Copiar</button>
+        </div>
+        <pre><code class="language-python" id="auto-code">from viewx import Report
+from viewx.datasets import load_iris
+
+Report.auto_generate(load_iris(), filename="iris_quality", outdir="output")</code></pre>
+      </div>
+    </section>
+
+    <section class="section" id="multicols">
+      <h2>begin_multicols() / new_page()</h2>
+      <div class="method-card">
+        <div class="method-name">begin_multicols(n=2) / end_multicols()</div>
+        <div class="method-desc">Layout en multiples columnas dentro del documento.</div>
+      </div>
+      <div class="method-card">
+        <div class="method-name">new_page()</div>
+        <div class="method-desc">Inserta un salto de pagina.</div>
+      </div>
+    </section>
   </main>
 </div>
 
 <footer>
-  <div class="footer-meta">ViewX &middot; Documentacion &middot; v2.3</div>
+  <div class="footer-meta">ViewX &middot; Documentacion &middot; v0.2.4</div>
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>

@@ -236,33 +236,18 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;backgro
           <span class="code-lang">Python</span>
           <button class="code-copy" onclick="copyCode('quick-code')">Copiar</button>
         </div>
-        <pre><code class="language-python" id="quick-code">from viewx.slides_engine import Presentation, Slide, Grid
-from viewx.components import Title, Text, Bullets, Image
+        <pre><code class="language-python" id="quick-code">from viewx.Slides import Presentation, Slide, Grid, Title, Text, BulletList, BarPlot
+from viewx.datasets import load_iris
 
-# Crear presentacion
-pres = Presentation(
-    title="Mi Presentacion",
-    theme="ocean",
-    transition="slide"
-)
+# Manual deck
+pres = Presentation("Mi presentacion", theme="dark")
+with Slide(title="Portada") as s:
+    s.add(Title("Hello ViewX").center("x").pos(top=20).zoom_in())
+pres.export("slides.html")
 
-# Slide de titulo
-with Slide(title="Bienvenida", bg="#0f172a"):
-    Title("ViewX Slides").pos(left=10, top=35)
-    Text("Presentaciones programaticas con Python").pos(left=10, top=55)
-
-# Slide con grid
-with Slide(title="Caracteristicas"):
-    with Grid(columns=2, gap=40):
-        Bullets([
-            "Temas profesionales",
-            "Animaciones CSS",
-            "Graficos Plotly"
-        ])
-        Image("demo.png", width="100%")
-
-# Exportar
-pres.export("presentacion.html", open_browser=True)</code></pre>
+# Auto deck from DataFrame
+df = load_iris()
+Presentation.auto_generate(df, title="Iris Overview", theme="ocean")</code></pre>
       </div>
     </section>
 
@@ -406,11 +391,30 @@ pres.export("presentacion.html", open_browser=True)</code></pre>
       </div>
       <p style="margin-top:1rem;color:var(--text-muted);">Todos los componentes soportan los metodos <code>.pos()</code>, <code>.size()</code>, <code>.anim()</code>, <code>.center()</code> para posicionamiento y animacion.</p>
     </section>
+
+    <section class="section" id="auto_generate">
+      <h2>auto_generate()</h2>
+      <div class="method-card">
+        <div class="method-name">Presentation.auto_generate(df, title, theme, filename, show=True) &rarr; str</div>
+        <div class="method-desc">Genera automaticamente una presentacion HTML con portada, KPIs, calidad, graficos y muestra de datos.</div>
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="code-lang">Python</span>
+          <button class="code-copy" onclick="copyCode('auto-code')">Copiar</button>
+        </div>
+        <pre><code class="language-python" id="auto-code">from viewx.Slides import Slides
+from viewx.datasets import load_iris
+
+Slides(load_iris(), auto=True, title="Dataset Deck", theme="dark")</code></pre>
+      </div>
+    </section>
   </main>
 </div>
 
 <footer>
-  <div class="footer-meta">ViewX &middot; Documentacion &middot; v2.3</div>
+  <div class="footer-meta">ViewX &middot; Documentacion &middot; v0.2.4</div>
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
