@@ -9,13 +9,13 @@
         
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         :root {
-            --vx-bg-page:       #F3F4F6;
-            --vx-bg-card:       #FFFFFF;
-            --vx-accent:        #0078D4;
-            --vx-text-primary:  #1A1A2E;
-            --vx-text-secondary:#6B7280;
+            --vx-bg-page:       #07080F;
+            --vx-bg-card:       #0F1117;
+            --vx-accent:        #6366F1;
+            --vx-text-primary:  #E2E5FF;
+            --vx-text-secondary:#9CA3AF;
             --vx-card-radius:   14px;
-            --vx-shadow:        0 2px 12px rgba(0,120,212,0.08);
+            --vx-shadow:        0 8px 32px rgba(99,102,241,0.15);
             --vx-transition:    all 0.35s cubic-bezier(.16,1,.3,1);
             --vx-ease:          cubic-bezier(0.32,0.72,0,1);
         }
@@ -64,13 +64,13 @@
             gap: 14px; height: 100%; position: relative; overflow: hidden;
         }
         .vx-sortable-table th { cursor: pointer; user-select: none; }
-        .vx-sortable-table th:hover { background: #0078D418; }
+        .vx-sortable-table th:hover { background: #6366F118; }
         .plotly-graph-div, .js-plotly-plot, .plot-container {
             width: 100% !important; height: 100% !important;
         }
         .vx-card::-webkit-scrollbar { width:5px; height:5px; }
         .vx-card::-webkit-scrollbar-track { background: transparent; }
-        .vx-card::-webkit-scrollbar-thumb { background:#0078D455; border-radius:3px; }
+        .vx-card::-webkit-scrollbar-thumb { background:#6366F155; border-radius:3px; }
 
         /* ── Modal overlay ── */
         .vx-modal-overlay {
@@ -81,10 +81,10 @@
         }
         .vx-modal-overlay.open { display: flex; }
         .vx-modal-box {
-            background: #FFFFFF;
+            background: #0F1117;
             border-radius: 16px;
             box-shadow: 0 24px 80px rgba(0,0,0,0.4);
-            border: 1px solid #0078D433;
+            border: 1px solid #6366F133;
             width: min(92vw, 1100px);
             max-height: 88vh;
             display: flex; flex-direction: column;
@@ -98,7 +98,7 @@
         .vx-modal-header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 18px 24px 14px;
-            border-bottom: 1px solid #0078D422;
+            border-bottom: 1px solid #6366F122;
             flex-shrink: 0;
         }
         .vx-modal-header h3 {
@@ -110,7 +110,7 @@
             width:32px; height:32px; display:flex; align-items:center; justify-content:center;
             transition: var(--vx-transition);
         }
-        .vx-modal-close:hover { background:#0078D422; color:#0078D4; }
+        .vx-modal-close:hover { background:#6366F122; color:#6366F1; }
         .vx-modal-body {
             flex: 1; overflow: auto; padding: 20px 24px 24px;
         }
@@ -119,7 +119,7 @@
         .vx-chart-info-btn {
             position: absolute; bottom: 10px; right: 10px;
             width: 32px; height: 32px; border-radius: 50%;
-            background: #0078D4EE; border: none; cursor: pointer;
+            background: #6366F1EE; border: none; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.25);
             transition: var(--vx-transition); z-index: 10;
@@ -131,15 +131,15 @@
         /* ── Data button ── */
         .vx-data-fab {
             position: fixed; bottom: 22px; right: 22px;
-            background: #0078D4; color: #fff;
+            background: #6366F1; color: #fff;
             border: none; border-radius: 50px;
             padding: 10px 20px; font-weight: 700; font-size: 0.82rem;
             cursor: pointer; z-index: 8000;
             display: flex; align-items: center; gap: 8px;
-            box-shadow: 0 4px 18px #0078D455;
+            box-shadow: 0 4px 18px #6366F155;
             transition: var(--vx-transition); letter-spacing: 0.3px;
         }
-        .vx-data-fab:hover { transform: translateY(-2px); box-shadow: 0 8px 28px #0078D466; }
+        .vx-data-fab:hover { transform: translateY(-2px); box-shadow: 0 8px 28px #6366F166; }
         
         .dashboard-container {
             padding: 74px 20px 20px;
@@ -153,12 +153,12 @@
             gap: 14px;
             flex: 1; min-height: 0;
         }
-        .c1_8dc500 { grid-area: 1 / 1 / 4 / 4; }
-.c2_7e78ca { grid-area: 1 / 4 / 4 / 7; }
-.c3_7a01b2 { grid-area: 1 / 7 / 4 / 10; }
-.c4_adb8d7 { grid-area: 1 / 10 / 4 / 13; }
-.c5_f12284 { grid-area: 4 / 1 / 8 / 7; }
-.c6_d04ba0 { grid-area: 4 / 7 / 8 / 13; }
+        .c1_26dec4 { grid-area: 1 / 1 / 4 / 4; }
+.c2_6b6ba9 { grid-area: 1 / 4 / 4 / 7; }
+.c3_d67f89 { grid-area: 1 / 7 / 4 / 10; }
+.c4_341ce1 { grid-area: 1 / 10 / 4 / 13; }
+.c5_1c6186 { grid-area: 4 / 1 / 8 / 7; }
+.c6_3196f6 { grid-area: 4 / 7 / 8 / 13; }
         .vx-card { animation: vxCardIn .4s cubic-bezier(0.32,0.72,0,1) both; }
         @keyframes vxCardIn {
             from { opacity:0; transform:translateY(18px) scale(0.98); filter:blur(2px); }
@@ -187,21 +187,21 @@
         <style>
         .vx-navbar {
             position:fixed; top:0; left:0; right:0; height:54px;
-            background:#FFFFFFF5; display:flex; align-items:center;
+            background:#0F1117F5; display:flex; align-items:center;
             justify-content:space-between; padding:0 24px; z-index:1000;
             box-shadow:0 1px 0 rgba(128,128,128,.12);
-            border-bottom:2px solid #0078D4;
+            border-bottom:2px solid #6366F1;
             backdrop-filter:blur(8px);
         }
         .nav-brand-wrap { display:flex; flex-direction:column; gap:1px; }
         .nav-brand {
-            font-weight:800; font-size:1.1rem; color:#0078D4;
+            font-weight:800; font-size:1.1rem; color:#6366F1;
             text-decoration:none; letter-spacing:-.4px;
             display:flex; align-items:center; gap:7px;
         }
         .nav-author-wrap { font-size:.7rem; color:var(--vx-text-secondary); font-weight:500; }
         .nav-author { font-size:.7rem; color:var(--vx-text-secondary); }
-        .nav-alink { color:#0078D4; text-decoration:none; }
+        .nav-alink { color:#6366F1; text-decoration:none; }
         .nav-alink:hover { text-decoration:underline; }
         .nav-links { display:flex; gap:18px; }
         .nav-link {
@@ -209,11 +209,11 @@
             font-weight:600; font-size:.82rem; opacity:.75;
             transition:var(--vx-transition);
         }
-        .nav-link:hover { opacity:1; color:#0078D4; }
+        .nav-link:hover { opacity:1; color:#6366F1; }
         </style>
         <nav class="vx-navbar">
             <div class="nav-brand-wrap">
-                <a href="#" class="nav-brand"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0078D4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Iris Auto Dashboard</a>
+                <a href="#" class="nav-brand"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Iris Auto Dashboard</a>
                 
             </div>
             <div class="nav-links"></div>
@@ -222,181 +222,181 @@
         <div class="vx-grid">
             
         <style>
-        .vb-c1_8dc500 {
+        .vb-c1_26dec4 {
             padding: 18px 20px; display: flex; align-items: center;
-            gap: 14px; border-left: 5px solid #0078D4;
+            gap: 14px; border-left: 5px solid #6366F1;
             height: 100%; position: relative; overflow: hidden;
         }
-        .vb-c1_8dc500::after {
+        .vb-c1_26dec4::after {
             content:''; position:absolute; right:-18px; top:-18px;
             width:80px; height:80px; border-radius:50%;
-            background:#0078D40D;
+            background:#6366F10D;
         }
-        .vb-icon-c1_8dc500 {
+        .vb-icon-c1_26dec4 {
             width: 48px; height: 48px; border-radius: 12px;
-            background: #0078D415;
+            background: #6366F115;
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
         }
-        .vb-label-c1_8dc500 {
+        .vb-label-c1_26dec4 {
             font-size: 0.72rem; font-weight: 700; letter-spacing: 0.6px;
             text-transform: uppercase; color: var(--vx-text-secondary);
             margin-bottom: 5px;
         }
-        .vb-val-c1_8dc500 {
+        .vb-val-c1_26dec4 {
             font-size: 1.75rem; font-weight: 800;
             color: var(--vx-text-primary); line-height: 1; letter-spacing: -0.5px;
         }
         </style>
-        <div class="vx-card vb-c1_8dc500 c1_8dc500 vx-valuebox" id="c1_8dc500">
-            <div class="vb-icon-c1_8dc500"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0078D4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+        <div class="vx-card vb-c1_26dec4 c1_26dec4 vx-valuebox" id="c1_26dec4">
+            <div class="vb-icon-c1_26dec4"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
             <div>
-                <div class="vb-label-c1_8dc500">petal_width</div>
-                <div class="vb-val-c1_8dc500">179.80</div>
+                <div class="vb-label-c1_26dec4">petal_width</div>
+                <div class="vb-val-c1_26dec4">179.80</div>
             </div>
         </div>
         <style>
-        .vb-c2_7e78ca {
+        .vb-c2_6b6ba9 {
             padding: 18px 20px; display: flex; align-items: center;
-            gap: 14px; border-left: 5px solid #0078D4;
+            gap: 14px; border-left: 5px solid #6366F1;
             height: 100%; position: relative; overflow: hidden;
         }
-        .vb-c2_7e78ca::after {
+        .vb-c2_6b6ba9::after {
             content:''; position:absolute; right:-18px; top:-18px;
             width:80px; height:80px; border-radius:50%;
-            background:#0078D40D;
+            background:#6366F10D;
         }
-        .vb-icon-c2_7e78ca {
+        .vb-icon-c2_6b6ba9 {
             width: 48px; height: 48px; border-radius: 12px;
-            background: #0078D415;
+            background: #6366F115;
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
         }
-        .vb-label-c2_7e78ca {
+        .vb-label-c2_6b6ba9 {
             font-size: 0.72rem; font-weight: 700; letter-spacing: 0.6px;
             text-transform: uppercase; color: var(--vx-text-secondary);
             margin-bottom: 5px;
         }
-        .vb-val-c2_7e78ca {
+        .vb-val-c2_6b6ba9 {
             font-size: 1.75rem; font-weight: 800;
             color: var(--vx-text-primary); line-height: 1; letter-spacing: -0.5px;
         }
         </style>
-        <div class="vx-card vb-c2_7e78ca c2_7e78ca vx-valuebox" id="c2_7e78ca">
-            <div class="vb-icon-c2_7e78ca"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0078D4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        <div class="vx-card vb-c2_6b6ba9 c2_6b6ba9 vx-valuebox" id="c2_6b6ba9">
+            <div class="vb-icon-c2_6b6ba9"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
             <div>
-                <div class="vb-label-c2_7e78ca">petal_length</div>
-                <div class="vb-val-c2_7e78ca">563.80</div>
+                <div class="vb-label-c2_6b6ba9">petal_length</div>
+                <div class="vb-val-c2_6b6ba9">563.80</div>
             </div>
         </div>
         <style>
-        .vb-c3_7a01b2 {
+        .vb-c3_d67f89 {
             padding: 18px 20px; display: flex; align-items: center;
-            gap: 14px; border-left: 5px solid #0078D4;
+            gap: 14px; border-left: 5px solid #6366F1;
             height: 100%; position: relative; overflow: hidden;
         }
-        .vb-c3_7a01b2::after {
+        .vb-c3_d67f89::after {
             content:''; position:absolute; right:-18px; top:-18px;
             width:80px; height:80px; border-radius:50%;
-            background:#0078D40D;
+            background:#6366F10D;
         }
-        .vb-icon-c3_7a01b2 {
+        .vb-icon-c3_d67f89 {
             width: 48px; height: 48px; border-radius: 12px;
-            background: #0078D415;
+            background: #6366F115;
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
         }
-        .vb-label-c3_7a01b2 {
+        .vb-label-c3_d67f89 {
             font-size: 0.72rem; font-weight: 700; letter-spacing: 0.6px;
             text-transform: uppercase; color: var(--vx-text-secondary);
             margin-bottom: 5px;
         }
-        .vb-val-c3_7a01b2 {
+        .vb-val-c3_d67f89 {
             font-size: 1.75rem; font-weight: 800;
             color: var(--vx-text-primary); line-height: 1; letter-spacing: -0.5px;
         }
         </style>
-        <div class="vx-card vb-c3_7a01b2 c3_7a01b2 vx-valuebox" id="c3_7a01b2">
-            <div class="vb-icon-c3_7a01b2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0078D4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg></div>
+        <div class="vx-card vb-c3_d67f89 c3_d67f89 vx-valuebox" id="c3_d67f89">
+            <div class="vb-icon-c3_d67f89"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg></div>
             <div>
-                <div class="vb-label-c3_7a01b2">sepal_width</div>
-                <div class="vb-val-c3_7a01b2">458.10</div>
+                <div class="vb-label-c3_d67f89">sepal_width</div>
+                <div class="vb-val-c3_d67f89">458.10</div>
             </div>
         </div>
         <style>
-        .vb-c4_adb8d7 {
+        .vb-c4_341ce1 {
             padding: 18px 20px; display: flex; align-items: center;
-            gap: 14px; border-left: 5px solid #0078D4;
+            gap: 14px; border-left: 5px solid #6366F1;
             height: 100%; position: relative; overflow: hidden;
         }
-        .vb-c4_adb8d7::after {
+        .vb-c4_341ce1::after {
             content:''; position:absolute; right:-18px; top:-18px;
             width:80px; height:80px; border-radius:50%;
-            background:#0078D40D;
+            background:#6366F10D;
         }
-        .vb-icon-c4_adb8d7 {
+        .vb-icon-c4_341ce1 {
             width: 48px; height: 48px; border-radius: 12px;
-            background: #0078D415;
+            background: #6366F115;
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
         }
-        .vb-label-c4_adb8d7 {
+        .vb-label-c4_341ce1 {
             font-size: 0.72rem; font-weight: 700; letter-spacing: 0.6px;
             text-transform: uppercase; color: var(--vx-text-secondary);
             margin-bottom: 5px;
         }
-        .vb-val-c4_adb8d7 {
+        .vb-val-c4_341ce1 {
             font-size: 1.75rem; font-weight: 800;
             color: var(--vx-text-primary); line-height: 1; letter-spacing: -0.5px;
         }
         </style>
-        <div class="vx-card vb-c4_adb8d7 c4_adb8d7 vx-valuebox" id="c4_adb8d7">
-            <div class="vb-icon-c4_adb8d7"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0078D4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+        <div class="vx-card vb-c4_341ce1 c4_341ce1 vx-valuebox" id="c4_341ce1">
+            <div class="vb-icon-c4_341ce1"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
             <div>
-                <div class="vb-label-c4_adb8d7">sepal_length</div>
-                <div class="vb-val-c4_adb8d7">876.50</div>
+                <div class="vb-label-c4_341ce1">sepal_length</div>
+                <div class="vb-val-c4_341ce1">876.50</div>
             </div>
         </div>
         <style>
-        .pc-c5_f12284 {
+        .pc-c5_1c6186 {
             padding: 12px 14px; display: grid;
             grid-template-rows: auto 1fr; height: 100%;
             width: 100%; overflow: hidden; gap: 6px; position: relative;
         }
-        .pc-c5_f12284 h4 {
+        .pc-c5_1c6186 h4 {
             margin: 0; color: var(--vx-text-primary); font-weight: 600;
             font-size: 0.88rem;
-            border-bottom: 2px solid #0078D428; padding-bottom: 6px;
+            border-bottom: 2px solid #6366F128; padding-bottom: 6px;
         }
-        .pcc-c5_f12284 { position:relative; width:100%; height:100%; min-height:0; overflow:hidden; }
-        .pcc-c5_f12284 .plotly-graph-div { width:100%!important; height:100%!important; }
+        .pcc-c5_1c6186 { position:relative; width:100%; height:100%; min-height:0; overflow:hidden; }
+        .pcc-c5_1c6186 .plotly-graph-div { width:100%!important; height:100%!important; }
         </style>
-        <div class="vx-card pc-c5_f12284 c5_f12284 vx-card-static" id="c5_f12284">
+        <div class="vx-card pc-c5_1c6186 c5_1c6186 vx-card-static" id="c5_1c6186">
             <h4 class="vx-card-header">petal_width by species</h4>
-            <div class="pcc-c5_f12284">
-                <div>                            <div id="12fbd02a-e94f-43f6-93f7-e8711c5a9d53" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("12fbd02a-e94f-43f6-93f7-e8711c5a9d53")) {                    Plotly.newPlot(                        "12fbd02a-e94f-43f6-93f7-e8711c5a9d53",                        [{"hovertemplate":"species=%{y}\u003cbr\u003epetal_width=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"setosa","marker":{"color":"#0078D4","pattern":{"shape":""}},"name":"setosa","orientation":"h","showlegend":true,"textposition":"auto","x":{"dtype":"f8","bdata":"Z2ZmZmZmKEA="},"xaxis":"x","y":["setosa"],"yaxis":"y","type":"bar"},{"hovertemplate":"species=%{y}\u003cbr\u003epetal_width=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"versicolor","marker":{"color":"#00B4D8","pattern":{"shape":""}},"name":"versicolor","orientation":"h","showlegend":true,"textposition":"auto","x":{"dtype":"f8","bdata":"MzMzMzOTUEA="},"xaxis":"x","y":["versicolor"],"yaxis":"y","type":"bar"},{"hovertemplate":"species=%{y}\u003cbr\u003epetal_width=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"virginica","marker":{"color":"#48CAE4","pattern":{"shape":""}},"name":"virginica","orientation":"h","showlegend":true,"textposition":"auto","x":{"dtype":"f8","bdata":"MzMzMzNTWUA="},"xaxis":"x","y":["virginica"],"yaxis":"y","type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"petal_width"},"gridcolor":"rgba(0,120,212,0.1)","zerolinecolor":"rgba(0,120,212,0.1)","showgrid":true},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"species"},"categoryorder":"array","categoryarray":["virginica","versicolor","setosa"],"tickfont":{"size":11},"gridcolor":"rgba(0,120,212,0.1)","zerolinecolor":"rgba(0,120,212,0.1)","showgrid":true},"legend":{"title":{"text":"species"},"tracegroupgap":0,"font":{"size":11}},"margin":{"t":24,"l":36,"r":18,"b":28},"barmode":"relative","title":{"text":""},"colorway":["#0078D4","#00B4D8","#48CAE4","#90E0EF","#ADE8F4"],"showlegend":false,"font":{"color":"#1A1A2E","family":"'Inter','Segoe UI',sans-serif"},"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","autosize":true,"hovermode":"closest"},                        {"displaylogo": false, "responsive": true, "autosizable": true}                    )                };            </script>        </div>
+            <div class="pcc-c5_1c6186">
+                <div>                            <div id="ef3d72af-b2ce-40d5-80ae-7fa2d4463aba" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("ef3d72af-b2ce-40d5-80ae-7fa2d4463aba")) {                    Plotly.newPlot(                        "ef3d72af-b2ce-40d5-80ae-7fa2d4463aba",                        [{"hovertemplate":"species=%{y}\u003cbr\u003epetal_width=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"setosa","marker":{"color":"#6366F1","pattern":{"shape":""}},"name":"setosa","orientation":"h","showlegend":true,"textposition":"auto","x":{"dtype":"f8","bdata":"Z2ZmZmZmKEA="},"xaxis":"x","y":["setosa"],"yaxis":"y","type":"bar"},{"hovertemplate":"species=%{y}\u003cbr\u003epetal_width=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"versicolor","marker":{"color":"#818CF8","pattern":{"shape":""}},"name":"versicolor","orientation":"h","showlegend":true,"textposition":"auto","x":{"dtype":"f8","bdata":"MzMzMzOTUEA="},"xaxis":"x","y":["versicolor"],"yaxis":"y","type":"bar"},{"hovertemplate":"species=%{y}\u003cbr\u003epetal_width=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"virginica","marker":{"color":"#A5B4FC","pattern":{"shape":""}},"name":"virginica","orientation":"h","showlegend":true,"textposition":"auto","x":{"dtype":"f8","bdata":"MzMzMzNTWUA="},"xaxis":"x","y":["virginica"],"yaxis":"y","type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"petal_width"},"gridcolor":"rgba(99,102,241,0.1)","zerolinecolor":"rgba(99,102,241,0.1)","showgrid":true},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"species"},"categoryorder":"array","categoryarray":["virginica","versicolor","setosa"],"tickfont":{"size":11},"gridcolor":"rgba(99,102,241,0.1)","zerolinecolor":"rgba(99,102,241,0.1)","showgrid":true},"legend":{"title":{"text":"species"},"tracegroupgap":0,"font":{"size":11}},"margin":{"t":24,"l":36,"r":18,"b":28},"barmode":"relative","title":{"text":""},"colorway":["#6366F1","#818CF8","#A5B4FC","#C7D2FE","#4F46E5"],"showlegend":false,"font":{"color":"#E2E5FF","family":"'Inter','Segoe UI',sans-serif"},"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","autosize":true,"hovermode":"closest"},                        {"displaylogo": false, "responsive": true, "autosizable": true}                    )                };            </script>        </div>
                 
-            <button class="vx-chart-info-btn" onclick="vxOpenModal('modal_c5_f12284')"
+            <button class="vx-chart-info-btn" onclick="vxOpenModal('modal_c5_1c6186')"
                     title="Chart details" aria-label="Open chart details">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             </button>
             </div>
         </div>
         
-            <div id="modal_c5_f12284" class="vx-modal-overlay" role="dialog" aria-modal="true"
-                 aria-labelledby="modal_c5_f12284-title">
+            <div id="modal_c5_1c6186" class="vx-modal-overlay" role="dialog" aria-modal="true"
+                 aria-labelledby="modal_c5_1c6186-title">
                 <div class="vx-modal-box" style="max-width:520px">
                     <div class="vx-modal-header">
-                        <h3 id="modal_c5_f12284-title">petal_width by species</h3>
+                        <h3 id="modal_c5_1c6186-title">petal_width by species</h3>
                         <button class="vx-modal-close" aria-label="Close dialog"
-                                onclick="vxCloseModal('modal_c5_f12284')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                                onclick="vxCloseModal('modal_c5_1c6186')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
                     </div>
                     <div class="vx-modal-body"><table style='width:100%;border-collapse:collapse'><tr><td style='padding:6px 10px;color:var(--vx-text-secondary);font-size:.8rem'>Categories</td><td style='padding:6px 10px;font-weight:600;font-size:.82rem'>3</td></tr><tr><td style='padding:6px 10px;color:var(--vx-text-secondary);font-size:.8rem'>Top</td><td style='padding:6px 10px;font-weight:600;font-size:.82rem'>setosa</td></tr><tr><td style='padding:6px 10px;color:var(--vx-text-secondary);font-size:.8rem'>Total petal_width</td><td style='padding:6px 10px;font-weight:600;font-size:.82rem'>179.80</td></tr></table></div>
                 </div>
             </div>
         <script>
     (function(){
-        var cont = document.querySelector('.pcc-c5_f12284');
+        var cont = document.querySelector('.pcc-c5_1c6186');
         var t;
         function resize(){
             var d = cont ? cont.querySelector('.plotly-graph-div') : null;
@@ -416,45 +416,45 @@
     })();
     </script>
         <style>
-        .pc-c6_d04ba0 {
+        .pc-c6_3196f6 {
             padding: 12px 14px; display: grid;
             grid-template-rows: auto 1fr; height: 100%;
             width: 100%; overflow: hidden; gap: 6px; position: relative;
         }
-        .pc-c6_d04ba0 h4 {
+        .pc-c6_3196f6 h4 {
             margin: 0; color: var(--vx-text-primary); font-weight: 600;
             font-size: 0.88rem;
-            border-bottom: 2px solid #0078D428; padding-bottom: 6px;
+            border-bottom: 2px solid #6366F128; padding-bottom: 6px;
         }
-        .pcc-c6_d04ba0 { position:relative; width:100%; height:100%; min-height:0; overflow:hidden; }
-        .pcc-c6_d04ba0 .plotly-graph-div { width:100%!important; height:100%!important; }
+        .pcc-c6_3196f6 { position:relative; width:100%; height:100%; min-height:0; overflow:hidden; }
+        .pcc-c6_3196f6 .plotly-graph-div { width:100%!important; height:100%!important; }
         </style>
-        <div class="vx-card pc-c6_d04ba0 c6_d04ba0 vx-card-static" id="c6_d04ba0">
+        <div class="vx-card pc-c6_3196f6 c6_3196f6 vx-card-static" id="c6_3196f6">
             <h4 class="vx-card-header">petal_width vs petal_length</h4>
-            <div class="pcc-c6_d04ba0">
-                <div>                            <div id="0cc6d7e0-fc5d-412b-947e-03d3463c61ef" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("0cc6d7e0-fc5d-412b-947e-03d3463c61ef")) {                    Plotly.newPlot(                        "0cc6d7e0-fc5d-412b-947e-03d3463c61ef",                        [{"hovertemplate":"species=setosa\u003cbr\u003epetal_width=%{x}\u003cbr\u003epetal_length=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"setosa","marker":{"color":"#0078D4","opacity":0.65,"symbol":"circle"},"mode":"markers","name":"setosa","orientation":"v","showlegend":true,"x":{"dtype":"f8","bdata":"mpmZmZmZyT+amZmZmZnJP5qZmZmZmck\u002fmpmZmZmZyT+amZmZmZnJP5qZmZmZmdk\u002fMzMzMzMz0z+amZmZmZnJP5qZmZmZmck\u002fmpmZmZmZuT+amZmZmZnJP5qZmZmZmck\u002fmpmZmZmZuT+amZmZmZm5P5qZmZmZmck\u002fmpmZmZmZ2T+amZmZmZnZPzMzMzMzM9M\u002fMzMzMzMz0z8zMzMzMzPTP5qZmZmZmck\u002fmpmZmZmZ2T+amZmZmZnJPwAAAAAAAOA\u002fmpmZmZmZyT+amZmZmZnJP5qZmZmZmdk\u002fmpmZmZmZyT+amZmZmZnJP5qZmZmZmck\u002fmpmZmZmZyT+amZmZmZnZP5qZmZmZmbk\u002fmpmZmZmZyT+amZmZmZm5P5qZmZmZmck\u002fmpmZmZmZyT+amZmZmZm5P5qZmZmZmck\u002fmpmZmZmZyT8zMzMzMzPTPzMzMzMzM9M\u002fmpmZmZmZyT8zMzMzMzPjP5qZmZmZmdk\u002fMzMzMzMz0z+amZmZmZnJP5qZmZmZmck\u002fmpmZmZmZyT+amZmZmZnJPw=="},"xaxis":"x","y":{"dtype":"f8","bdata":"ZmZmZmZm9j9mZmZmZmb2P83MzMzMzPQ\u002fAAAAAAAA+D9mZmZmZmb2PzMzMzMzM\u002fs\u002fZmZmZmZm9j8AAAAAAAD4P2ZmZmZmZvY\u002fAAAAAAAA+D8AAAAAAAD4P5qZmZmZmfk\u002fZmZmZmZm9j+amZmZmZnxPzMzMzMzM\u002fM\u002fAAAAAAAA+D\u002fNzMzMzMz0P2ZmZmZmZvY\u002fMzMzMzMz+z8AAAAAAAD4PzMzMzMzM\u002fs\u002fAAAAAAAA+D8AAAAAAADwPzMzMzMzM\u002fs\u002fZmZmZmZm\u002fj+amZmZmZn5P5qZmZmZmfk\u002fAAAAAAAA+D9mZmZmZmb2P5qZmZmZmfk\u002fmpmZmZmZ+T8AAAAAAAD4PwAAAAAAAPg\u002fZmZmZmZm9j8AAAAAAAD4PzMzMzMzM\u002fM\u002fzczMzMzM9D8AAAAAAAD4P83MzMzMzPQ\u002fAAAAAAAA+D\u002fNzMzMzMz0P83MzMzMzPQ\u002fzczMzMzM9D+amZmZmZn5P2ZmZmZmZv4\u002fZmZmZmZm9j+amZmZmZn5P2ZmZmZmZvY\u002fAAAAAAAA+D9mZmZmZmb2Pw=="},"yaxis":"y","type":"scatter","line":{"color":"#0078D4"}},{"hovertemplate":"species=versicolor\u003cbr\u003epetal_width=%{x}\u003cbr\u003epetal_length=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"versicolor","marker":{"color":"#00B4D8","opacity":0.65,"symbol":"circle"},"mode":"markers","name":"versicolor","orientation":"v","showlegend":true,"x":{"dtype":"f8","bdata":"ZmZmZmZm9j8AAAAAAAD4PwAAAAAAAPg\u002fzczMzMzM9D8AAAAAAAD4P83MzMzMzPQ\u002fmpmZmZmZ+T8AAAAAAADwP83MzMzMzPQ\u002fZmZmZmZm9j8AAAAAAADwPwAAAAAAAPg\u002fAAAAAAAA8D9mZmZmZmb2P83MzMzMzPQ\u002fZmZmZmZm9j8AAAAAAAD4PwAAAAAAAPA\u002fAAAAAAAA+D+amZmZmZnxP83MzMzMzPw\u002fzczMzMzM9D8AAAAAAAD4PzMzMzMzM\u002fM\u002fzczMzMzM9D9mZmZmZmb2P2ZmZmZmZvY\u002fMzMzMzMz+z8AAAAAAAD4PwAAAAAAAPA\u002fmpmZmZmZ8T8AAAAAAADwPzMzMzMzM\u002fM\u002fmpmZmZmZ+T8AAAAAAAD4P5qZmZmZmfk\u002fAAAAAAAA+D\u002fNzMzMzMz0P83MzMzMzPQ\u002fzczMzMzM9D8zMzMzMzPzP2ZmZmZmZvY\u002fMzMzMzMz8z8AAAAAAADwP83MzMzMzPQ\u002fMzMzMzMz8z\u002fNzMzMzMz0P83MzMzMzPQ\u002fmpmZmZmZ8T\u002fNzMzMzMz0Pw=="},"xaxis":"x","y":{"dtype":"f8","bdata":"zczMzMzMEkAAAAAAAAASQJqZmZmZmRNAAAAAAAAAEEBmZmZmZmYSQAAAAAAAABJAzczMzMzMEkBmZmZmZmYKQGZmZmZmZhJAMzMzMzMzD0AAAAAAAAAMQM3MzMzMzBBAAAAAAAAAEEDNzMzMzMwSQM3MzMzMzAxAmpmZmZmZEUAAAAAAAAASQGZmZmZmZhBAAAAAAAAAEkAzMzMzMzMPQDMzMzMzMxNAAAAAAAAAEECamZmZmZkTQM3MzMzMzBJAMzMzMzMzEUCamZmZmZkRQDMzMzMzMxNAAAAAAAAAFEAAAAAAAAASQAAAAAAAAAxAZmZmZmZmDkCamZmZmZkNQDMzMzMzMw9AZmZmZmZmFEAAAAAAAAASQAAAAAAAABJAzczMzMzMEkCamZmZmZkRQGZmZmZmZhBAAAAAAAAAEECamZmZmZkRQGZmZmZmZhJAAAAAAAAAEEBmZmZmZmYKQM3MzMzMzBBAzczMzMzMEEDNzMzMzMwQQDMzMzMzMxFAAAAAAAAACEBmZmZmZmYQQA=="},"yaxis":"y","type":"scatter","line":{"color":"#0078D4"}},{"hovertemplate":"species=virginica\u003cbr\u003epetal_width=%{x}\u003cbr\u003epetal_length=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"virginica","marker":{"color":"#48CAE4","opacity":0.65,"symbol":"circle"},"mode":"markers","name":"virginica","orientation":"v","showlegend":true,"x":{"dtype":"f8","bdata":"AAAAAAAABEBmZmZmZmb+P83MzMzMzABAzczMzMzM\u002fD+amZmZmZkBQM3MzMzMzABAMzMzMzMz+z\u002fNzMzMzMz8P83MzMzMzPw\u002fAAAAAAAABEAAAAAAAAAAQGZmZmZmZv4\u002fzczMzMzMAEAAAAAAAAAAQDMzMzMzMwNAZmZmZmZmAkDNzMzMzMz8P5qZmZmZmQFAZmZmZmZmAkAAAAAAAAD4P2ZmZmZmZgJAAAAAAAAAAEAAAAAAAAAAQM3MzMzMzPw\u002fzczMzMzMAEDNzMzMzMz8P83MzMzMzPw\u002fzczMzMzM\u002fD\u002fNzMzMzMwAQJqZmZmZmfk\u002fZmZmZmZm\u002fj8AAAAAAAAAQJqZmZmZmQFAAAAAAAAA+D9mZmZmZmb2P2ZmZmZmZgJAMzMzMzMzA0DNzMzMzMz8P83MzMzMzPw\u002fzczMzMzMAEAzMzMzMzMDQGZmZmZmZgJAZmZmZmZm\u002fj9mZmZmZmYCQAAAAAAAAARAZmZmZmZmAkBmZmZmZmb+PwAAAAAAAABAZmZmZmZmAkDNzMzMzMz8Pw=="},"xaxis":"x","y":{"dtype":"f8","bdata":"AAAAAAAAGEBmZmZmZmYUQJqZmZmZmRdAZmZmZmZmFkAzMzMzMzMXQGZmZmZmZhpAAAAAAAAAEkAzMzMzMzMZQDMzMzMzMxdAZmZmZmZmGEBmZmZmZmYUQDMzMzMzMxVAAAAAAAAAFkAAAAAAAAAUQGZmZmZmZhRAMzMzMzMzFUAAAAAAAAAWQM3MzMzMzBpAmpmZmZmZG0AAAAAAAAAUQM3MzMzMzBZAmpmZmZmZE0DNzMzMzMwaQJqZmZmZmRNAzczMzMzMFkAAAAAAAAAYQDMzMzMzMxNAmpmZmZmZE0BmZmZmZmYWQDMzMzMzMxdAZmZmZmZmGECamZmZmZkZQGZmZmZmZhZAZmZmZmZmFEBmZmZmZmYWQGZmZmZmZhhAZmZmZmZmFkAAAAAAAAAWQDMzMzMzMxNAmpmZmZmZFUBmZmZmZmYWQGZmZmZmZhRAZmZmZmZmFECamZmZmZkXQM3MzMzMzBZAzczMzMzMFEAAAAAAAAAUQM3MzMzMzBRAmpmZmZmZFUBmZmZmZmYUQA=="},"yaxis":"y","type":"scatter","line":{"color":"#0078D4"}}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"petal_width"},"gridcolor":"rgba(0,120,212,0.1)","zerolinecolor":"rgba(0,120,212,0.1)","showgrid":true},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"petal_length"},"gridcolor":"rgba(0,120,212,0.1)","zerolinecolor":"rgba(0,120,212,0.1)","showgrid":true},"legend":{"title":{"text":"species"},"tracegroupgap":0,"font":{"size":11}},"margin":{"t":24,"l":36,"r":18,"b":28},"title":{"text":""},"colorway":["#0078D4","#00B4D8","#48CAE4","#90E0EF","#ADE8F4"],"font":{"color":"#1A1A2E","family":"'Inter','Segoe UI',sans-serif"},"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","autosize":true,"hovermode":"closest"},                        {"displaylogo": false, "responsive": true, "autosizable": true}                    )                };            </script>        </div>
+            <div class="pcc-c6_3196f6">
+                <div>                            <div id="7a1ba2b9-d74a-4910-9d67-1f8e67fb3e40" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("7a1ba2b9-d74a-4910-9d67-1f8e67fb3e40")) {                    Plotly.newPlot(                        "7a1ba2b9-d74a-4910-9d67-1f8e67fb3e40",                        [{"hovertemplate":"species=setosa\u003cbr\u003epetal_width=%{x}\u003cbr\u003epetal_length=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"setosa","marker":{"color":"#6366F1","opacity":0.65,"symbol":"circle"},"mode":"markers","name":"setosa","orientation":"v","showlegend":true,"x":{"dtype":"f8","bdata":"mpmZmZmZyT+amZmZmZnJP5qZmZmZmck\u002fmpmZmZmZyT+amZmZmZnJP5qZmZmZmdk\u002fMzMzMzMz0z+amZmZmZnJP5qZmZmZmck\u002fmpmZmZmZuT+amZmZmZnJP5qZmZmZmck\u002fmpmZmZmZuT+amZmZmZm5P5qZmZmZmck\u002fmpmZmZmZ2T+amZmZmZnZPzMzMzMzM9M\u002fMzMzMzMz0z8zMzMzMzPTP5qZmZmZmck\u002fmpmZmZmZ2T+amZmZmZnJPwAAAAAAAOA\u002fmpmZmZmZyT+amZmZmZnJP5qZmZmZmdk\u002fmpmZmZmZyT+amZmZmZnJP5qZmZmZmck\u002fmpmZmZmZyT+amZmZmZnZP5qZmZmZmbk\u002fmpmZmZmZyT+amZmZmZm5P5qZmZmZmck\u002fmpmZmZmZyT+amZmZmZm5P5qZmZmZmck\u002fmpmZmZmZyT8zMzMzMzPTPzMzMzMzM9M\u002fmpmZmZmZyT8zMzMzMzPjP5qZmZmZmdk\u002fMzMzMzMz0z+amZmZmZnJP5qZmZmZmck\u002fmpmZmZmZyT+amZmZmZnJPw=="},"xaxis":"x","y":{"dtype":"f8","bdata":"ZmZmZmZm9j9mZmZmZmb2P83MzMzMzPQ\u002fAAAAAAAA+D9mZmZmZmb2PzMzMzMzM\u002fs\u002fZmZmZmZm9j8AAAAAAAD4P2ZmZmZmZvY\u002fAAAAAAAA+D8AAAAAAAD4P5qZmZmZmfk\u002fZmZmZmZm9j+amZmZmZnxPzMzMzMzM\u002fM\u002fAAAAAAAA+D\u002fNzMzMzMz0P2ZmZmZmZvY\u002fMzMzMzMz+z8AAAAAAAD4PzMzMzMzM\u002fs\u002fAAAAAAAA+D8AAAAAAADwPzMzMzMzM\u002fs\u002fZmZmZmZm\u002fj+amZmZmZn5P5qZmZmZmfk\u002fAAAAAAAA+D9mZmZmZmb2P5qZmZmZmfk\u002fmpmZmZmZ+T8AAAAAAAD4PwAAAAAAAPg\u002fZmZmZmZm9j8AAAAAAAD4PzMzMzMzM\u002fM\u002fzczMzMzM9D8AAAAAAAD4P83MzMzMzPQ\u002fAAAAAAAA+D\u002fNzMzMzMz0P83MzMzMzPQ\u002fzczMzMzM9D+amZmZmZn5P2ZmZmZmZv4\u002fZmZmZmZm9j+amZmZmZn5P2ZmZmZmZvY\u002fAAAAAAAA+D9mZmZmZmb2Pw=="},"yaxis":"y","type":"scatter","line":{"color":"#6366F1"}},{"hovertemplate":"species=versicolor\u003cbr\u003epetal_width=%{x}\u003cbr\u003epetal_length=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"versicolor","marker":{"color":"#818CF8","opacity":0.65,"symbol":"circle"},"mode":"markers","name":"versicolor","orientation":"v","showlegend":true,"x":{"dtype":"f8","bdata":"ZmZmZmZm9j8AAAAAAAD4PwAAAAAAAPg\u002fzczMzMzM9D8AAAAAAAD4P83MzMzMzPQ\u002fmpmZmZmZ+T8AAAAAAADwP83MzMzMzPQ\u002fZmZmZmZm9j8AAAAAAADwPwAAAAAAAPg\u002fAAAAAAAA8D9mZmZmZmb2P83MzMzMzPQ\u002fZmZmZmZm9j8AAAAAAAD4PwAAAAAAAPA\u002fAAAAAAAA+D+amZmZmZnxP83MzMzMzPw\u002fzczMzMzM9D8AAAAAAAD4PzMzMzMzM\u002fM\u002fzczMzMzM9D9mZmZmZmb2P2ZmZmZmZvY\u002fMzMzMzMz+z8AAAAAAAD4PwAAAAAAAPA\u002fmpmZmZmZ8T8AAAAAAADwPzMzMzMzM\u002fM\u002fmpmZmZmZ+T8AAAAAAAD4P5qZmZmZmfk\u002fAAAAAAAA+D\u002fNzMzMzMz0P83MzMzMzPQ\u002fzczMzMzM9D8zMzMzMzPzP2ZmZmZmZvY\u002fMzMzMzMz8z8AAAAAAADwP83MzMzMzPQ\u002fMzMzMzMz8z\u002fNzMzMzMz0P83MzMzMzPQ\u002fmpmZmZmZ8T\u002fNzMzMzMz0Pw=="},"xaxis":"x","y":{"dtype":"f8","bdata":"zczMzMzMEkAAAAAAAAASQJqZmZmZmRNAAAAAAAAAEEBmZmZmZmYSQAAAAAAAABJAzczMzMzMEkBmZmZmZmYKQGZmZmZmZhJAMzMzMzMzD0AAAAAAAAAMQM3MzMzMzBBAAAAAAAAAEEDNzMzMzMwSQM3MzMzMzAxAmpmZmZmZEUAAAAAAAAASQGZmZmZmZhBAAAAAAAAAEkAzMzMzMzMPQDMzMzMzMxNAAAAAAAAAEECamZmZmZkTQM3MzMzMzBJAMzMzMzMzEUCamZmZmZkRQDMzMzMzMxNAAAAAAAAAFEAAAAAAAAASQAAAAAAAAAxAZmZmZmZmDkCamZmZmZkNQDMzMzMzMw9AZmZmZmZmFEAAAAAAAAASQAAAAAAAABJAzczMzMzMEkCamZmZmZkRQGZmZmZmZhBAAAAAAAAAEECamZmZmZkRQGZmZmZmZhJAAAAAAAAAEEBmZmZmZmYKQM3MzMzMzBBAzczMzMzMEEDNzMzMzMwQQDMzMzMzMxFAAAAAAAAACEBmZmZmZmYQQA=="},"yaxis":"y","type":"scatter","line":{"color":"#6366F1"}},{"hovertemplate":"species=virginica\u003cbr\u003epetal_width=%{x}\u003cbr\u003epetal_length=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"virginica","marker":{"color":"#A5B4FC","opacity":0.65,"symbol":"circle"},"mode":"markers","name":"virginica","orientation":"v","showlegend":true,"x":{"dtype":"f8","bdata":"AAAAAAAABEBmZmZmZmb+P83MzMzMzABAzczMzMzM\u002fD+amZmZmZkBQM3MzMzMzABAMzMzMzMz+z\u002fNzMzMzMz8P83MzMzMzPw\u002fAAAAAAAABEAAAAAAAAAAQGZmZmZmZv4\u002fzczMzMzMAEAAAAAAAAAAQDMzMzMzMwNAZmZmZmZmAkDNzMzMzMz8P5qZmZmZmQFAZmZmZmZmAkAAAAAAAAD4P2ZmZmZmZgJAAAAAAAAAAEAAAAAAAAAAQM3MzMzMzPw\u002fzczMzMzMAEDNzMzMzMz8P83MzMzMzPw\u002fzczMzMzM\u002fD\u002fNzMzMzMwAQJqZmZmZmfk\u002fZmZmZmZm\u002fj8AAAAAAAAAQJqZmZmZmQFAAAAAAAAA+D9mZmZmZmb2P2ZmZmZmZgJAMzMzMzMzA0DNzMzMzMz8P83MzMzMzPw\u002fzczMzMzMAEAzMzMzMzMDQGZmZmZmZgJAZmZmZmZm\u002fj9mZmZmZmYCQAAAAAAAAARAZmZmZmZmAkBmZmZmZmb+PwAAAAAAAABAZmZmZmZmAkDNzMzMzMz8Pw=="},"xaxis":"x","y":{"dtype":"f8","bdata":"AAAAAAAAGEBmZmZmZmYUQJqZmZmZmRdAZmZmZmZmFkAzMzMzMzMXQGZmZmZmZhpAAAAAAAAAEkAzMzMzMzMZQDMzMzMzMxdAZmZmZmZmGEBmZmZmZmYUQDMzMzMzMxVAAAAAAAAAFkAAAAAAAAAUQGZmZmZmZhRAMzMzMzMzFUAAAAAAAAAWQM3MzMzMzBpAmpmZmZmZG0AAAAAAAAAUQM3MzMzMzBZAmpmZmZmZE0DNzMzMzMwaQJqZmZmZmRNAzczMzMzMFkAAAAAAAAAYQDMzMzMzMxNAmpmZmZmZE0BmZmZmZmYWQDMzMzMzMxdAZmZmZmZmGECamZmZmZkZQGZmZmZmZhZAZmZmZmZmFEBmZmZmZmYWQGZmZmZmZhhAZmZmZmZmFkAAAAAAAAAWQDMzMzMzMxNAmpmZmZmZFUBmZmZmZmYWQGZmZmZmZhRAZmZmZmZmFECamZmZmZkXQM3MzMzMzBZAzczMzMzMFEAAAAAAAAAUQM3MzMzMzBRAmpmZmZmZFUBmZmZmZmYUQA=="},"yaxis":"y","type":"scatter","line":{"color":"#6366F1"}}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"petal_width"},"gridcolor":"rgba(99,102,241,0.1)","zerolinecolor":"rgba(99,102,241,0.1)","showgrid":true},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"petal_length"},"gridcolor":"rgba(99,102,241,0.1)","zerolinecolor":"rgba(99,102,241,0.1)","showgrid":true},"legend":{"title":{"text":"species"},"tracegroupgap":0,"font":{"size":11}},"margin":{"t":24,"l":36,"r":18,"b":28},"title":{"text":""},"colorway":["#6366F1","#818CF8","#A5B4FC","#C7D2FE","#4F46E5"],"font":{"color":"#E2E5FF","family":"'Inter','Segoe UI',sans-serif"},"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","autosize":true,"hovermode":"closest"},                        {"displaylogo": false, "responsive": true, "autosizable": true}                    )                };            </script>        </div>
                 
-            <button class="vx-chart-info-btn" onclick="vxOpenModal('modal_c6_d04ba0')"
+            <button class="vx-chart-info-btn" onclick="vxOpenModal('modal_c6_3196f6')"
                     title="Chart details" aria-label="Open chart details">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             </button>
             </div>
         </div>
         
-            <div id="modal_c6_d04ba0" class="vx-modal-overlay" role="dialog" aria-modal="true"
-                 aria-labelledby="modal_c6_d04ba0-title">
+            <div id="modal_c6_3196f6" class="vx-modal-overlay" role="dialog" aria-modal="true"
+                 aria-labelledby="modal_c6_3196f6-title">
                 <div class="vx-modal-box" style="max-width:520px">
                     <div class="vx-modal-header">
-                        <h3 id="modal_c6_d04ba0-title">petal_width vs petal_length</h3>
+                        <h3 id="modal_c6_3196f6-title">petal_width vs petal_length</h3>
                         <button class="vx-modal-close" aria-label="Close dialog"
-                                onclick="vxCloseModal('modal_c6_d04ba0')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                                onclick="vxCloseModal('modal_c6_3196f6')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
                     </div>
                     <div class="vx-modal-body"><table style='width:100%;border-collapse:collapse'><tr><td style='padding:6px 10px;color:var(--vx-text-secondary);font-size:.8rem'>Pearson r</td><td style='padding:6px 10px;font-weight:600;font-size:.82rem'>0.963</td></tr><tr><td style='padding:6px 10px;color:var(--vx-text-secondary);font-size:.8rem'>petal_width mean</td><td style='padding:6px 10px;font-weight:600;font-size:.82rem'>1.20</td></tr><tr><td style='padding:6px 10px;color:var(--vx-text-secondary);font-size:.8rem'>petal_length mean</td><td style='padding:6px 10px;font-weight:600;font-size:.82rem'>3.76</td></tr></table></div>
                 </div>
             </div>
         <script>
     (function(){
-        var cont = document.querySelector('.pcc-c6_d04ba0');
+        var cont = document.querySelector('.pcc-c6_3196f6');
         var t;
         function resize(){
             var d = cont ? cont.querySelector('.plotly-graph-div') : null;

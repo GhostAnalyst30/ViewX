@@ -4,7 +4,7 @@
     <title>Iris Manual</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
     <style>
         
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -153,9 +153,10 @@
             gap: 16px;
             flex: 1; min-height: 0;
         }
-        .c1_99b8fe { grid-area: 1 / 1 / 3 / 4; }
-.c2_a5b5e8 { grid-area: 1 / 4 / 3 / 8; }
-.c3_6ba435 { grid-area: 3 / 1 / 7 / 13; }
+        .c1_2a8de2 { grid-area: 1 / 1 / 3 / 4; }
+.c2_ee467b { grid-area: 1 / 4 / 3 / 8; }
+.c3_fdeb3b { grid-area: 1 / 8 / 7 / 13; }
+.c4_d91468 { grid-area: 3 / 1 / 7 / 8; }
         .vx-card { animation: vxCardIn .4s cubic-bezier(0.32,0.72,0,1) both; }
         @keyframes vxCardIn {
             from { opacity:0; transform:translateY(18px) scale(0.98); filter:blur(2px); }
@@ -169,6 +170,7 @@
         .vx-card:nth-child(1){animation-delay:0.0s}
 .vx-card:nth-child(2){animation-delay:0.05s}
 .vx-card:nth-child(3){animation-delay:0.1s}
+.vx-card:nth-child(4){animation-delay:0.15000000000000002s}
         @media(max-width:768px){
             .vx-grid { display:flex; flex-direction:column; overflow-y:auto; }
             .vx-card { min-height:220px; flex-shrink:0; }
@@ -182,104 +184,162 @@
         <div class="vx-grid">
             
         <style>
-        .vb-c1_99b8fe {
+        .vb-c1_2a8de2 {
             padding: 18px 20px; display: flex; align-items: center;
             gap: 14px; border-left: 5px solid #3B82F6;
             height: 100%; position: relative; overflow: hidden;
         }
-        .vb-c1_99b8fe::after {
+        .vb-c1_2a8de2::after {
             content:''; position:absolute; right:-18px; top:-18px;
             width:80px; height:80px; border-radius:50%;
             background:#3B82F60D;
         }
-        .vb-icon-c1_99b8fe {
+        .vb-icon-c1_2a8de2 {
             width: 48px; height: 48px; border-radius: 12px;
             background: #3B82F615;
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
         }
-        .vb-label-c1_99b8fe {
+        .vb-label-c1_2a8de2 {
             font-size: 0.72rem; font-weight: 700; letter-spacing: 0.6px;
             text-transform: uppercase; color: var(--vx-text-secondary);
             margin-bottom: 5px;
         }
-        .vb-val-c1_99b8fe {
+        .vb-val-c1_2a8de2 {
             font-size: 1.75rem; font-weight: 800;
             color: var(--vx-text-primary); line-height: 1; letter-spacing: -0.5px;
         }
         </style>
-        <div class="vx-card vb-c1_99b8fe c1_99b8fe vx-valuebox" id="c1_99b8fe">
-            <div class="vb-icon-c1_99b8fe"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
+        <div class="vx-card vb-c1_2a8de2 c1_2a8de2 vx-valuebox" id="c1_2a8de2">
+            <div class="vb-icon-c1_2a8de2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
             <div>
-                <div class="vb-label-c1_99b8fe">Filas</div>
-                <div class="vb-val-c1_99b8fe">150</div>
+                <div class="vb-label-c1_2a8de2">Filas</div>
+                <div class="vb-val-c1_2a8de2">150</div>
             </div>
         </div>
         <style>
-        .ib-card-c2_a5b5e8 {
+        .ib-card-c2_ee467b {
             padding: 16px 18px; display: flex; flex-direction: column;
             height: 100%; border-top: 4px solid #3B82F6;
         }
-        .ib-title-c2_a5b5e8 {
+        .ib-title-c2_ee467b {
             font-size: 0.78rem; font-weight: 700; letter-spacing: 0.5px;
             text-transform: uppercase; color: #3B82F6; margin-bottom: 12px;
         }
-        .ib-rows-c2_a5b5e8 { display: flex; flex-direction: column; gap: 7px; flex: 1; overflow: auto; }
-        .ib-row-c2_a5b5e8 {
+        .ib-rows-c2_ee467b { display: flex; flex-direction: column; gap: 7px; flex: 1; overflow: auto; }
+        .ib-row-c2_ee467b {
             display: flex; justify-content: space-between; align-items: center;
             padding: 5px 8px; border-radius: 7px; background: #3B82F609;
         }
-        .ib-label-c2_a5b5e8 {
+        .ib-label-c2_ee467b {
             font-size: 0.73rem; color: var(--vx-text-secondary); font-weight: 500;
         }
-        .ib-val-c2_a5b5e8 {
+        .ib-val-c2_ee467b {
             font-size: 0.82rem; font-weight: 700; color: var(--vx-text-primary);
         }
         </style>
-        <div class="vx-card ib-card-c2_a5b5e8 c2_a5b5e8" id="c2_a5b5e8">
-            <div class="ib-title-c2_a5b5e8">species</div>
-            <div class="ib-rows-c2_a5b5e8">
-            <div class="ib-row-c2_a5b5e8">
-                <span class="ib-label-c2_a5b5e8">Mean</span>
-                <span class="ib-val-c2_a5b5e8">—</span>
+        <div class="vx-card ib-card-c2_ee467b c2_ee467b" id="c2_ee467b">
+            <div class="ib-title-c2_ee467b">species</div>
+            <div class="ib-rows-c2_ee467b">
+            <div class="ib-row-c2_ee467b">
+                <span class="ib-label-c2_ee467b">Mean</span>
+                <span class="ib-val-c2_ee467b">—</span>
             </div>
-            <div class="ib-row-c2_a5b5e8">
-                <span class="ib-label-c2_a5b5e8">Median</span>
-                <span class="ib-val-c2_a5b5e8">—</span>
+            <div class="ib-row-c2_ee467b">
+                <span class="ib-label-c2_ee467b">Median</span>
+                <span class="ib-val-c2_ee467b">—</span>
             </div>
-            <div class="ib-row-c2_a5b5e8">
-                <span class="ib-label-c2_a5b5e8">Std Dev</span>
-                <span class="ib-val-c2_a5b5e8">—</span>
+            <div class="ib-row-c2_ee467b">
+                <span class="ib-label-c2_ee467b">Std Dev</span>
+                <span class="ib-val-c2_ee467b">—</span>
             </div>
-            <div class="ib-row-c2_a5b5e8">
-                <span class="ib-label-c2_a5b5e8">Min</span>
-                <span class="ib-val-c2_a5b5e8">setosa</span>
+            <div class="ib-row-c2_ee467b">
+                <span class="ib-label-c2_ee467b">Min</span>
+                <span class="ib-val-c2_ee467b">setosa</span>
             </div>
-            <div class="ib-row-c2_a5b5e8">
-                <span class="ib-label-c2_a5b5e8">Max</span>
-                <span class="ib-val-c2_a5b5e8">virginica</span>
+            <div class="ib-row-c2_ee467b">
+                <span class="ib-label-c2_ee467b">Max</span>
+                <span class="ib-val-c2_ee467b">virginica</span>
             </div>
-            <div class="ib-row-c2_a5b5e8">
-                <span class="ib-label-c2_a5b5e8">Count</span>
-                <span class="ib-val-c2_a5b5e8">150</span>
+            <div class="ib-row-c2_ee467b">
+                <span class="ib-label-c2_ee467b">Count</span>
+                <span class="ib-val-c2_ee467b">150</span>
             </div></div>
         </div>
         <style>
-        .tc-c3_6ba435 { padding:14px 16px; display:flex; flex-direction:column; height:100%; }
-        .tc-c3_6ba435 h4 { color:var(--vx-text-primary); margin:0 0 10px; font-weight:600; font-size:.88rem; flex-shrink:0; }
-        .tcc-c3_6ba435 { overflow:auto; flex:1; scrollbar-width:thin; }
-        .vxt-c3_6ba435 { width:100%; border-collapse:collapse; font-size:.78rem; }
-        .vxt-c3_6ba435 th {
+        .pc-c3_fdeb3b {
+            padding: 12px 14px; display: grid;
+            grid-template-rows: auto 1fr; height: 100%;
+            width: 100%; overflow: hidden; gap: 6px; position: relative;
+        }
+        .pc-c3_fdeb3b h4 {
+            margin: 0; color: var(--vx-text-primary); font-weight: 600;
+            font-size: 0.88rem;
+            border-bottom: 2px solid #3B82F628; padding-bottom: 6px;
+        }
+        .pcc-c3_fdeb3b { position:relative; width:100%; height:100%; min-height:0; overflow:hidden; }
+        .pcc-c3_fdeb3b .plotly-graph-div { width:100%!important; height:100%!important; }
+        </style>
+        <div class="vx-card pc-c3_fdeb3b c3_fdeb3b vx-card-static" id="c3_fdeb3b">
+            <h4 class="vx-card-header">Sepal vs Petal</h4>
+            <div class="pcc-c3_fdeb3b">
+                <div>                            <div id="2ad01e8b-b533-4a2a-a7ee-31e3c305591a" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("2ad01e8b-b533-4a2a-a7ee-31e3c305591a")) {                    Plotly.newPlot(                        "2ad01e8b-b533-4a2a-a7ee-31e3c305591a",                        [{"hovertemplate":"species=setosa\u003cbr\u003esepal_length=%{x}\u003cbr\u003epetal_length=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"setosa","marker":{"color":"#0078D4","symbol":"circle"},"mode":"markers","name":"setosa","orientation":"v","showlegend":true,"x":{"dtype":"f8","bdata":"ZmZmZmZmFECamZmZmZkTQM3MzMzMzBJAZmZmZmZmEkAAAAAAAAAUQJqZmZmZmRVAZmZmZmZmEkAAAAAAAAAUQJqZmZmZmRFAmpmZmZmZE0CamZmZmZkVQDMzMzMzMxNAMzMzMzMzE0AzMzMzMzMRQDMzMzMzMxdAzczMzMzMFkCamZmZmZkVQGZmZmZmZhRAzczMzMzMFkBmZmZmZmYUQJqZmZmZmRVAZmZmZmZmFEBmZmZmZmYSQGZmZmZmZhRAMzMzMzMzE0AAAAAAAAAUQAAAAAAAABRAzczMzMzMFEDNzMzMzMwUQM3MzMzMzBJAMzMzMzMzE0CamZmZmZkVQM3MzMzMzBRAAAAAAAAAFkCamZmZmZkTQAAAAAAAABRAAAAAAAAAFkCamZmZmZkTQJqZmZmZmRFAZmZmZmZmFEAAAAAAAAAUQAAAAAAAABJAmpmZmZmZEUAAAAAAAAAUQGZmZmZmZhRAMzMzMzMzE0BmZmZmZmYUQGZmZmZmZhJAMzMzMzMzFUAAAAAAAAAUQA=="},"xaxis":"x","y":{"dtype":"f8","bdata":"ZmZmZmZm9j9mZmZmZmb2P83MzMzMzPQ\u002fAAAAAAAA+D9mZmZmZmb2PzMzMzMzM\u002fs\u002fZmZmZmZm9j8AAAAAAAD4P2ZmZmZmZvY\u002fAAAAAAAA+D8AAAAAAAD4P5qZmZmZmfk\u002fZmZmZmZm9j+amZmZmZnxPzMzMzMzM\u002fM\u002fAAAAAAAA+D\u002fNzMzMzMz0P2ZmZmZmZvY\u002fMzMzMzMz+z8AAAAAAAD4PzMzMzMzM\u002fs\u002fAAAAAAAA+D8AAAAAAADwPzMzMzMzM\u002fs\u002fZmZmZmZm\u002fj+amZmZmZn5P5qZmZmZmfk\u002fAAAAAAAA+D9mZmZmZmb2P5qZmZmZmfk\u002fmpmZmZmZ+T8AAAAAAAD4PwAAAAAAAPg\u002fZmZmZmZm9j8AAAAAAAD4PzMzMzMzM\u002fM\u002fzczMzMzM9D8AAAAAAAD4P83MzMzMzPQ\u002fAAAAAAAA+D\u002fNzMzMzMz0P83MzMzMzPQ\u002fzczMzMzM9D+amZmZmZn5P2ZmZmZmZv4\u002fZmZmZmZm9j+amZmZmZn5P2ZmZmZmZvY\u002fAAAAAAAA+D9mZmZmZmb2Pw=="},"yaxis":"y","type":"scatter","line":{"color":"#3B82F6"}},{"hovertemplate":"species=versicolor\u003cbr\u003esepal_length=%{x}\u003cbr\u003epetal_length=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"versicolor","marker":{"color":"#00B4D8","symbol":"circle"},"mode":"markers","name":"versicolor","orientation":"v","showlegend":true,"x":{"dtype":"f8","bdata":"AAAAAAAAHECamZmZmZkZQJqZmZmZmRtAAAAAAAAAFkAAAAAAAAAaQM3MzMzMzBZAMzMzMzMzGUCamZmZmZkTQGZmZmZmZhpAzczMzMzMFEAAAAAAAAAUQJqZmZmZmRdAAAAAAAAAGEBmZmZmZmYYQGZmZmZmZhZAzczMzMzMGkBmZmZmZmYWQDMzMzMzMxdAzczMzMzMGEBmZmZmZmYWQJqZmZmZmRdAZmZmZmZmGEAzMzMzMzMZQGZmZmZmZhhAmpmZmZmZGUBmZmZmZmYaQDMzMzMzMxtAzczMzMzMGkAAAAAAAAAYQM3MzMzMzBZAAAAAAAAAFkAAAAAAAAAWQDMzMzMzMxdAAAAAAAAAGECamZmZmZkVQAAAAAAAABhAzczMzMzMGkAzMzMzMzMZQGZmZmZmZhZAAAAAAAAAFkAAAAAAAAAWQGZmZmZmZhhAMzMzMzMzF0AAAAAAAAAUQGZmZmZmZhZAzczMzMzMFkDNzMzMzMwWQM3MzMzMzBhAZmZmZmZmFEDNzMzMzMwWQA=="},"xaxis":"x","y":{"dtype":"f8","bdata":"zczMzMzMEkAAAAAAAAASQJqZmZmZmRNAAAAAAAAAEEBmZmZmZmYSQAAAAAAAABJAzczMzMzMEkBmZmZmZmYKQGZmZmZmZhJAMzMzMzMzD0AAAAAAAAAMQM3MzMzMzBBAAAAAAAAAEEDNzMzMzMwSQM3MzMzMzAxAmpmZmZmZEUAAAAAAAAASQGZmZmZmZhBAAAAAAAAAEkAzMzMzMzMPQDMzMzMzMxNAAAAAAAAAEECamZmZmZkTQM3MzMzMzBJAMzMzMzMzEUCamZmZmZkRQDMzMzMzMxNAAAAAAAAAFEAAAAAAAAASQAAAAAAAAAxAZmZmZmZmDkCamZmZmZkNQDMzMzMzMw9AZmZmZmZmFEAAAAAAAAASQAAAAAAAABJAzczMzMzMEkCamZmZmZkRQGZmZmZmZhBAAAAAAAAAEECamZmZmZkRQGZmZmZmZhJAAAAAAAAAEEBmZmZmZmYKQM3MzMzMzBBAzczMzMzMEEDNzMzMzMwQQDMzMzMzMxFAAAAAAAAACEBmZmZmZmYQQA=="},"yaxis":"y","type":"scatter","line":{"color":"#3B82F6"}},{"hovertemplate":"species=virginica\u003cbr\u003esepal_length=%{x}\u003cbr\u003epetal_length=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"virginica","marker":{"color":"#48CAE4","symbol":"circle"},"mode":"markers","name":"virginica","orientation":"v","showlegend":true,"x":{"dtype":"f8","bdata":"MzMzMzMzGUAzMzMzMzMXQGZmZmZmZhxAMzMzMzMzGUAAAAAAAAAaQGZmZmZmZh5AmpmZmZmZE0AzMzMzMzMdQM3MzMzMzBpAzczMzMzMHEAAAAAAAAAaQJqZmZmZmRlAMzMzMzMzG0DNzMzMzMwWQDMzMzMzMxdAmpmZmZmZGUAAAAAAAAAaQM3MzMzMzB5AzczMzMzMHkAAAAAAAAAYQJqZmZmZmRtAZmZmZmZmFkDNzMzMzMweQDMzMzMzMxlAzczMzMzMGkDNzMzMzMwcQM3MzMzMzBhAZmZmZmZmGECamZmZmZkZQM3MzMzMzBxAmpmZmZmZHUCamZmZmZkfQJqZmZmZmRlAMzMzMzMzGUBmZmZmZmYYQM3MzMzMzB5AMzMzMzMzGUCamZmZmZkZQAAAAAAAABhAmpmZmZmZG0DNzMzMzMwaQJqZmZmZmRtAMzMzMzMzF0AzMzMzMzMbQM3MzMzMzBpAzczMzMzMGkAzMzMzMzMZQAAAAAAAABpAzczMzMzMGECamZmZmZkXQA=="},"xaxis":"x","y":{"dtype":"f8","bdata":"AAAAAAAAGEBmZmZmZmYUQJqZmZmZmRdAZmZmZmZmFkAzMzMzMzMXQGZmZmZmZhpAAAAAAAAAEkAzMzMzMzMZQDMzMzMzMxdAZmZmZmZmGEBmZmZmZmYUQDMzMzMzMxVAAAAAAAAAFkAAAAAAAAAUQGZmZmZmZhRAMzMzMzMzFUAAAAAAAAAWQM3MzMzMzBpAmpmZmZmZG0AAAAAAAAAUQM3MzMzMzBZAmpmZmZmZE0DNzMzMzMwaQJqZmZmZmRNAzczMzMzMFkAAAAAAAAAYQDMzMzMzMxNAmpmZmZmZE0BmZmZmZmYWQDMzMzMzMxdAZmZmZmZmGECamZmZmZkZQGZmZmZmZhZAZmZmZmZmFEBmZmZmZmYWQGZmZmZmZhhAZmZmZmZmFkAAAAAAAAAWQDMzMzMzMxNAmpmZmZmZFUBmZmZmZmYWQGZmZmZmZhRAZmZmZmZmFECamZmZmZkXQM3MzMzMzBZAzczMzMzMFEAAAAAAAAAUQM3MzMzMzBRAmpmZmZmZFUBmZmZmZmYUQA=="},"yaxis":"y","type":"scatter","line":{"color":"#3B82F6"}}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"sepal_length"},"gridcolor":"rgba(59,130,246,0.1)","zerolinecolor":"rgba(59,130,246,0.1)","showgrid":true},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"petal_length"},"gridcolor":"rgba(59,130,246,0.1)","zerolinecolor":"rgba(59,130,246,0.1)","showgrid":true},"legend":{"title":{"text":"species"},"tracegroupgap":0,"font":{"size":11}},"margin":{"t":24,"l":36,"r":18,"b":28},"font":{"color":"#F0F0F0","family":"'Inter','Segoe UI',sans-serif"},"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","colorway":["#3B82F6","#60A5FA","#93C5FD","#BFDBFE","#2563EB"],"title":{"text":""},"autosize":true,"hovermode":"closest"},                        {"displaylogo": false, "responsive": true, "autosizable": true}                    )                };            </script>        </div>
+                
+            <button class="vx-chart-info-btn" onclick="vxOpenModal('modal_c3_fdeb3b')"
+                    title="Chart details" aria-label="Open chart details">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </button>
+            </div>
+        </div>
+        
+            <div id="modal_c3_fdeb3b" class="vx-modal-overlay" role="dialog" aria-modal="true"
+                 aria-labelledby="modal_c3_fdeb3b-title">
+                <div class="vx-modal-box" style="max-width:520px">
+                    <div class="vx-modal-header">
+                        <h3 id="modal_c3_fdeb3b-title">Sepal vs Petal</h3>
+                        <button class="vx-modal-close" aria-label="Close dialog"
+                                onclick="vxCloseModal('modal_c3_fdeb3b')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                    </div>
+                    <div class="vx-modal-body"><p style='color:var(--vx-text-secondary);font-size:.85rem'>No additional statistics available.</p></div>
+                </div>
+            </div>
+        <script>
+    (function(){
+        var cont = document.querySelector('.pcc-c3_fdeb3b');
+        var t;
+        function resize(){
+            var d = cont ? cont.querySelector('.plotly-graph-div') : null;
+            if(d && window.Plotly){
+                var w = cont.clientWidth, h = cont.clientHeight;
+                if(w>0&&h>0) Plotly.relayout(d,{width:w,height:h});
+            }
+        }
+        if(window.ResizeObserver && cont)
+            new ResizeObserver(function(){clearTimeout(t);t=setTimeout(resize,50);}).observe(cont);
+        window.addEventListener('resize',function(){clearTimeout(t);t=setTimeout(resize,100);});
+        (function wait(n){
+            var d=cont?cont.querySelector('.plotly-graph-div'):null;
+            if(d&&window.Plotly) resize();
+            else if(n>0) setTimeout(function(){wait(n-1);},120);
+        })(18);
+    })();
+    </script>
+        <style>
+        .tc-c4_d91468 { padding:14px 16px; display:flex; flex-direction:column; height:100%; }
+        .tc-c4_d91468 h4 { color:var(--vx-text-primary); margin:0 0 10px; font-weight:600; font-size:.88rem; flex-shrink:0; }
+        .tcc-c4_d91468 { overflow:auto; flex:1; scrollbar-width:thin; }
+        .vxt-c4_d91468 { width:100%; border-collapse:collapse; font-size:.78rem; }
+        .vxt-c4_d91468 th {
             background:#3B82F612; color:#3B82F6; padding:9px 8px;
             text-align:left; font-weight:700; position:sticky; top:0;
             border-bottom:2px solid #3B82F633; font-size:.75rem; letter-spacing:.3px;
         }
-        .vxt-c3_6ba435 td { padding:7px 8px; border-bottom:1px solid rgba(128,128,128,.1); color:var(--vx-text-primary); }
-        .vxt-c3_6ba435 tr:hover { background:#3B82F607; }
+        .vxt-c4_d91468 td { padding:7px 8px; border-bottom:1px solid rgba(128,128,128,.1); color:var(--vx-text-primary); }
+        .vxt-c4_d91468 tr:hover { background:#3B82F607; }
         </style>
-        <div class="vx-card tc-c3_6ba435 c3_6ba435 vx-card-static" id="c3_6ba435">
+        <div class="vx-card tc-c4_d91468 c4_d91468 vx-card-static" id="c4_d91468">
             <h4 class="vx-card-header">Muestra</h4>
-            <div class="tcc-c3_6ba435"><table class="dataframe vxt-c3_6ba435 vx-sortable-table">
+            <div class="tcc-c4_d91468"><table class="dataframe vxt-c4_d91468 vx-sortable-table">
   <thead>
     <tr style="text-align: right;">
       <th>sepal_length</th>
