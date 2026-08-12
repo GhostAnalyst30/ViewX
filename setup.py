@@ -9,7 +9,7 @@ except FileNotFoundError:
 
 setup(
     name="viewx",
-    version="0.2.4",
+    version="0.3.0",
     author="Emmanuel Ascendra Perez",
     author_email="ascendraemmanuel@gmail.com",
     description="Librería de visualización adaptable para HTML, Dashboards y PDFs en Python",
@@ -40,28 +40,25 @@ setup(
 
     python_requires=">=3.8",
 
-    # Dependencias mínimas
+    # Dependencias mínimas (núcleo interactivo)
     install_requires=[
         "numpy>=1.25.0",
         "pandas>=2.1.0",
-        "matplotlib>=3.8.0",
-        "pylatex>=1.4.2",  # Para PDFs
-        "seaborn>=0.12.2",
-        "plotly>=6.0.0"
+        "plotly>=6.0.0",
     ],
 
     # Dependencias opcionales
     extras_require={
-        "streamlit": ["streamlit>=1.32.0"],
-        "dash": ["dash>=2.14.0"],
-        "viz": ["seaborn>=0.12.2", "plotly>=6.0.0"],
-        "pdf": ["pylatex>=1.5.0"],
+        # Gráficas estáticas (vx.plot(..., static=True)) y auto-reportes PDF
+        "static": ["matplotlib>=3.8.0"],
+        # Reportes PDF vía LaTeX (requiere pdflatex instalado en el sistema)
+        "pdf": ["pylatex>=1.4.2", "matplotlib>=3.8.0"],
+        # Exportar figuras Plotly a PNG/SVG
+        "export": ["kaleido>=0.2.1"],
         "all": [
-            "streamlit>=1.32.0",
-            "dash>=2.14.0",
-            "seaborn>=0.12.2",
-            "plotly>=6.0.0",
-            "pylatex>=1.5.0",
+            "matplotlib>=3.8.0",
+            "pylatex>=1.4.2",
+            "kaleido>=0.2.1",
         ],
     },
 )

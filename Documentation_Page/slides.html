@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Slides — ViewX</title>
+<title>Presentation — ViewX</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
 <style>
@@ -112,7 +112,7 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;backgro
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/datamatrix.html">DataMatrix</a>
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/report.html">Report</a>
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/HTML.html">HTML</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/slides.html" class="active">Slides</a>
+      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/slides.html" class="active">Presentation</a>
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/datasets.html">Datasets</a>
     </div>
     <button class="nav-pip" onclick="copyText('pip install viewx')">pip install viewx</button>
@@ -132,7 +132,7 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;backgro
     <div class="sidebar-links">
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/slides.html#presentation">Presentation</a>
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/slides.html#config">Configuracion</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/slides.html#export">export()</a>
+      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/slides.html#export">save() / show()</a>
     </div>
     <div class="sidebar-title">Clase Slide</div>
     <div class="sidebar-links">
@@ -149,13 +149,13 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;backgro
   </aside>
 
   <main class="main-content">
-    <div class="breadcrumb"><a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/index.html">ViewX</a> / Slides</div>
-    <h1 class="page-title">Slides</h1>
+    <div class="breadcrumb"><a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/index.html">ViewX</a> / Presentation</div>
+    <h1 class="page-title">Presentation</h1>
     <p class="page-desc">Motor de presentaciones HTML interactivas. Crea slides programaticamente con Python, incluyendo graficos Plotly, animaciones CSS, temas profesionales y controles de navegacion.</p>
 
     <section class="section" id="overview">
       <h2>Descripcion general</h2>
-      <p>ViewX Slides permite crear presentaciones HTML completas desde Python:</p>
+      <p>ViewX Presentation (contenedor de Slide) permite crear presentaciones HTML completas desde Python:</p>
       <ul style="margin-left:1.5rem;color:var(--text-muted);">
         <li>6 temas profesionales (dark, light, neon, ocean, sunset, corporate)</li>
         <li>20+ animaciones de entrada y loop</li>
@@ -240,14 +240,14 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;backgro
 from viewx.datasets import load_iris
 
 # Manual deck
-pres = Presentation("Mi presentacion", theme="dark")
+pres = Presentation("Mi presentacion", theme="dark_enterprise")
 with Slide(title="Portada") as s:
     s.add(Title("Hello ViewX").center("x").pos(top=20).zoom_in())
-pres.export("slides.html")
+pres.save("slides.html")
 
 # Auto deck from DataFrame
 df = load_iris()
-Presentation.auto_generate(df, title="Iris Overview", theme="ocean")</code></pre>
+Presentation.auto(df, title="Iris Overview", theme="glass_ocean").save("iris_deck.html")</code></pre>
       </div>
     </section>
 
@@ -258,7 +258,7 @@ Presentation.auto_generate(df, title="Iris Overview", theme="ocean")</code></pre
         <div class="method-desc">Clase principal que contiene todas las slides y configuracion global de la presentacion.</div>
         <div class="param-list">
           <div class="param"><span class="param-name">title</span> <span class="param-type">str</span> - Titulo de la presentacion</div>
-          <div class="param"><span class="param-name">theme</span> <span class="param-type">str, default="dark"</span> - Tema a usar</div>
+          <div class="param"><span class="param-name">theme</span> <span class="param-type">str</span> - Tema a usar (los 6 canonicos de ViewX; por defecto el tema global)</div>
           <div class="param"><span class="param-name">width</span> <span class="param-type">int, default=1280</span> - Ancho en pixels</div>
           <div class="param"><span class="param-name">height</span> <span class="param-type">int, default=720</span> - Alto en pixels</div>
           <div class="param"><span class="param-name">transition</span> <span class="param-type">str, default="slide"</span> - Transicion entre slides</div>
@@ -300,12 +300,12 @@ Presentation.auto_generate(df, title="Iris Overview", theme="ocean")</code></pre
     </section>
 
     <section class="section" id="export">
-      <h2>export()</h2>
+      <h2>save() / show()</h2>
       <div class="method-card">
-        <div class="method-name">export(filename, open_browser=False) &rarr; str</div>
-        <div class="method-desc">Genera el archivo HTML de la presentacion. Opcionalmente abre en el navegador.</div>
+        <div class="method-name">save(path, open_browser=False) &rarr; str</div>
+        <div class="method-desc">Genera el archivo HTML de la presentacion. <code>show()</code> lo genera y abre en el navegador.</div>
         <div class="param-list">
-          <div class="param"><span class="param-name">filename</span> <span class="param-type">str</span> - Ruta del archivo de salida</div>
+          <div class="param"><span class="param-name">path</span> <span class="param-type">str</span> - Ruta del archivo de salida</div>
           <div class="param"><span class="param-name">open_browser</span> <span class="param-type">bool</span> - Abrir automaticamente en navegador</div>
         </div>
       </div>
@@ -393,10 +393,10 @@ Presentation.auto_generate(df, title="Iris Overview", theme="ocean")</code></pre
     </section>
 
     <section class="section" id="auto_generate">
-      <h2>auto_generate()</h2>
+      <h2>Presentation.auto()</h2>
       <div class="method-card">
-        <div class="method-name">Presentation.auto_generate(df, title, theme, filename, show=True) &rarr; str</div>
-        <div class="method-desc">Genera automaticamente una presentacion HTML con portada, KPIs, calidad, graficos y muestra de datos.</div>
+        <div class="method-name">Presentation.auto(df, title, theme, columns, max_slides) &rarr; Presentation</div>
+        <div class="method-desc">Genera automaticamente una presentacion con portada, KPIs, calidad, graficos y muestra de datos. Devuelve la Presentation; exportala con <code>.save(path)</code> o <code>.show()</code>.</div>
       </div>
       <div class="code-block">
         <div class="code-header">
@@ -404,17 +404,17 @@ Presentation.auto_generate(df, title="Iris Overview", theme="ocean")</code></pre
           <span class="code-lang">Python</span>
           <button class="code-copy" onclick="copyCode('auto-code')">Copiar</button>
         </div>
-        <pre><code class="language-python" id="auto-code">from viewx.Slides import Slides
+        <pre><code class="language-python" id="auto-code">from viewx import Presentation
 from viewx.datasets import load_iris
 
-Slides(load_iris(), auto=True, title="Dataset Deck", theme="dark")</code></pre>
+Presentation.auto(load_iris(), title="Dataset Deck", theme="dark_enterprise").save("deck.html")</code></pre>
       </div>
     </section>
   </main>
 </div>
 
 <footer>
-  <div class="footer-meta">ViewX &middot; Documentacion &middot; v0.2.4</div>
+  <div class="footer-meta">ViewX &middot; Documentacion &middot; v0.3.0</div>
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>

@@ -307,19 +307,7 @@ class AnalyzerEngine:
     def _find_correlations(
         self, df: pd.DataFrame, numeric_cols: List[str], threshold: float = 0.3
     ) -> List[Tuple[str, str, float]]:
-        if len(numeric_cols) < 2:
-            return []
+        # Single vectorized corr() pass; signed values read from the same matrix.
+        from viewx.shared.column_profile import top_correlation_pairs
 
-        corr_matrix = df[numeric_cols].corr().abs()
-        pairs = []
-        for i in range(len(numeric_cols)):
-            for j in range(i + 1, len(numeric_cols)):
-                r = corr_matrix.iloc[i, j]
-                if r >= threshold:
-                    col_a = numeric_cols[i]
-                    col_b = numeric_cols[j]
-                    actual_r = df[[col_a, col_b]].corr().iloc[0, 1]
-                    pairs.append((col_a, col_b, float(actual_r)))
-
-        pairs.sort(key=lambda x: abs(x[2]), reverse=True)
-        return pairs[:10]
+        return top_correlation_pairs(df, numeric_cols, threshold=threshold, top=10)

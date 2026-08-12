@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from datetime import datetime
 from typing import Dict, List, Optional, Union
 
@@ -12,6 +13,7 @@ from .visualizer import Visualizer
 
 from viewx.shared import datamatrix_runtime_js, plotly_script_tag
 from viewx.shared.insights import compute_highlights
+from viewx.shared.themes import datamatrix_mode, get_theme, theme_spec
 
 
 class DataMatrix:
@@ -145,6 +147,38 @@ class DataMatrix:
             self.analyze()
         return compute_highlights(self.report)
 
+    def save(
+        self,
+        path: str = "datamatrix_report.html",
+        title: str = "ViewX DataMatrix Report",
+        theme: Optional[str] = None,
+        sample_rows: int = 200,
+        explorer_max_rows: int = 5000,
+        open_browser: bool = False,
+    ) -> str:
+        """Write the EDA report to an HTML file. Returns the file path."""
+        html = self.render_html(
+            title=title, theme=theme,
+            sample_rows=sample_rows, explorer_max_rows=explorer_max_rows,
+        )
+
+        import os
+        directory = os.path.dirname(path)
+        if directory:
+            os.makedirs(directory, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(html)
+
+        if open_browser:
+            import webbrowser
+            webbrowser.open("file://" + os.path.abspath(path))
+
+        return path
+
+    def show(self, path: str = "datamatrix_report.html", **kwargs) -> str:
+        """Write the EDA report and open it in the default browser."""
+        return self.save(path, open_browser=True, **kwargs)
+
     def generate_report(
         self,
         output_path: str = "datamatrix_report.html",
@@ -154,34 +188,32 @@ class DataMatrix:
         template: Optional[str] = None,
         explorer_max_rows: int = 5000,
     ) -> str:
-        if self.report is None:
-            self.analyze()
-
-        mode = template if template else theme
-        html = self.render_html(
-            title=title, theme=mode, explorer_max_rows=explorer_max_rows
+        """Deprecated: use ``save(path)`` or ``show()`` instead."""
+        warnings.warn(
+            "DataMatrix.generate_report() is deprecated; use save(path) or show().",
+            DeprecationWarning, stacklevel=2,
         )
-
-        with open(output_path, "w", encoding="utf-8") as f:
-            f.write(html)
-
-        if show:
-            import webbrowser
-            webbrowser.open(output_path)
-
-        return output_path
+        return self.save(
+            output_path, title=title, theme=template or theme,
+            explorer_max_rows=explorer_max_rows, open_browser=show,
+        )
 
     def render_html(
         self,
         title: str = "ViewX DataMatrix Report",
-        theme: str = "dark",
+        theme: Optional[str] = None,
+        sample_rows: int = 200,
         explorer_max_rows: int = 5000,
     ) -> str:
         if self.report is None:
             self.analyze()
 
-        self.visualizer.set_mode(theme)
-        tmpl = ReportTheme(mode=theme)
+        theme_name = theme if theme is not None else get_theme()
+        mode = datamatrix_mode(theme_name)
+        accent = theme_spec(theme_name).get("accent", "#6366F1")
+
+        self.visualizer.set_mode(mode)
+        tmpl = ReportTheme(mode=mode, accent_color=accent)
         return tmpl.render(
             title=title,
             report=self.report,
@@ -189,6 +221,7 @@ class DataMatrix:
             df=self.df,
             visualizer=self.visualizer,
             timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            sample_rows=sample_rows,
             explorer_max_rows=explorer_max_rows,
         )
 
@@ -214,6 +247,7 @@ class ReportTheme:
         df: pd.DataFrame,
         visualizer: Visualizer,
         timestamp: str,
+        sample_rows: int = 200,
         explorer_max_rows: int = 5000,
     ) -> str:
         overview_plots = visualizer.generate_overview_plots(report)
@@ -232,6 +266,7 @@ class ReportTheme:
         return self._html(
             title, report, overview_plots, col_plots, bib_plots, corr_plots,
             df, has_bib, has_corr, timestamp, explorer_data, highlights,
+            sample_rows=sample_rows,
         )
 
     def _alerts_html(self, alerts: List[str]) -> str:
@@ -282,6 +317,7 @@ class ReportTheme:
     def _html(
         self, title, report, overview_plots, col_plots, bib_plots, corr_plots,
         df, has_bib, has_corr, timestamp, explorer_data, highlights=None,
+        sample_rows: int = 200,
     ):
         is_dark = self.mode == "dark"
         bg_page = "#07080F" if is_dark else "#F3F4F6"
@@ -1330,13 +1366,14 @@ class ReportTheme:
             <h2 class="dm-tab-header">Data Sample</h2>
             <p class="dm-tab-sub">Paginated preview of dataset rows</p>
             <div class="dm-card">
+                {f'<div class="dm-exp-banner">Showing the first {min(sample_rows, len(df)):,} of {len(df):,} rows. Use the Explore tab for the full interactive view.</div>' if len(df) > sample_rows else ''}
                 <div class="dm-sample-controls">
                     <button id="dm-sample-prev" class="dm-btn-ghost">Previous</button>
                     <span id="dm-sample-page-info">Page 1</span>
                     <button id="dm-sample-next" class="dm-btn-ghost">Next</button>
                 </div>
                 <div class="dm-table-wrap">
-                    {df.to_html(classes="dm-table", index=False, table_id="dm-sample-table")}
+                    {df.head(sample_rows).to_html(classes="dm-table", index=False, table_id="dm-sample-table")}
                 </div>
             </div>
         </div>

@@ -9,13 +9,20 @@ from __future__ import annotations
 import html
 import json
 import os
+import warnings
 import webbrowser
 from dataclasses import dataclass
-from typing import Any, ClassVar, Dict, Iterable, List, Optional
+from typing import Any, ClassVar, Dict, List, Optional
 
 import pandas as pd
 
 from viewx.shared import PLOTLY_CDN
+from viewx.shared.themes import (
+    THEMES as SHARED_THEMES,
+    LEGACY_ALIASES,
+    get_theme,
+    resolve_theme,
+)
 
 
 KEYFRAMES = """
@@ -46,38 +53,13 @@ KEYFRAMES = """
 @keyframes skewIn { from { opacity:0; transform:translateX(-40px) skewX(8deg); } to { opacity:1; transform:translateX(0) skewX(0); } }
 """
 
+# Slide palettes derive from the canonical shared registry so one theme name
+# works everywhere. Legacy slide names (dark, light, ocean, ...) keep working.
 THEMES: Dict[str, Dict[str, str]] = {
-    "dark": {
-        "bg": "#0f0f1a", "surface": "#1a1a2e", "primary": "#e94560", "accent": "#00d4ff",
-        "text": "#f5f7fb", "muted": "#a7adbd", "border": "rgba(255,255,255,.12)",
-        "shadow": "rgba(0,0,0,.42)", "font": "'Inter','Segoe UI',sans-serif",
-    },
-    "light": {
-        "bg": "#f8fafc", "surface": "#ffffff", "primary": "#2563eb", "accent": "#7c3aed",
-        "text": "#172033", "muted": "#64748b", "border": "rgba(15,23,42,.12)",
-        "shadow": "rgba(15,23,42,.13)", "font": "'Inter','Segoe UI',sans-serif",
-    },
-    "neon": {
-        "bg": "#090014", "surface": "#13002b", "primary": "#00ff88", "accent": "#ff00e5",
-        "text": "#ffffff", "muted": "#b9a9ff", "border": "rgba(0,255,136,.25)",
-        "shadow": "rgba(0,255,136,.18)", "font": "'JetBrains Mono','Courier New',monospace",
-    },
-    "ocean": {
-        "bg": "#07172f", "surface": "#102544", "primary": "#64ffda", "accent": "#48cae4",
-        "text": "#dbeafe", "muted": "#93a4bd", "border": "rgba(100,255,218,.18)",
-        "shadow": "rgba(0,0,0,.35)", "font": "'Helvetica Neue',Arial,sans-serif",
-    },
-    "sunset": {
-        "bg": "#1b0b2e", "surface": "#34184f", "primary": "#ff6b6b", "accent": "#ffd166",
-        "text": "#fff7ed", "muted": "#d8b4fe", "border": "rgba(255,209,102,.22)",
-        "shadow": "rgba(0,0,0,.38)", "font": "'Georgia',serif",
-    },
-    "corporate": {
-        "bg": "#ffffff", "surface": "#f1f5ff", "primary": "#1d4ed8", "accent": "#0f766e",
-        "text": "#0f172a", "muted": "#64748b", "border": "rgba(15,23,42,.10)",
-        "shadow": "rgba(15,23,42,.10)", "font": "Arial,sans-serif",
-    },
+    name: dict(spec["slides"]) for name, spec in SHARED_THEMES.items()
 }
+for _alias, _target in LEGACY_ALIASES.items():
+    THEMES.setdefault(_alias, THEMES[_target])
 
 
 def _css_value(value: Any, default_unit: str = "px") -> str:
@@ -236,14 +218,14 @@ class Presentation:
     def __init__(
         self,
         title: str = "Presentación",
-        theme: str = "dark",
+        theme: Optional[str] = None,
         width: int = 1280,
         height: int = 720,
         transition: str = "slide",
         show_numbers: bool = True,
     ) -> None:
         self.title = title
-        self.theme_name = theme
+        self.theme_name = theme if theme is not None else get_theme()
         self.width = width
         self.height = height
         self.transition = transition
@@ -312,7 +294,9 @@ class Presentation:
 
     @property
     def theme(self) -> Dict[str, str]:
-        return THEMES.get(self.theme_name, THEMES["dark"])
+        if self.theme_name in THEMES:
+            return THEMES[self.theme_name]
+        return THEMES[resolve_theme(self.theme_name)]
 
     def _controls_html(self) -> str:
         if self.kiosk_mode:
@@ -397,10 +381,12 @@ body:hover #vx-dots{{opacity:1;}}
 {self.custom_css}
 """
 
-    def export(self, filename: str = "presentacion.html", open_browser: bool = False) -> str:
+    def save(self, path: str = "presentacion.html", open_browser: bool = False) -> str:
+        """Write the presentation to an HTML file. Returns the absolute path."""
         total = len(self.slides)
         if total == 0:
-            raise ValueError("La presentación no contiene slides. Usa `with Slide(...):` antes de exportar.")
+            raise ValueError("La presentación no contiene slides. Usa `with Slide(...):` antes de guardar.")
+        filename = path
         slides_html = "\n".join(slide._render(i + 1, total, self.show_numbers) for i, slide in enumerate(self.slides))
         dots = "".join(f'<button class="vx-dot" type="button" onclick="goToSlide({i})" title="Slide {i+1}"></button>' for i in range(total))
         font_link = f'<link rel="stylesheet" href="{html.escape(self.font_url, quote=True)}">' if self.font_url else ""
@@ -492,38 +478,64 @@ updateUI();
 </script>
 </body>
 </html>"""
+        directory = os.path.dirname(filename)
+        if directory:
+            os.makedirs(directory, exist_ok=True)
         with open(filename, "w", encoding="utf-8") as f:
             f.write(html_doc)
         if open_browser:
             webbrowser.open("file://" + os.path.abspath(filename))
         return os.path.abspath(filename)
 
-    def show(self, filename: str = "presentacion.html") -> str:
-        return self.export(filename, open_browser=True)
+    def export(self, filename: str = "presentacion.html", open_browser: bool = False) -> str:
+        """Deprecated: use ``save()`` instead."""
+        warnings.warn(
+            "Presentation.export() is deprecated; use save(path) or show().",
+            DeprecationWarning, stacklevel=2,
+        )
+        return self.save(filename, open_browser=open_browser)
+
+    def show(self, path: str = "presentacion.html") -> str:
+        """Write the presentation and open it in the default browser."""
+        return self.save(path, open_browser=True)
+
+    @classmethod
+    def auto(
+        cls,
+        df: "pd.DataFrame",
+        title: str = "Dataset Overview",
+        theme: Optional[str] = None,
+        columns: Optional[List[str]] = None,
+        max_slides: int = 8,
+    ) -> "Presentation":
+        """Build an auto-generated slide deck from a DataFrame.
+
+        Returns the Presentation; call ``.save(path)`` or ``.show()`` on it.
+        """
+        from .auto_builder import build_auto_presentation
+
+        return build_auto_presentation(
+            df, title=title, theme=theme, columns=columns, max_slides=max_slides,
+        )
 
     @classmethod
     def auto_generate(
         cls,
         df: "pd.DataFrame",
         title: str = "Dataset Overview",
-        theme: str = "dark",
+        theme: Optional[str] = None,
         filename: str = "auto_slides.html",
         columns: Optional[List[str]] = None,
         max_slides: int = 8,
         show: bool = True,
     ) -> str:
-        """Build an auto-generated slide deck from a DataFrame."""
-        from .auto_builder import build_auto_presentation
-
-        return build_auto_presentation(
-            df,
-            title=title,
-            theme=theme,
-            filename=filename,
-            columns=columns,
-            max_slides=max_slides,
-            show=show,
+        """Deprecated: use ``Presentation.auto(df, ...).save(path)`` instead."""
+        warnings.warn(
+            "Presentation.auto_generate() is deprecated; use Presentation.auto(df).save(path).",
+            DeprecationWarning, stacklevel=2,
         )
+        pres = cls.auto(df, title=title, theme=theme, columns=columns, max_slides=max_slides)
+        return pres.save(filename, open_browser=show)
 
 
 __all__ = ["Presentation", "Slide", "Grid", "ContextStack", "THEMES"]

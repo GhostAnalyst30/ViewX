@@ -110,7 +110,7 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;backgro
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/datamatrix.html">DataMatrix</a>
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/report.html">Report</a>
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/HTML.html" class="active">HTML</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/slides.html">Slides</a>
+      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/slides.html">Presentation</a>
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/datasets.html">Datasets</a>
     </div>
     <button class="nav-pip" onclick="copyText('pip install viewx')">pip install viewx</button>
@@ -129,30 +129,30 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;backgro
     <div class="sidebar-links">
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/#thememanager">ThemeManager</a>
     </div>
-    <div class="sidebar-title">Clase HTML</div>
+    <div class="sidebar-title">Clase Dashboard</div>
     <div class="sidebar-links">
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/#constructor">Constructor</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/#add_valuebox">add_valuebox()</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/#add_infobox">add_infobox()</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/#add_chart">add_chart()</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/#add_table">add_table()</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/#add_text">add_text()</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/ #generate">generate()</a>
+      <a href="HTML.html#constructor">Constructor</a>
+      <a href="HTML.html#add_valuebox">add_valuebox()</a>
+      <a href="HTML.html#add_infobox">add_infobox()</a>
+      <a href="HTML.html#add_chart">add_chart()</a>
+      <a href="HTML.html#add_table">add_table()</a>
+      <a href="HTML.html#add_text">add_text()</a>
+      <a href="HTML.html#generate">save() / show()</a>
     </div>
-    <div class="sidebar-title">Auto Generate</div>
+    <div class="sidebar-title">Modo automatico</div>
     <div class="sidebar-links">
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/#auto_generate">auto_generate()</a>
+      <a href="HTML.html#auto_generate">Dashboard.auto()</a>
     </div>
   </aside>
 
   <main class="main-content">
-    <div class="breadcrumb"><a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/index.html">ViewX</a> / HTML Dashboard</div>
-    <h1 class="page-title">HTML Dashboard</h1>
-    <p class="page-desc">Constructor de dashboards interactivos con Plotly. Sistema de grid CSS responsive, 6 temas profesionales integrados, y componentes como valueboxes, infoboxes, graficos y tablas.</p>
+    <div class="breadcrumb"><a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/index.html">ViewX</a> / Dashboard</div>
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-desc">Constructor de dashboards interactivos con Plotly. Sistema de grid CSS responsive, 6 temas profesionales integrados, y componentes como valueboxes, infoboxes, graficos y tablas. (En v0.2.x esta clase se llamaba <code>HTML</code>; el alias sigue disponible.)</p>
 
     <section class="section" id="overview">
       <h2>Descripcion general</h2>
-      <p>La clase HTML permite crear dashboards complejos de forma programatica. Caracteristicas principales:</p>
+      <p>La clase Dashboard permite crear dashboards complejos de forma programatica. Caracteristicas principales:</p>
       <ul style="margin-left:1.5rem;color:var(--text-muted);">
         <li>Grid CSS de 12 columnas configurable</li>
         <li>6 temas profesionales + soporte para temas custom</li>
@@ -208,15 +208,13 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;backgro
           <span class="code-lang">Python</span>
           <button class="code-copy" onclick="copyCode('quick-code')">Copiar</button>
         </div>
-        <pre><code class="language-python" id="quick-code">from viewx import HTML
-import plotly.express as px
+        <pre><code class="language-python" id="quick-code">import viewx as vx
 import pandas as pd
 
 df = pd.DataFrame({"mes": [1,2,3,4], "ventas": [100,150,130,180]})
-fig = px.line(df, x="mes", y="ventas")
 
 # Crear dashboard
-dash = HTML(
+dash = vx.Dashboard(
     title="Dashboard Ventas",
     theme="dark_enterprise",  # o ID: 1
     cols=12,
@@ -226,10 +224,11 @@ dash = HTML(
 # Agregar componentes
 dash.add_valuebox("Total Ventas", "$560K", icon_key="dollar", row=1, col=1, height=2, width=3)
 dash.add_valuebox("Clientes", "1,234", icon_key="users", row=1, col=4, height=2, width=3)
-dash.add_chart(fig, title="Tendencia", row=3, col=1, height=5, width=12)
+dash.add_chart(vx.plot(df, kind="line", x="mes", y="ventas"),
+               title="Tendencia", row=3, col=1, height=5, width=12)
 
-# Generar HTML
-dash.generate("dashboard.html")</code></pre>
+# Exportar HTML (dash.show() lo abre en el navegador)
+dash.save("dashboard.html")</code></pre>
       </div>
     </section>
 
@@ -257,14 +256,14 @@ custom = {
     "text_secondary": "#888888",
     "chart_colors": ["#E94560", "#00D4FF", "#FFD166"]
 }
-dash = HTML(title="Mi Dashboard", theme=custom)</code></pre>
+dash = Dashboard(title="Mi Dashboard", theme=custom)</code></pre>
       </div>
     </section>
 
     <section class="section" id="constructor">
-      <h2>Constructor HTML</h2>
+      <h2>Constructor Dashboard</h2>
       <div class="method-card">
-        <div class="method-name">HTML(title, theme, cols, rows, gap, padding, navbar, authors, data_button, df)</div>
+        <div class="method-name">Dashboard(title, theme, cols, rows, gap, padding, navbar, authors, data_button, df)</div>
         <div class="method-desc">Inicializa el constructor de dashboards con la configuracion del grid y tema.</div>
         <div class="param-list">
           <div class="param"><span class="param-name">title</span> <span class="param-type">str</span> - Titulo del dashboard</div>
@@ -309,11 +308,13 @@ dash = HTML(title="Mi Dashboard", theme=custom)</code></pre>
     <section class="section" id="add_chart">
       <h2>add_chart()</h2>
       <div class="method-card">
-        <div class="method-name">add_chart(fig, title, row, col, height, width)</div>
-        <div class="method-desc">Inserta un grafico Plotly interactivo. Incluye automaticamente un boton de info que abre un modal con detalles.</div>
+        <div class="method-name">add_chart(data | fig, chart_type, x, y, z, title, row, col, height, width)</div>
+        <div class="method-desc">Inserta un grafico Plotly interactivo. Acepta un Chart de <code>vx.plot()</code>, una figura Plotly, o datos + tipo (line, bar, bar_h, scatter, area, pie, donut, histogram, box, violin, heatmap, funnel, treemap, bubble). Incluye boton de info con modal.</div>
         <div class="param-list">
-          <div class="param"><span class="param-name">fig</span> <span class="param-type">plotly.graph_objects.Figure</span> - Figura de Plotly</div>
+          <div class="param"><span class="param-name">data / fig</span> <span class="param-type">Chart | Figure | DataFrame</span> - Chart de vx.plot, figura Plotly, o DataFrame</div>
+          <div class="param"><span class="param-name">chart_type</span> <span class="param-type">str</span> - Tipo de grafica cuando pasas data + x/y</div>
           <div class="param"><span class="param-name">title</span> <span class="param-type">str</span> - Titulo del grafico</div>
+          <div class="param"><span class="param-name">downsample</span> <span class="param-type">bool, default=True</span> - Reduce series de mas de 10k puntos</div>
         </div>
       </div>
     </section>
@@ -335,23 +336,23 @@ dash = HTML(title="Mi Dashboard", theme=custom)</code></pre>
     </section>
 
     <section class="section" id="generate">
-      <h2>generate()</h2>
+      <h2>save() / show()</h2>
       <div class="method-card">
-        <div class="method-name">generate(filename="dashboard.html")</div>
-        <div class="method-desc">Exporta el dashboard como archivo HTML autocontenido.</div>
+        <div class="method-name">save(path="dashboard.html", open_browser=False) &rarr; str</div>
+        <div class="method-desc">Exporta el dashboard como archivo HTML autocontenido. <code>show()</code> lo exporta y abre en el navegador.</div>
       </div>
     </section>
 
     <section class="section" id="auto_generate">
-      <h2>auto_generate()</h2>
+      <h2>Dashboard.auto()</h2>
       <div class="method-card">
-        <div class="method-name">auto_generate(df, title, theme, filename) &rarr; str</div>
-        <div class="method-desc">Funcion standalone que genera automaticamente un dashboard completo a partir de un DataFrame. Detecta tipos de columnas, genera KPIs, graficos y tablas de forma inteligente.</div>
+        <div class="method-name">Dashboard.auto(df, title, theme, layout, columns) &rarr; Dashboard</div>
+        <div class="method-desc">Genera automaticamente un dashboard completo a partir de un DataFrame. Detecta tipos de columnas, elige KPIs y graficos de forma inteligente, y devuelve el Dashboard listo para <code>.save()</code> o <code>.show()</code>.</div>
         <div class="param-list">
           <div class="param"><span class="param-name">df</span> <span class="param-type">pd.DataFrame</span> - DataFrame a visualizar</div>
           <div class="param"><span class="param-name">title</span> <span class="param-type">str</span> - Titulo del dashboard</div>
-          <div class="param"><span class="param-name">theme</span> <span class="param-type">int | str | dict</span> - Tema a usar</div>
-          <div class="param"><span class="param-name">filename</span> <span class="param-type">str</span> - Ruta del archivo de salida</div>
+          <div class="param"><span class="param-name">theme</span> <span class="param-type">int | str | dict</span> - Tema a usar (por defecto, el tema global)</div>
+          <div class="param"><span class="param-name">layout</span> <span class="param-type">str | list</span> - Preset: default, kpi_focus, chart_focus, table_first</div>
         </div>
       </div>
       <div class="code-block">
@@ -360,25 +361,22 @@ dash = HTML(title="Mi Dashboard", theme=custom)</code></pre>
           <span class="code-lang">Python</span>
           <button class="code-copy" onclick="copyCode('auto-code')">Copiar</button>
         </div>
-        <pre><code class="language-python" id="auto-code">from viewx import HTML
-from viewx.datasets import load_dataset
+        <pre><code class="language-python" id="auto-code">from viewx import Dashboard, load_dataset
 
-df = load_dataset("iris")
-HTML.auto_generate(
+df = load_dataset("iris.csv")
+Dashboard.auto(
     df,
     title="Iris Dashboard",
-    template="glass_ocean",
-    filename="iris_dash.html",
+    theme="glass_ocean",
     layout="chart_focus",
-    show=False,
-)</code></pre>
+).save("iris_dash.html")</code></pre>
       </div>
     </section>
   </main>
 </div>
 
 <footer>
-  <div class="footer-meta">ViewX &middot; Documentacion &middot; v0.2.4</div>
+  <div class="footer-meta">ViewX &middot; Documentacion &middot; v0.3.0</div>
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>

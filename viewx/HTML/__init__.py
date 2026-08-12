@@ -1,6 +1,7 @@
-from .html_engine import HTML
+from .html_engine import Dashboard, HTML, ThemeManager
 
 __all__ = [
-    # Clases principales
-    'HTML'
+    "Dashboard",
+    "HTML",  # legacy alias of Dashboard
+    "ThemeManager",
 ]

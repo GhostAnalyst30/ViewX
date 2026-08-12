@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import json
 import os
 import uuid
+import warnings
 from typing import Dict, List, Optional, Tuple, Union, Literal
 
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 
 from viewx.shared import (
     fig_to_html,
@@ -16,6 +15,16 @@ from viewx.shared import (
     html_table_sort_js,
     plotly_script_tag,
 )
+from viewx.shared.themes import THEMES as SHARED_THEMES, resolve_theme, get_theme
+from viewx.shared.column_profile import (
+    classify_columns,
+    coerce_types,
+    format_value,
+    rank_categorical,
+    rank_numeric,
+    top_correlation_pairs,
+)
+from viewx.plot.factory import build_plotly_figure
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -88,67 +97,15 @@ class ThemeManager:
     })
     """
 
-    BUILT_IN: Dict[str, dict] = {
-        "corporate_blue": {
-            "id": 0, "name": "Corporate Blue",
-            "bg_page": "#F3F4F6", "bg_card": "#FFFFFF",
-            "accent": "#0078D4", "text_primary": "#1A1A2E",
-            "text_secondary": "#6B7280",
-            "shadow": "0 2px 12px rgba(0,120,212,0.08)",
-            "chart_colors": ["#0078D4","#00B4D8","#48CAE4","#90E0EF","#ADE8F4"],
-        },
-        "dark_enterprise": {
-            "id": 1, "name": "Dark Enterprise",
-            "bg_page": "#0D0D0D", "bg_card": "#161616",
-            "accent": "#3B82F6", "text_primary": "#F0F0F0",
-            "text_secondary": "#9CA3AF",
-            "shadow": "0 4px 24px rgba(0,0,0,0.5)",
-            "chart_colors": ["#3B82F6","#60A5FA","#93C5FD","#BFDBFE","#2563EB"],
-        },
-        "modern_green": {
-            "id": 2, "name": "Modern Green",
-            "bg_page": "#F0FAF4", "bg_card": "#FFFFFF",
-            "accent": "#059669", "text_primary": "#1A2E1A",
-            "text_secondary": "#6B7280",
-            "shadow": "0 2px 12px rgba(5,150,105,0.1)",
-            "chart_colors": ["#059669","#10B981","#34D399","#6EE7B7","#A7F3D0"],
-        },
-        "void_indigo": {
-            "id": 3, "name": "Void Indigo",
-            "bg_page": "#07080F", "bg_card": "#0F1117",
-            "accent": "#6366F1", "text_primary": "#E2E5FF",
-            "text_secondary": "#9CA3AF",
-            "shadow": "0 8px 32px rgba(99,102,241,0.15)",
-            "chart_colors": ["#6366F1","#818CF8","#A5B4FC","#C7D2FE","#4F46E5"],
-        },
-        "glass_ocean": {
-            "id": 4, "name": "Glass Ocean",
-            "bg_page": "linear-gradient(135deg,#0f2027,#203a43,#2c5364)",
-            "bg_card": "rgba(255,255,255,0.06)",
-            "accent": "#22D3EE", "text_primary": "#FFFFFF",
-            "text_secondary": "#93C5FD",
-            "shadow": "0 8px 32px rgba(0,0,0,0.25)",
-            "glass": True,
-            "chart_colors": ["#22D3EE","#06B6D4","#0891B2","#0E7490","#155E75"],
-        },
-        "cyberpunk_neon": {
-            "id": 5, "name": "Cyberpunk Neon",
-            "bg_page": "#050505", "bg_card": "#0D0214",
-            "accent": "#F000FF", "text_primary": "#00FFFF",
-            "text_secondary": "#A78BFA",
-            "shadow": "0 0 20px rgba(240,0,255,0.25)",
-            "border_glow": True,
-            "chart_colors": ["#F000FF","#00FFFF","#FF0080","#FACC15","#A78BFA"],
-        },
-    }
+    # Canonical registry lives in viewx.shared.themes (one definition for all engines)
+    BUILT_IN: Dict[str, dict] = SHARED_THEMES
 
-    def __init__(self, theme: Union[int, ThemeName, dict] = "corporate_blue"):
-        self._id_map = {t["id"]: k for k, t in self.BUILT_IN.items()}
+    def __init__(self, theme: Union[int, ThemeName, dict, None] = None):
         self.custom = False
         self.set_theme(theme)
 
     # ------------------------------------------------------------------
-    def set_theme(self, theme: Union[int, ThemeName, dict]):
+    def set_theme(self, theme: Union[int, ThemeName, dict, None]):
         if isinstance(theme, dict):
             self.current_theme_name = "custom"
             base = {
@@ -164,12 +121,9 @@ class ThemeManager:
             self.custom = True
             return
 
-        if isinstance(theme, int):
-            theme = self._id_map.get(theme, "corporate_blue")
-        if theme not in self.BUILT_IN:
-            theme = "corporate_blue"
-        self.current_theme_name = theme
-        self.current_theme = self.BUILT_IN[theme]
+        name = resolve_theme(theme) if theme is not None else get_theme()
+        self.current_theme_name = name
+        self.current_theme = self.BUILT_IN[name]
 
     # ------------------------------------------------------------------
     def get_colors(self) -> Tuple[str, str, str, str]:
@@ -344,32 +298,34 @@ class ThemeManager:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# MAIN HTML CLASS
+# MAIN DASHBOARD CLASS
 # ──────────────────────────────────────────────────────────────────────────────
-class HTML:
+class Dashboard:
     """
     Manual dashboard builder.
 
     Usage
     -----
-    dash = HTML(title="Sales Report", theme="dark_enterprise")
+    dash = Dashboard(title="Sales Report", theme="dark_enterprise")
     dash.add_valuebox(title="Revenue", value="$1.2M", icon_key="dollar", row=1, col=1, height=2, width=3)
     dash.add_chart(fig=my_fig, title="Trend", row=1, col=4, height=4, width=9)
-    dash.generate("report.html")
+    dash.save("report.html")
+
+    One-step version: ``Dashboard.auto(df).save("report.html")``
     """
 
     def __init__(
         self,
         title: str = "ViewX Dashboard",
-        theme: Union[int, ThemeName, dict] = "corporate_blue",
+        theme: Union[int, ThemeName, dict, None] = None,
         cols: int = 12,
         rows: int = 12,
         gap: int = 16,
         padding: int = 22,
-        navbar: dict = None,
-        authors: Union[str, List] = None,
+        navbar: Optional[dict] = None,
+        authors: Union[str, List, None] = None,
         data_button: bool = False,
-        df: pd.DataFrame = None,
+        df: Optional[pd.DataFrame] = None,
         verbose: bool = False,
     ):
         self.title = title
@@ -459,7 +415,7 @@ class HTML:
         row: int = 1, col: int = 1, height: int = 2, width: int = 3,
         # legacy emoji icon ignored silently
         icon: str = None,
-    ) -> "HTML":
+    ) -> "Dashboard":
         uid = self._uid()
         self._register_block(uid, row, col, height, width)
         _, bg_card, accent, _ = self.theme_manager.get_colors()
@@ -524,7 +480,7 @@ class HTML:
         title: str = None,
         color: str = None,
         row: int = 1, col: int = 1, height: int = 3, width: int = 3,
-    ) -> "HTML":
+    ) -> "Dashboard":
         """
         Multi-stat infobox for a single column.
 
@@ -627,17 +583,31 @@ class HTML:
         title: str = "",
         row: int = 1, col: int = 1, height: int = 6, width: int = 6,
         show_info_btn: bool = True,
+        downsample: bool = True,
         # Extra info for the info modal
-        _info_stats: dict = None,
-    ) -> "HTML":
+        _info_stats: Optional[dict] = None,
+    ) -> "Dashboard":
         uid = self._uid()
         self._register_block(uid, row, col, height, width)
         _, _, accent, text = self.theme_manager.get_colors()
         colors = self.theme_manager.chart_colors()
 
+        # Accept vx.plot() Chart objects transparently
+        from viewx.plot import Chart
+        if isinstance(data, Chart):
+            fig, data = data, None
+        if isinstance(fig, Chart):
+            if not fig.interactive:
+                raise ValueError(
+                    "Static (matplotlib) charts cannot be embedded in a Dashboard. "
+                    "Build the chart with static=False."
+                )
+            if not title:
+                title = fig.title
+            fig = fig.fig
+
         if fig is not None:
             chart_fig = fig
-            # ← NUEVO: aplicar paleta y fondo del tema
             chart_fig.update_layout(
                 colorway=colors,
                 paper_bgcolor="rgba(0,0,0,0)",
@@ -651,52 +621,13 @@ class HTML:
                     selector=dict(type="scatter"),
                     line=dict(color=colors[0]),
                 )
-        elif data is not None and x is not None and y is not None:
-            kw = dict(color_discrete_sequence=colors)
-            
-            if chart_type == "bar":
-                chart_fig = px.bar(data, x=x, y=y, title=title, **kw  )
-            elif chart_type == "bar_h":
-                chart_fig = px.bar(data, x=y, y=x, orientation="h", title=title, **kw)
-            elif chart_type == "scatter":
-                chart_fig = px.scatter(data, x=x, y=y, color=z, title=title, **kw)
-            elif chart_type == "area":
-                chart_fig = px.area(data, x=x, y=y, title=title, **kw)
-            elif chart_type == "line":
-                chart_fig = px.line(data, x=x, y=y, title=title, **kw)
-            elif chart_type == "pie":
-                chart_fig = px.pie(data, names=x, values=y, title=title,
-                                color_discrete_sequence=colors)
-            elif chart_type == "donut":
-                chart_fig = px.pie(data, names=x, values=y, hole=0.45, title=title,
-                                color_discrete_sequence=colors)
-            elif chart_type == "histogram":
-                chart_fig = px.histogram(data, x=x, title=title, **kw)
-            elif chart_type == "box":
-                chart_fig = px.box(data, x=x, y=y, title=title, **kw)
-            elif chart_type == "violin":
-                chart_fig = px.violin(data, x=x, y=y, title=title, box=True, **kw)
-            elif chart_type == "heatmap":
-                # x=columna categoria fila, y=columna categoria col, z=valor numérico
-                pivot = data.pivot_table(index=x, columns=y, values=z, aggfunc="sum")
-                chart_fig = go.Figure(go.Heatmap(
-                    z=pivot.values, x=list(pivot.columns),
-                    y=list(pivot.index), colorscale=colors[::-1],
-                ))
-            elif chart_type == "funnel":
-                chart_fig = px.funnel(data, x=y, y=x, title=title, **kw)
-            elif chart_type == "treemap":
-                # x=path (lista de cols categoricas), y=values
-                path_cols = x if isinstance(x, list) else [x]
-                chart_fig = px.treemap(data, path=path_cols, values=y,
-                                    title=title, color_discrete_sequence=colors)
-            elif chart_type == "bubble":
-                # x, y normales; z=tamaño de burbuja
-                chart_fig = px.scatter(data, x=x, y=y, size=z, title=title, **kw)
-            else:
-                raise ValueError(f"chart_type '{chart_type}' no reconocido.")
+        elif data is not None and (x is not None or y is not None):
+            chart_fig = build_plotly_figure(
+                data, kind=chart_type, x=x, y=y, z=z,
+                title=title, colors=colors, downsample=downsample,
+            )
         else:
-            raise ValueError("Provide fig or (data + x + y)")
+            raise ValueError("Provide fig, a vx.plot Chart, or (data + x/y)")
 
         grid_color = self._hex_to_rgba(self._accent_hex(), 0.10)
         chart_fig.update_layout(
@@ -834,7 +765,7 @@ class HTML:
     def add_table(
         self, df: pd.DataFrame, title: str = "",
         row: int = 1, col: int = 1, height: int = 4, width: int = 6,
-    ) -> "HTML":
+    ) -> "Dashboard":
         uid = self._uid()
         self._register_block(uid, row, col, height, width)
         _, _, accent, _ = self.theme_manager.get_colors()
@@ -875,7 +806,7 @@ class HTML:
     def add_text(
         self, content: str,
         row: int = 1, col: int = 1, height: int = 2, width: int = 6,
-    ) -> "HTML":
+    ) -> "Dashboard":
         uid = self._uid()
         self._register_block(uid, row, col, height, width)
         _, _, accent, _ = self.theme_manager.get_colors()
@@ -892,6 +823,9 @@ class HTML:
         <div class="vx-card txc-{uid} {uid}" id="{uid}">{content}</div>"""
         self.components_html.append(html)
         return self
+
+    # Legacy alias used in early statslibx examples.
+    add_plot = add_chart
 
     # ── navbar ────────────────────────────────────────────────────────────────
     def _build_navbar(self) -> str:
@@ -1062,8 +996,24 @@ class HTML:
             {db_svg} View Data
         </button>"""
 
-    # ── generate ──────────────────────────────────────────────────────────────
+    # ── save / show ───────────────────────────────────────────────────────────
+    def save(self, path: str = "dashboard.html", open_browser: bool = False) -> str:
+        """Write the dashboard to an HTML file. Returns the file path."""
+        return self._render_to_file(path, open_browser)
+
+    def show(self, path: str = "dashboard.html") -> str:
+        """Write the dashboard and open it in the default browser."""
+        return self._render_to_file(path, True)
+
     def generate(self, filename: str = "dashboard.html", show: bool = True) -> str:
+        """Deprecated: use ``save()`` or ``show()`` instead."""
+        warnings.warn(
+            "Dashboard.generate() is deprecated; use save(path) or show().",
+            DeprecationWarning, stacklevel=2,
+        )
+        return self._render_to_file(filename, show)
+
+    def _render_to_file(self, filename: str, open_browser: bool) -> str:
         _, _, accent, _ = self.theme_manager.get_colors()
         nav_offset = self.padding + 54 if self.navbar else self.padding
         plotly_head = plotly_script_tag() if self._needs_plotly else ""
@@ -1121,38 +1071,40 @@ class HTML:
 </body>
 </html>"""
 
+        directory = os.path.dirname(filename)
+        if directory:
+            os.makedirs(directory, exist_ok=True)
         with open(filename, "w", encoding="utf-8") as f:
             f.write(full_html)
 
-        if show:
+        if open_browser:
             import webbrowser
-            webbrowser.open(filename)
+            webbrowser.open("file://" + os.path.abspath(filename))
 
         self._log("Dashboard generated successfully.")
         self._log(f" - Total components: {len(self.components_html)}")
         self._log(f" - Filename: {filename}")
         return filename
 
-    # ── auto_generate ─────────────────────────────────────────────────────────
+    # ── auto ──────────────────────────────────────────────────────────────────
     @classmethod
-    def auto_generate(
+    def auto(
         cls,
         data: pd.DataFrame,
-        columns: List[str] = None,
-        template: Union[int, str, dict] = "corporate_blue",
+        columns: Optional[List[str]] = None,
+        theme: Union[int, str, dict, None] = None,
         title: str = "Auto Dashboard",
-        filename: str = "auto_dashboard.html",
-        navbar: dict = None,
+        navbar: Optional[dict] = None,
         authors=None,
-        method_valuebox: Literal["sum","mean","median","max","min"] = "sum",
+        method_valuebox: Literal["sum", "mean", "median", "max", "min"] = "sum",
         data_button: bool = False,
-        color_palette: List[str] = None,
+        color_palette: Optional[List[str]] = None,
         layout=None,
-        show: bool = True,
         verbose: bool = False,
-    ) -> str:
+    ) -> "Dashboard":
         """
-        Builds a professional dashboard from any DataFrame using intelligent layout.
+        Build a professional dashboard from any DataFrame using intelligent layout.
+        Returns the Dashboard instance; call ``.save(path)`` or ``.show()`` on it.
 
         layout options:
           - None / "default": standard KPI strip + charts
@@ -1161,107 +1113,39 @@ class HTML:
           - "table_first": data table on main grid
           - list[dict]: custom placement with type kpi/chart/table + row/col/height/width
         """
+        template = theme
 
         # ── 1. Column selection ───────────────────────────────────────────────
         cols_to_use = list(columns) if columns is not None else list(data.columns)
         missing = [c for c in cols_to_use if c not in data.columns]
         if missing:
-            raise KeyError(f"\n❌  Columns not found: {missing}\n✅  Available: {list(data.columns)}")
+            raise KeyError(f"Columns not found: {missing}. Available: {list(data.columns)}")
 
-        df = data[cols_to_use].copy()
-
-        # ── 2. Smart type coercion ────────────────────────────────────────────
-        def _try_parse(s: pd.Series) -> pd.Series:
-            if not pd.api.types.is_object_dtype(s):
-                return s
-            cleaned = s.astype(str).str.strip().str.replace(r"[$€£¥%\s,]", "", regex=True)
-            num = pd.to_numeric(cleaned, errors="coerce")
-            if num.notna().sum() / max(len(s.dropna()), 1) >= 0.80:
-                return num
-            try:
-                dt = pd.to_datetime(s, errors="coerce")
-                if dt.notna().sum() / max(len(s.dropna()), 1) >= 0.80:
-                    return dt
-            except Exception:
-                pass
-            return s
-
-        coerced: Dict[str, str] = {}
-        for col in cols_to_use:
-            old = str(df[col].dtype)
-            df[col] = _try_parse(df[col])
-            new = str(df[col].dtype)
-            if old != new:
-                coerced[col] = f"{old} → {new}"
+        # ── 2. Smart type coercion (shared heuristics) ────────────────────────
+        df, coerced = coerce_types(data, cols_to_use)
         if coerced and verbose:
             print("Auto coercion:", ", ".join(f"{k}: {v}" for k, v in coerced.items()))
 
         # ── 3. Classify columns ───────────────────────────────────────────────
-        def _classify(s: pd.Series) -> str:
-            if pd.api.types.is_datetime64_any_dtype(s): return "datetime"
-            if pd.api.types.is_bool_dtype(s):           return "boolean"
-            if pd.api.types.is_numeric_dtype(s):        return "numeric"
-            return "categorical" if s.nunique() / max(len(s), 1) < 0.5 else "text"
-
-        col_types    = {c: _classify(df[c]) for c in cols_to_use}
-        all_num      = [c for c, t in col_types.items() if t == "numeric"]
-        all_cat      = [c for c, t in col_types.items() if t == "categorical"]
-        all_dt       = [c for c, t in col_types.items() if t == "datetime"]
-        all_bool     = [c for c, t in col_types.items() if t == "boolean"]
-
-        for c in all_dt:
-            df[c] = pd.to_datetime(df[c])
+        col_types = classify_columns(df)
+        all_num  = [c for c, t in col_types.items() if t == "numeric"]
+        all_cat  = [c for c, t in col_types.items() if t == "categorical"]
+        all_dt   = [c for c, t in col_types.items() if t == "datetime"]
+        all_bool = [c for c, t in col_types.items() if t == "boolean"]
 
         if verbose:
             print(f"Detected -> numeric:{len(all_num)}  categorical:{len(all_cat)}  "
                   f"datetime:{len(all_dt)}  boolean:{len(all_bool)}")
 
         # ── 4. Statistical study: rank & select best variables ────────────────
-        #
-        # Numeric ranking:  completeness (0.5) + normalized variance (0.5)
-        # KPI limit: up to 4 (keeps the strip compact)
-        # Chart limit: up to 4 charts on the canvas (2 per row × 2 rows)
+        ranked_num = rank_numeric(df, all_num)
+        ranked_cat = rank_categorical(df, all_cat)
+        scatter_pairs = top_correlation_pairs(df, ranked_num)
 
-        def _score_numeric(col: str) -> float:
-            s = df[col].dropna()
-            if len(s) == 0:
-                return 0.0
-            completeness = len(s) / len(df)
-            cv = (s.std() / abs(s.mean())) if s.mean() != 0 else 0.0
-            return 0.5 * completeness + 0.5 * min(cv, 5.0) / 5.0
-
-        ranked_num = sorted(all_num, key=_score_numeric, reverse=True)
-
-        # Best categorical: highest completeness × moderate cardinality (5–20)
-        def _score_cat(col: str) -> float:
-            s = df[col].dropna()
-            completeness = len(s) / max(len(df), 1)
-            n_unique = s.nunique()
-            card_score = 1.0 if 2 <= n_unique <= 20 else max(0.0, 1.0 - (n_unique - 20) / 80)
-            return completeness * card_score
-
-        ranked_cat = sorted(all_cat, key=_score_cat, reverse=True)
-
-        # Correlation study for scatter selection
-        scatter_pairs: List[Tuple[float, str, str]] = []
-        if len(ranked_num) >= 2:
-            corr_mat = df[ranked_num].corr().abs()
-            for i in range(len(ranked_num)):
-                for j in range(i + 1, len(ranked_num)):
-                    r = corr_mat.iloc[i, j]
-                    scatter_pairs.append((r, ranked_num[i], ranked_num[j]))
-            scatter_pairs.sort(reverse=True)
-
-        if verbose:
-            print("Variable scores:")
-            for col in ranked_num[:6]:
-                sc = _score_numeric(col)
-                null_pct = df[col].isna().mean() * 100
-                print(f"    {col:25s}  score={sc:.3f}  nulls={null_pct:.1f}%")
-            if scatter_pairs:
-                print("Top correlations:")
-                for r, a, b in scatter_pairs[:3]:
-                    print(f"    {a} x {b}  r={r:.3f}")
+        if verbose and scatter_pairs:
+            print("Top correlations:")
+            for a, b, r in scatter_pairs[:3]:
+                print(f"    {a} x {b}  r={r:.3f}")
 
         # ── 5. Palette & theme setup ──────────────────────────────────────────
         tm_tmp = ThemeManager(template)
@@ -1274,13 +1158,11 @@ class HTML:
             fig.update_layout(colorway=pal, title_text="")
             return fig
 
-        # ── 6. Value formatter ────────────────────────────────────────────────
-        def _fmt(v: float) -> str:
-            a = abs(v)
-            if a >= 1_000_000_000: return f"{v/1_000_000_000:,.2f}B"
-            if a >= 1_000_000:     return f"{v/1_000_000:,.2f}M"
-            if a >= 1_000:         return f"{v/1_000:,.1f}K"
-            return f"{v:,.2f}"
+        # ── 6. Value formatter (shared) ───────────────────────────────────────
+        _fmt = format_value
+
+        # WebGL for large scatter clouds
+        scatter_render = "webgl" if len(df) > 5000 else "auto"
 
         # ── 7. Build component catalogue ─────────────────────────────────────
         #
@@ -1380,11 +1262,12 @@ class HTML:
 
         # Chart slot 3: highest-correlation scatter pair
         if scatter_pairs and len(charts) < MAX_CHARTS:
-            _, col_a, col_b = scatter_pairs[0]
+            col_a, col_b, _ = scatter_pairs[0]
             color_col = ranked_cat[0] if ranked_cat else None
             fig = _fig_style(px.scatter(
                 df, x=col_a, y=col_b, color=color_col,
                 opacity=0.65, color_discrete_sequence=pal,
+                render_mode=scatter_render,
             ))
             stats = {
                 "Pearson r":    f"{df[[col_a, col_b]].corr().iloc[0,1]:.3f}",
@@ -1395,11 +1278,12 @@ class HTML:
 
         # Chart slot 4a: second-best correlated pair scatter
         if len(scatter_pairs) >= 2 and len(charts) < MAX_CHARTS:
-            _, col_a, col_b = scatter_pairs[1]
+            col_a, col_b, _ = scatter_pairs[1]
             color_col = ranked_cat[0] if ranked_cat else None
             fig = _fig_style(px.scatter(
                 df, x=col_a, y=col_b, color=color_col,
                 opacity=0.65, color_discrete_sequence=pal,
+                render_mode=scatter_render,
             ))
             stats = {
                 "Pearson r":    f"{df[[col_a, col_b]].corr().iloc[0,1]:.3f}",
@@ -1570,7 +1454,7 @@ class HTML:
                         )
                 elif t == "table":
                     dash.add_table(df, title=item.get("title", "Data"), row=r, col=c, height=h, width=w)
-            return dash.generate(filename=filename, show=show)
+            return dash
 
         # Place KPIs
         for i, (col_name, val, icon_key) in enumerate(planned_kpis):
@@ -1593,4 +1477,38 @@ class HTML:
             tr, tc, th, tw = table_slot
             dash.add_table(df, title="Data Preview", row=tr, col=tc, height=th, width=tw)
 
-        return dash.generate(filename=filename, show=show)
+        return dash
+
+    @classmethod
+    def auto_generate(
+        cls,
+        data: pd.DataFrame,
+        columns: Optional[List[str]] = None,
+        template: Union[int, str, dict, None] = None,
+        title: str = "Auto Dashboard",
+        filename: str = "auto_dashboard.html",
+        navbar: Optional[dict] = None,
+        authors=None,
+        method_valuebox: Literal["sum", "mean", "median", "max", "min"] = "sum",
+        data_button: bool = False,
+        color_palette: Optional[List[str]] = None,
+        layout=None,
+        show: bool = True,
+        verbose: bool = False,
+    ) -> str:
+        """Deprecated: use ``Dashboard.auto(df, ...).save(path)`` instead."""
+        warnings.warn(
+            "Dashboard.auto_generate() is deprecated; use Dashboard.auto(df, theme=...).save(path).",
+            DeprecationWarning, stacklevel=2,
+        )
+        dash = cls.auto(
+            data, columns=columns, theme=template, title=title,
+            navbar=navbar, authors=authors, method_valuebox=method_valuebox,
+            data_button=data_button, color_palette=color_palette,
+            layout=layout, verbose=verbose,
+        )
+        return dash._render_to_file(filename, show)
+
+
+# Backwards-friendly alias (the class was called HTML before v0.3.0)
+HTML = Dashboard

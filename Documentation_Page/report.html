@@ -106,7 +106,7 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;backgro
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/datamatrix.html">DataMatrix</a>
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/report.html" class="active">Report</a>
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/HTML.html">HTML</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/slides.html">Slides</a>
+      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/slides.html">Presentation</a>
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/datasets.html">Datasets</a>
     </div>
     <button class="nav-pip" onclick="copyText('pip install viewx')">pip install viewx</button>
@@ -127,26 +127,26 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;backgro
     </div>
     <div class="sidebar-title">Contenido</div>
     <div class="sidebar-links">
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/report.html#add_text">add_text()</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/report.html#add_section">add_section()</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/report.html#add_image">add_image()</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/report.html#add_table">add_table()</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/report.html#add_code">add_code()</a>
+      <a href="report.html#add_text">text()</a>
+      <a href="report.html#add_section">section() / subsection()</a>
+      <a href="report.html#add_image">add_image()</a>
+      <a href="report.html#add_table">add_table()</a>
+      <a href="report.html#add_code">add_code()</a>
     </div>
     <div class="sidebar-title">Listas y Cajas</div>
     <div class="sidebar-links">
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/report.html#add_itemize">add_itemize()</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/report.html#add_enumerate">add_enumerate()</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/report.html#add_box">add_box()</a>
+      <a href="report.html#add_itemize">bullets() / numbered()</a>
+      <a href="report.html#add_box">add_box()</a>
     </div>
     <div class="sidebar-title">Graficos</div>
     <div class="sidebar-links">
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/report.html#add_plot">add_plot()</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/report.html#add_multiplot">add_multiplot()</a>
+      <a href="report.html#add_plot">add_line_plot()</a>
+      <a href="report.html#add_multiplot">add_multiplot()</a>
     </div>
-    <div class="sidebar-title">Build</div>
+    <div class="sidebar-title">Exportar</div>
     <div class="sidebar-links">
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/report.html#build">build()</a>
+      <a href="report.html#build">save() / show()</a>
+      <a href="report.html#auto_generate">Report.auto()</a>
     </div>
   </aside>
 
@@ -157,11 +157,11 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;backgro
 
     <section class="section" id="overview">
       <h2>Descripcion general</h2>
-      <p>Report utiliza PyLaTeX para generar documentos PDF de alta calidad. El flujo de trabajo es simple:</p>
+      <p>Report genera documentos PDF de alta calidad (LaTeX por debajo, sin necesidad de conocer LaTeX). El flujo de trabajo es simple:</p>
       <ol style="margin-left:1.5rem;color:var(--text-muted);">
         <li>Crear una instancia de Report con titulo y autor</li>
-        <li>Agregar contenido usando los metodos add_*()</li>
-        <li>Llamar a build() para generar el PDF</li>
+        <li>Agregar contenido con <code>with r.section(...)</code>, <code>text()</code>, <code>bullets()</code>, <code>add_table()</code>...</li>
+        <li>Llamar a <code>save("archivo.pdf")</code> para compilar el PDF</li>
       </ol>
     </section>
 
@@ -191,42 +191,42 @@ report = Report(
 )
 
 # Agregar contenido
-report.add_text("Este es el informe del Q4 2024.", bold=True)
-report.add_section("Resultados")
-report.add_table(
-    headers=["Producto", "Ventas", "Crecimiento"],
-    rows=[
-        ["Producto A", "1,200", "+15%"],
-        ["Producto B", "890", "+8%"]
-    ],
-    caption="Ventas por producto"
-)
+report.text("Este es el informe del Q4 2024.", bold=True)
+with report.section("Resultados"):
+    report.add_table(
+        headers=["Producto", "Ventas", "Crecimiento"],
+        rows=[
+            ["Producto A", "1,200", "+15%"],
+            ["Producto B", "890", "+8%"]
+        ],
+        caption="Ventas por producto"
+    )
 
-# Generar PDF
-report.build("informe_q4")</code></pre>
+# Compilar PDF
+report.save("informe_q4.pdf")</code></pre>
       </div>
     </section>
 
     <section class="section" id="constructor">
       <h2>Constructor</h2>
       <div class="method-card">
-        <div class="method-name">Report(title, author, outdir, twoColumn, images_dir)</div>
-        <div class="method-desc">Inicializa un nuevo documento LaTeX con los paquetes necesarios preconfigurados (geometry, float, graphicx, tikz, pgfplots, tcolorbox, listings).</div>
+        <div class="method-name">Report(title, author, outdir, two_column, images_dir)</div>
+        <div class="method-desc">Inicializa un nuevo documento con los paquetes necesarios preconfigurados (geometry, float, graphicx, tikz, pgfplots, tcolorbox, listings).</div>
         <div class="param-list">
           <div class="param"><span class="param-name">title</span> <span class="param-type">str, default="Reporte"</span> - Titulo del documento</div>
           <div class="param"><span class="param-name">author</span> <span class="param-type">str, default="Autor"</span> - Autor del documento</div>
           <div class="param"><span class="param-name">outdir</span> <span class="param-type">str, default="output"</span> - Directorio de salida</div>
-          <div class="param"><span class="param-name">twoColumn</span> <span class="param-type">bool, default=False</span> - Si True, usa formato de dos columnas</div>
+          <div class="param"><span class="param-name">two_column</span> <span class="param-type">bool, default=False</span> - Si True, usa formato de dos columnas</div>
           <div class="param"><span class="param-name">images_dir</span> <span class="param-type">str, default="images"</span> - Subdirectorio para imagenes</div>
         </div>
       </div>
     </section>
 
     <section class="section" id="add_text">
-      <h2>add_text()</h2>
+      <h2>text()</h2>
       <div class="method-card">
-        <div class="method-name">add_text(text, bold=False)</div>
-        <div class="method-desc">Agrega texto plano al documento. Opcionalmente en negrita.</div>
+        <div class="method-name">text(text, bold=False)</div>
+        <div class="method-desc">Agrega texto plano al documento. Opcionalmente en negrita. (<code>add_text()</code> es equivalente.)</div>
         <div class="param-list">
           <div class="param"><span class="param-name">text</span> <span class="param-type">str</span> - Texto a agregar</div>
           <div class="param"><span class="param-name">bold</span> <span class="param-type">bool</span> - Si True, aplica negrita</div>
@@ -235,14 +235,14 @@ report.build("informe_q4")</code></pre>
     </section>
 
     <section class="section" id="add_section">
-      <h2>add_section() / add_subsection()</h2>
+      <h2>section() / subsection()</h2>
       <div class="method-card">
-        <div class="method-name">add_section(title) &rarr; Section</div>
-        <div class="method-desc">Crea una nueva seccion en el documento. Retorna un objeto Section de PyLaTeX.</div>
+        <div class="method-name">with report.section(title): ...</div>
+        <div class="method-desc">Abre una seccion como context manager: todo lo agregado dentro del bloque <code>with</code> queda anidado en ella. Sin PyLaTeX expuesto.</div>
       </div>
       <div class="method-card">
-        <div class="method-name">add_subsection(title) &rarr; Subsection</div>
-        <div class="method-desc">Crea una nueva subseccion.</div>
+        <div class="method-name">with report.subsection(title): ...</div>
+        <div class="method-desc">Igual, para subsecciones (anidable dentro de una seccion).</div>
       </div>
     </section>
 
@@ -254,7 +254,7 @@ report.build("informe_q4")</code></pre>
         <div class="param-list">
           <div class="param"><span class="param-name">filename</span> <span class="param-type">str</span> - Nombre del archivo de imagen</div>
           <div class="param"><span class="param-name">caption</span> <span class="param-type">str, optional</span> - Leyenda de la figura</div>
-          <div class="param"><span class="param-name">width</span> <span class="param-type">str, default="0.6\\textwidth"</span> - Ancho de la imagen</div>
+          <div class="param"><span class="param-name">width</span> <span class="param-type">float, default=0.6</span> - Ancho como fraccion del ancho de linea (0-1)</div>
           <div class="param"><span class="param-name">placement</span> <span class="param-type">str, default="H"</span> - Posicionamiento LaTeX (H, h, t, b)</div>
         </div>
       </div>
@@ -286,35 +286,35 @@ report.build("informe_q4")</code></pre>
     </section>
 
     <section class="section" id="add_itemize">
-      <h2>add_itemize() / add_enumerate()</h2>
+      <h2>bullets() / numbered()</h2>
       <div class="method-card">
-        <div class="method-name">add_itemize(items)</div>
-        <div class="method-desc">Crea una lista con vinetas.</div>
+        <div class="method-name">bullets(items)</div>
+        <div class="method-desc">Crea una lista con vinetas. (<code>add_itemize()</code> es equivalente.)</div>
       </div>
       <div class="method-card">
-        <div class="method-name">add_enumerate(items)</div>
-        <div class="method-desc">Crea una lista numerada.</div>
+        <div class="method-name">numbered(items)</div>
+        <div class="method-desc">Crea una lista numerada. (<code>add_enumerate()</code> es equivalente.)</div>
       </div>
     </section>
 
     <section class="section" id="add_box">
       <h2>add_box()</h2>
       <div class="method-card">
-        <div class="method-name">add_box(title, content, color="blue!15")</div>
-        <div class="method-desc">Crea una caja destacada usando tcolorbox. Ideal para notas, advertencias o contenido importante.</div>
+        <div class="method-name">add_box(title, content, color="#DBEAFE")</div>
+        <div class="method-desc">Crea una caja destacada. Ideal para notas, advertencias o contenido importante.</div>
         <div class="param-list">
           <div class="param"><span class="param-name">title</span> <span class="param-type">str</span> - Titulo de la caja</div>
           <div class="param"><span class="param-name">content</span> <span class="param-type">str</span> - Contenido de la caja</div>
-          <div class="param"><span class="param-name">color</span> <span class="param-type">str</span> - Color de fondo (formato LaTeX)</div>
+          <div class="param"><span class="param-name">color</span> <span class="param-type">str</span> - Color de fondo: hex CSS ("#DBEAFE"), nombre basico ("green") o spec LaTeX</div>
         </div>
       </div>
     </section>
 
     <section class="section" id="add_plot">
-      <h2>add_plot()</h2>
+      <h2>add_line_plot()</h2>
       <div class="method-card">
-        <div class="method-name">add_plot(x, y, caption)</div>
-        <div class="method-desc">Genera un grafico 2D usando PGFPlots directamente en LaTeX. Ideal para graficos simples sin dependencias externas.</div>
+        <div class="method-name">add_line_plot(x, y, caption)</div>
+        <div class="method-desc">Genera un grafico 2D estatico renderizado nativamente en el PDF. Ideal para graficos simples sin dependencias externas.</div>
         <div class="param-list">
           <div class="param"><span class="param-name">x</span> <span class="param-type">list</span> - Valores del eje X</div>
           <div class="param"><span class="param-name">y</span> <span class="param-type">list</span> - Valores del eje Y</div>
@@ -329,7 +329,7 @@ report.build("informe_q4")</code></pre>
         </div>
         <pre><code class="language-python" id="plot-code">x = [1, 2, 3, 4, 5]
 y = [2.3, 4.1, 3.8, 5.2, 4.9]
-report.add_plot(x, y, caption="Tendencia mensual")</code></pre>
+report.add_line_plot(x, y, caption="Tendencia mensual")</code></pre>
       </div>
     </section>
 
@@ -346,12 +346,12 @@ report.add_plot(x, y, caption="Tendencia mensual")</code></pre>
     </section>
 
     <section class="section" id="build">
-      <h2>build()</h2>
+      <h2>save() / show()</h2>
       <div class="method-card">
-        <div class="method-name">build(filename="reporte_final")</div>
-        <div class="method-desc">Compila el documento LaTeX y genera el PDF. El archivo se guarda en el directorio outdir especificado en el constructor.</div>
+        <div class="method-name">save(path="reporte.pdf") &rarr; str</div>
+        <div class="method-desc">Compila el documento y genera el PDF. Si <code>path</code> no incluye carpeta, se guarda en el <code>outdir</code> del constructor. <code>show()</code> compila y abre el PDF.</div>
         <div class="param-list">
-          <div class="param"><span class="param-name">filename</span> <span class="param-type">str</span> - Nombre del archivo (sin extension)</div>
+          <div class="param"><span class="param-name">path</span> <span class="param-type">str</span> - Nombre o ruta del PDF</div>
         </div>
       </div>
       <div class="code-block">
@@ -361,15 +361,15 @@ report.add_plot(x, y, caption="Tendencia mensual")</code></pre>
           <button class="code-copy" onclick="copyCode('build-code')">Copiar</button>
         </div>
         <pre><code class="language-python" id="build-code"># Genera output/mi_reporte.pdf
-report.build("mi_reporte")</code></pre>
+report.save("mi_reporte.pdf")</code></pre>
       </div>
     </section>
 
     <section class="section" id="auto_generate">
-      <h2>auto_generate()</h2>
+      <h2>Report.auto()</h2>
       <div class="method-card">
-        <div class="method-name">Report.auto_generate(df, title, author, filename, outdir, include_plots=True) &rarr; str</div>
-        <div class="method-desc">Genera un PDF automatico con resumen ejecutivo, advertencias, fortalezas, perfiles de columnas, correlaciones, graficos y muestra de datos. Requiere pdflatex.</div>
+        <div class="method-name">Report.auto(df, title, author, outdir, include_plots=True) &rarr; Report</div>
+        <div class="method-desc">Genera un reporte automatico con resumen ejecutivo, advertencias, fortalezas, perfiles de columnas, correlaciones, graficos y muestra de datos. Devuelve el Report; compilalo con <code>.save(path)</code>. Requiere pdflatex.</div>
       </div>
       <div class="code-block">
         <div class="code-header">
@@ -380,7 +380,7 @@ report.build("mi_reporte")</code></pre>
         <pre><code class="language-python" id="auto-code">from viewx import Report
 from viewx.datasets import load_iris
 
-Report.auto_generate(load_iris(), filename="iris_quality", outdir="output")</code></pre>
+Report.auto(load_iris(), title="Iris Quality").save("iris_quality.pdf")</code></pre>
       </div>
     </section>
 
@@ -399,7 +399,7 @@ Report.auto_generate(load_iris(), filename="iris_quality", outdir="output")</cod
 </div>
 
 <footer>
-  <div class="footer-meta">ViewX &middot; Documentacion &middot; v0.2.4</div>
+  <div class="footer-meta">ViewX &middot; Documentacion &middot; v0.3.0</div>
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>

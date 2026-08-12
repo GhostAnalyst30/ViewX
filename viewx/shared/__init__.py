@@ -5,6 +5,7 @@ from .runtime import (
     html_plotly_resize_js,
     html_table_sort_js,
 )
+from .stats_payload import from_report_payload, ReportTarget
 from .a11y import modal_attrs, overlay_attrs
 
 __all__ = [
@@ -17,4 +18,6 @@ __all__ = [
     "datamatrix_runtime_js",
     "modal_attrs",
     "overlay_attrs",
+    "from_report_payload",
+    "ReportTarget",
 ]

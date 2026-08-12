@@ -8,6 +8,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+from viewx.shared.plotly_bundle import fig_to_html
+
 from .analyzers import ColumnProfile, DatasetReport
 
 
@@ -49,20 +51,19 @@ class Visualizer:
     def set_mode(self, mode: str):
         self.mode = mode if mode in ("dark", "light") else "dark"
 
+    _PLOT_CONFIG = dict(
+        displaylogo=False,
+        responsive=True,
+        modeBarButtonsToRemove=[
+            "zoom2d", "pan2d", "select2d", "lasso2d",
+            "zoomIn2d", "zoomOut2d", "autoScale2d",
+            "hoverClosestCartesian", "hoverCompareCartesian",
+        ],
+    )
+
     def _to_html(self, fig: go.Figure) -> str:
-        return fig.to_html(
-            full_html=False,
-            include_plotlyjs=False,
-            config=dict(
-                displaylogo=False,
-                responsive=True,
-                modeBarButtonsToRemove=[
-                    "zoom2d", "pan2d", "select2d", "lasso2d",
-                    "zoomIn2d", "zoomOut2d", "autoScale2d",
-                    "hoverClosestCartesian", "hoverCompareCartesian",
-                ],
-            ),
-        )
+        # Delegates to the shared Plotly-to-HTML helper (single code path)
+        return fig_to_html(fig, include_js=False, config=self._PLOT_CONFIG)
 
     def _apply_theme(self, fig: go.Figure) -> go.Figure:
         layout = self.DARK_LAYOUT if self.mode == "dark" else self.LIGHT_LAYOUT

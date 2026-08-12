@@ -11,6 +11,30 @@ from .analyzers import DatasetReport
 DEFAULT_EXPLORER_MAX_ROWS = 5000
 
 
+def _stratified_sample(
+    df: pd.DataFrame, report: DatasetReport, max_rows: int
+) -> pd.DataFrame:
+    """Sample max_rows preserving category proportions when possible."""
+    strat_col = None
+    for col in report.categorical_columns:
+        if 2 <= df[col].nunique(dropna=True) <= 50:
+            strat_col = col
+            break
+
+    if strat_col is not None:
+        frac = min(max_rows / len(df), 1.0)
+        parts = [
+            group.sample(frac=frac, random_state=0)
+            for _, group in df.groupby(strat_col, observed=True)
+        ]
+        sampled = pd.concat(parts)
+        if len(sampled) > max_rows:
+            sampled = sampled.sample(n=max_rows, random_state=0)
+        return sampled.sort_index()
+
+    return df.sample(n=max_rows, random_state=0).sort_index()
+
+
 def build_explorer_payload(
     df: pd.DataFrame,
     report: DatasetReport,
@@ -19,13 +43,16 @@ def build_explorer_payload(
     """Serialize dataset + column metadata for client-side interactive exploration."""
     total_rows = len(df)
     truncated = total_rows > max_rows
-    sample = df.iloc[:max_rows].copy() if truncated else df.copy()
+    sample = _stratified_sample(df, report, max_rows) if truncated else df.copy()
 
     for col in sample.columns:
         if pd.api.types.is_datetime64_any_dtype(sample[col]):
             sample[col] = sample[col].dt.strftime("%Y-%m-%d %H:%M:%S").where(
                 sample[col].notna(), None
             )
+        elif pd.api.types.is_float_dtype(sample[col]):
+            # Round floats to keep the embedded JSON payload compact
+            sample[col] = sample[col].round(4)
 
     records: List[dict] = json.loads(
         sample.to_json(orient="records", date_format="iso")

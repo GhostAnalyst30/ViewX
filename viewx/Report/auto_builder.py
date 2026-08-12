@@ -5,17 +5,18 @@ from __future__ import annotations
 import os
 from typing import List, Optional
 
-import matplotlib
-
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 import pandas as pd
 
 from viewx.DataMatrix.analyzers import AnalyzerEngine
+from viewx.shared.column_profile import best_categorical_col, best_numeric_col
 from viewx.shared.insights import quality_summary
 
 
 def _save_histogram(df: pd.DataFrame, col: str, images_dir: str) -> Optional[str]:
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
     s = df[col].dropna()
     if len(s) == 0:
         return None
@@ -33,6 +34,10 @@ def _save_histogram(df: pd.DataFrame, col: str, images_dir: str) -> Optional[str
 
 
 def _save_bar_chart(df: pd.DataFrame, col: str, images_dir: str) -> Optional[str]:
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
     s = df[col].dropna()
     if len(s) == 0:
         return None
@@ -49,48 +54,18 @@ def _save_bar_chart(df: pd.DataFrame, col: str, images_dir: str) -> Optional[str
     return filename
 
 
-def _best_numeric_col(df: pd.DataFrame, numeric_cols: List[str]) -> Optional[str]:
-    if not numeric_cols:
-        return None
-
-    def score(col: str) -> float:
-        s = df[col].dropna()
-        if len(s) == 0:
-            return 0.0
-        completeness = len(s) / len(df)
-        cv = (s.std() / abs(s.mean())) if s.mean() != 0 else 0.0
-        return 0.5 * completeness + 0.5 * min(cv, 5.0) / 5.0
-
-    return max(numeric_cols, key=score)
-
-
-def _best_categorical_col(df: pd.DataFrame, cat_cols: List[str]) -> Optional[str]:
-    if not cat_cols:
-        return None
-
-    def score(col: str) -> float:
-        s = df[col].dropna()
-        completeness = len(s) / max(len(df), 1)
-        n_unique = s.nunique()
-        card_score = 1.0 if 2 <= n_unique <= 20 else max(0.0, 1.0 - (n_unique - 20) / 80)
-        return completeness * card_score
-
-    return max(cat_cols, key=score)
-
-
 def build_auto_report(
     df: pd.DataFrame,
     report_cls,
     title: str = "Dataset Quality Report",
     author: str = "ViewX",
-    filename: str = "auto_report",
     outdir: str = "output",
     columns: Optional[List[str]] = None,
     include_plots: bool = True,
     show_warnings: bool = True,
     show_highlights: bool = True,
-) -> str:
-    """Build a PDF report with dataset quality analysis."""
+):
+    """Assemble a quality report (returns the Report; caller saves it)."""
     cols = list(columns) if columns else list(df.columns)
     missing = [c for c in cols if c not in df.columns]
     if missing:
@@ -119,14 +94,14 @@ def build_auto_report(
     rpt.add_text("")
 
     if show_warnings and alerts:
-        with rpt.doc.create(rpt.add_section("Quality Warnings")):
+        with rpt.section("Quality Warnings"):
             rpt.add_itemize(alerts[:20])
 
     if show_highlights and highlights:
-        with rpt.doc.create(rpt.add_section("Dataset Strengths")):
+        with rpt.section("Dataset Strengths"):
             rpt.add_itemize(highlights)
 
-    with rpt.doc.create(rpt.add_section("Column Profiles")):
+    with rpt.section("Column Profiles"):
         headers = ["Column", "Type", "Missing %", "Unique", "Alerts"]
         rows = []
         for p in dataset_report.column_profiles.values():
@@ -140,7 +115,7 @@ def build_auto_report(
         rpt.add_table(headers, rows, caption="Per-column quality profile")
 
     if correlations:
-        with rpt.doc.create(rpt.add_section("Notable Correlations")):
+        with rpt.section("Notable Correlations"):
             corr_headers = ["Variable A", "Variable B", "Pearson r"]
             corr_rows = [[c["x"], c["y"], f"{c['r']:.4f}"] for c in correlations[:10]]
             rpt.add_table(corr_headers, corr_rows, caption="Top correlation pairs")
@@ -149,7 +124,7 @@ def build_auto_report(
             x_vals = work[top["x"]].dropna().tolist()[:50]
             y_vals = work[top["y"]].dropna().tolist()[:50]
             if len(x_vals) == len(y_vals) and len(x_vals) >= 2:
-                rpt.add_plot(
+                rpt.add_line_plot(
                     x_vals,
                     y_vals,
                     caption=f"Scatter: {top['x']} vs {top['y']} (r={top['r']:.3f})",
@@ -157,9 +132,9 @@ def build_auto_report(
 
     if include_plots:
         rpt.new_page()
-        with rpt.doc.create(rpt.add_section("Visual Summary")):
-            num_col = _best_numeric_col(work, dataset_report.numeric_columns)
-            cat_col = _best_categorical_col(work, dataset_report.categorical_columns)
+        with rpt.section("Visual Summary"):
+            num_col = best_numeric_col(work, dataset_report.numeric_columns)
+            cat_col = best_categorical_col(work, dataset_report.categorical_columns)
             if num_col:
                 hist_file = _save_histogram(work, num_col, rpt.images_dir)
                 if hist_file:
@@ -170,7 +145,7 @@ def build_auto_report(
                     rpt.add_image(bar_file, caption=f"Top categories in {cat_col}")
 
     rpt.new_page()
-    with rpt.doc.create(rpt.add_section("Sample Data")):
+    with rpt.section("Sample Data"):
         sample = work.head(10)
         sample_headers = [str(c) for c in sample.columns[:8]]
         sample_rows = [
@@ -183,5 +158,4 @@ def build_auto_report(
             caption="First 10 rows (truncated values)",
         )
 
-    rpt.build(filename)
-    return os.path.join(outdir, f"{filename}.pdf")
+    return rpt

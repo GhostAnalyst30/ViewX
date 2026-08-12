@@ -7,6 +7,7 @@ from typing import List, Optional
 import pandas as pd
 
 from viewx.DataMatrix.analyzers import AnalyzerEngine
+from viewx.shared.column_profile import best_categorical_col, best_numeric_col
 from viewx.shared.insights import quality_summary
 
 from .charts import BarPlot, PiePlot, ScatterPlot
@@ -14,45 +15,14 @@ from .components import BulletList, IconStat, Subtitle, Text, Title
 from .slides_engine import Grid, Presentation, Slide
 
 
-def _best_numeric_col(df: pd.DataFrame, numeric_cols: List[str]) -> Optional[str]:
-    if not numeric_cols:
-        return None
-
-    def score(col: str) -> float:
-        s = df[col].dropna()
-        if len(s) == 0:
-            return 0.0
-        completeness = len(s) / len(df)
-        cv = (s.std() / abs(s.mean())) if s.mean() != 0 else 0.0
-        return 0.5 * completeness + 0.5 * min(cv, 5.0) / 5.0
-
-    return max(numeric_cols, key=score)
-
-
-def _best_categorical_col(df: pd.DataFrame, cat_cols: List[str]) -> Optional[str]:
-    if not cat_cols:
-        return None
-
-    def score(col: str) -> float:
-        s = df[col].dropna()
-        completeness = len(s) / max(len(df), 1)
-        n_unique = s.nunique()
-        card_score = 1.0 if 2 <= n_unique <= 20 else max(0.0, 1.0 - (n_unique - 20) / 80)
-        return completeness * card_score
-
-    return max(cat_cols, key=score)
-
-
 def build_auto_presentation(
     df: pd.DataFrame,
     title: str = "Dataset Overview",
-    theme: str = "dark",
-    filename: str = "auto_slides.html",
+    theme: Optional[str] = None,
     columns: Optional[List[str]] = None,
     max_slides: int = 8,
-    show: bool = True,
-) -> str:
-    """Build and export an auto-generated presentation from a DataFrame."""
+) -> Presentation:
+    """Build an auto-generated presentation from a DataFrame (does not save)."""
     cols = list(columns) if columns else list(df.columns)
     missing = [c for c in cols if c not in df.columns]
     if missing:
@@ -99,7 +69,7 @@ def build_auto_presentation(
         Title("Data Quality").pos(left=6, top=8).slide_in("left")
         BulletList(quality_items).pos(left=8, top=26).size(width="84%").fade_in(delay=0.2)
 
-    num_col = _best_numeric_col(work, report.numeric_columns)
+    num_col = best_numeric_col(work, report.numeric_columns)
     if num_col:
         s = work[num_col].dropna()
         bins = min(12, max(3, int(s.nunique())))
@@ -118,7 +88,7 @@ def build_auto_presentation(
                 left=8, top=32
             ).size(width="84%", height="52%")
 
-    cat_col = _best_categorical_col(work, report.categorical_columns)
+    cat_col = best_categorical_col(work, report.categorical_columns)
     if cat_col:
         top = work[cat_col].value_counts().head(8)
         with Slide(title=f"Categorical: {cat_col}", notes=f"Top categories in {cat_col}."):
@@ -168,4 +138,4 @@ def build_auto_presentation(
         Text(f"Columns: {header}").pos(left=7, top=20).size(width="88%")
         BulletList(sample_lines[:6]).pos(left=8, top=30).size(width="88%")
 
-    return pres.export(filename, open_browser=show)
+    return pres

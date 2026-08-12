@@ -1,20 +1,25 @@
-from typing import Optional, Union, Literal, List, Tuple
+"""Built-in datasets and synthetic data generation for ViewX."""
+
+from __future__ import annotations
+
 import io
 import pkgutil
 from pathlib import Path
-import pandas as pd
+from typing import Dict, List, Optional, Tuple, Union
+
 import numpy as np
+import pandas as pd
 from numpy.typing import NDArray
 
-
-_SUPPORTED_BACKENDS = ("pandas", "polars")
+_SUPPORTED_BACKENDS = {"pandas"}
+_SUPPORTED_EXTENSIONS = {".csv", ".parquet", ".xlsx", ".xls", ".json"}
 
 
 def _validate_columns(
-    df: pd.DataFrame,  # 输入的数据框，可以是pandas或polars DataFrame
-    X_columns: List[str],  # 特征列名列表
-    y_column: str  # 目标列名
-) -> None:  # 无返回值，函数仅用于验证
+    df: pd.DataFrame,
+    X_columns: List[str],
+    y_column: str,
+) -> None:
     columns = set(df.columns)
     missing = set(X_columns + [y_column]) - columns
     if missing:
@@ -24,11 +29,9 @@ def _validate_columns(
 def _X_y(
     df: pd.DataFrame,
     X_columns: List[str],
-    y_column: str
+    y_column: str,
 ) -> Tuple[NDArray, NDArray]:
-    """
-    Extrae X e y como arrays numpy desde pandas o polars.
-    """
+    """Extrae X e y como arrays numpy desde un DataFrame de pandas."""
     _validate_columns(df, X_columns, y_column)
 
     if isinstance(df, pd.DataFrame):
@@ -36,27 +39,10 @@ def _X_y(
         y = df[y_column].to_numpy().ravel()
         return X, y
 
-    else:
-        raise TypeError(
-            "Backend no soportado. Use pandas.DataFrame"
-        )
+    raise TypeError("Backend no soportado. Use pandas.DataFrame")
 
 
-import io
-import pkgutil
-import pandas as pd
-from typing import Literal, Optional, Tuple, List, Union
-from numpy.typing import NDArray
-
-_SUPPORTED_BACKENDS = {"pandas"}
-_SUPPORTED_EXTENSIONS = {".csv", ".parquet", ".xlsx", ".xls", ".json"}
-
-def _read_file(
-    buffer_or_path,
-    ext: str,
-    backend: str,
-    sep: str,
-):
+def _read_file(buffer_or_path, ext: str, backend: str, sep: str):
     if backend == "pandas":
         if ext == ".csv":
             return pd.read_csv(buffer_or_path, sep=sep)
@@ -69,82 +55,72 @@ def _read_file(
 
     raise ValueError(f"Extensión '{ext}' no soportada para backend '{backend}'.")
 
-def load_dataset(
-        name: str,
-        backend: str = "pandas",
-        return_X_y: Optional[Tuple[List[str], str]] = None,
-        sep: str = ","
-    ) -> Union[pd.DataFrame, Tuple[NDArray, NDArray]]:
-    """
-    Carga un dataset interno del paquete.
 
-    Datasets disponibles:
-    - iris.csv
-    - penguins.csv
-    - sp500_companies.csv
-    - titanic.csv
-    - course_completion.csv
-    - Cocoa_Bubbles_Investment_Nigeria_Ghana_1980_2023.xlsx
+def load_dataset(
+    name: str,
+    backend: str = "pandas",
+    return_X_y: Optional[Tuple[List[str], str]] = None,
+    sep: str = ",",
+) -> Union[pd.DataFrame, Tuple[NDArray, NDArray]]:
+    """
+    Carga un dataset interno del paquete (o una ruta local).
+
+    Datasets incluidos: iris.csv, penguins.csv, titanic.csv.
 
     Parámetros
     ----------
     name : str
-        Nombre del archivo CSV.
-    backend : {'pandas', 'polars'}, default='pandas'
+        Nombre del archivo (con extensión) o ruta local.
+    backend : {'pandas'}, default='pandas'
         Backend de DataFrame a utilizar.
     return_X_y : tuple[list[str], str], optional
-        Si se especifica, devuelve (X, y) como arrays numpy,
+        Si se especifica, devuelve (X, y) como arrays numpy.
+    sep : str
+        Separador para archivos CSV.
 
     Retorna
     -------
     DataFrame o (X, y)
     """
-
     if backend not in _SUPPORTED_BACKENDS:
         raise ValueError(
-            f"Backend '{backend}' no soportado. "
-            f"Use uno de {_SUPPORTED_BACKENDS}."
+            f"Backend '{backend}' no soportado. Use uno de {_SUPPORTED_BACKENDS}."
         )
 
     path = Path(name)
     resource_name = path.name
     ext = path.suffix.lower()
 
-
     if ext not in _SUPPORTED_EXTENSIONS:
         raise ValueError(
-            f"Extensión '{ext}' no soportada. "
-            f"Soportadas: {_SUPPORTED_EXTENSIONS}"
+            f"Extensión '{ext}' no soportada. Soportadas: {_SUPPORTED_EXTENSIONS}"
         )
 
     df = None
 
-    # 1️⃣ Intentar cargar desde el paquete
+    # 1. Intentar cargar desde el paquete
     try:
         data_bytes = pkgutil.get_data("viewx.datasets", resource_name)
-
         if data_bytes is not None:
             buffer = io.BytesIO(data_bytes)
             df = _read_file(buffer, ext, backend, sep)
     except FileNotFoundError:
         pass
 
-    # 2️⃣ Intentar cargar desde ruta local
+    # 2. Intentar cargar desde ruta local
     if df is None:
         if not path.exists():
             raise FileNotFoundError(
-                f"Dataset '{name}' no encontrado "
-                f"ni en viewx.datasets ni en la ruta local."
+                f"Dataset '{name}' no encontrado ni en viewx.datasets ni en la ruta local."
             )
         df = _read_file(path, ext, backend, sep)
 
-    # 3️⃣ Devolver X, y si se solicita
+    # 3. Devolver X, y si se solicita
     if return_X_y is not None:
         X_columns, y_column = return_X_y
         return _X_y(df, X_columns, y_column)
 
     return df
-
 
 
 # =========================
@@ -153,29 +129,34 @@ def load_dataset(
 
 def load_iris(
     backend: str = "pandas",
-    return_X_y: Optional[Tuple[List[str], str]] = None
-):
-    return load_dataset(
-        "iris.csv",
-        backend=backend,
-        return_X_y=return_X_y
-    )
+    return_X_y: Optional[Tuple[List[str], str]] = None,
+) -> Union[pd.DataFrame, Tuple[NDArray, NDArray]]:
+    return load_dataset("iris.csv", backend=backend, return_X_y=return_X_y)
 
 
 def load_penguins(
     backend: str = "pandas",
-    return_X_y: Optional[Tuple[List[str], str]] = None
-):
-    return load_dataset(
-        "penguins.csv",
-        backend=backend,
-        return_X_y=return_X_y
-    )
+    return_X_y: Optional[Tuple[List[str], str]] = None,
+) -> Union[pd.DataFrame, Tuple[NDArray, NDArray]]:
+    return load_dataset("penguins.csv", backend=backend, return_X_y=return_X_y)
 
 
-from typing import Optional
+def generate_dataset(
+    n_rows: int,
+    schema: Dict[str, dict],
+    seed: Optional[int] = None,
+    save: bool = False,
+    filename: Optional[str] = None,
+) -> pd.DataFrame:
+    """Genera un DataFrame sintético a partir de un esquema de distribuciones.
 
-def generate_dataset(n_rows, schema, seed=None, save: Optional[bool] = False, filename: Optional[str] = None):
+    schema ejemplo::
+
+        {
+            "region": {"dist": "categorical", "choices": ["N", "S"], "probs": [0.6, 0.4]},
+            "revenue": {"dist": "lognormal", "mean": 8, "sigma": 0.4, "round": 2},
+        }
+    """
     if seed is not None:
         if not isinstance(seed, int):
             raise TypeError("seed debe ser un entero o None")
@@ -185,10 +166,8 @@ def generate_dataset(n_rows, schema, seed=None, save: Optional[bool] = False, fi
 
     if not isinstance(schema, dict):
         raise TypeError("schema debe ser un diccionario")
-    
 
-
-    data = {}
+    data: Dict[str, NDArray] = {}
 
     for col, config in schema.items():
         if "dist" not in config:
@@ -203,42 +182,36 @@ def generate_dataset(n_rows, schema, seed=None, save: Optional[bool] = False, fi
             values = np.random.normal(
                 loc=config.get("mean", 0),
                 scale=config.get("std", 1),
-                size=n_rows
+                size=n_rows,
             )
-
         elif dist == "uniform":
             values = np.random.uniform(
                 low=config.get("low", 0),
                 high=config.get("high", 1),
-                size=n_rows
+                size=n_rows,
             )
-
         elif dist == "exponential":
             values = np.random.exponential(
                 scale=config.get("scale", 1),
-                size=n_rows
+                size=n_rows,
             )
-
         elif dist == "lognormal":
             values = np.random.lognormal(
                 mean=config.get("mean", 0),
                 sigma=config.get("sigma", config.get("std", 1)),
-                size=n_rows
+                size=n_rows,
             )
-
         elif dist == "poisson":
             values = np.random.poisson(
                 lam=config.get("lam", 1),
-                size=n_rows
+                size=n_rows,
             )
-
         elif dist == "binomial":
             values = np.random.binomial(
                 n=config.get("n", 1),
                 p=config.get("p", 0.5),
-                size=n_rows
+                size=n_rows,
             )
-
         elif dist == "categorical":
             choices = config.get("choices") or config.get("labels")
             if not choices:
@@ -256,7 +229,6 @@ def generate_dataset(n_rows, schema, seed=None, save: Optional[bool] = False, fi
                 values = np.random.choice(choices, size=n_rows)
             data[col] = values
             continue
-
         else:
             raise ValueError(f"Distribución no soportada: {dist}")
 
@@ -267,12 +239,9 @@ def generate_dataset(n_rows, schema, seed=None, save: Optional[bool] = False, fi
             values = values.astype(float)
         else:
             raise ValueError(f"Tipo no soportado: {dtype}")
-        
+
         # ---------- REDONDEO ----------
-        if nround > 0:
-            values = np.round(values, nround)
-        else:
-            values = np.round(values, 2)
+        values = np.round(values, nround if nround > 0 else 2)
 
         data[col] = values
 

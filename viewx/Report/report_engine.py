@@ -1,40 +1,70 @@
+"""PDF report engine (LaTeX under the hood, no LaTeX knowledge required).
+
+Requires a LaTeX distribution with ``pdflatex`` on PATH, and the ``pylatex``
+package (``pip install viewx[pdf]``).
+
+Usage
+-----
+r = Report("Reporte técnico", author="Ana")
+with r.section("Introducción"):
+    r.text("Resumen del análisis.", bold=True)
+    r.bullets(["Punto uno", "Punto dos"])
+r.add_table(["A", "B"], [[1, 2], [3, 4]], caption="Datos")
+r.save("reporte.pdf")
+"""
+
+from __future__ import annotations
+
 import os
+import shutil
+import warnings
+from contextlib import contextmanager
+from typing import Iterable, List, Optional, Sequence, Tuple, Union
+
 from pylatex import (
-    Document, Section, Subsection, Figure, Table, Tabular,
-    NoEscape, Command, Itemize, Enumerate
+    Command, Document, Enumerate, Figure, Itemize, NoEscape, Section, Subsection,
 )
 from pylatex.utils import escape_latex
-import shutil
 
+# Basic CSS color names mapped to soft LaTeX tints for add_box()
+_CSS_BOX_COLORS = {
+    "blue": "blue!15", "green": "green!15", "red": "red!15",
+    "yellow": "yellow!20", "orange": "orange!20", "purple": "violet!15",
+    "gray": "gray!15", "grey": "gray!15", "cyan": "cyan!15",
+}
 
 
 class Report:
-    def __init__(self, title="Reporte", author="Autor", outdir="output", twoColumn: bool = False, images_dir = "images"):
-
+    def __init__(
+        self,
+        title: str = "Reporte",
+        author: str = "Autor",
+        outdir: str = "output",
+        two_column: bool = False,
+        images_dir: str = "images",
+    ):
         self.outdir = outdir
         os.makedirs(outdir, exist_ok=True)
 
-        # 📂 images dentro de output
+        # images live inside outdir so LaTeX can resolve them at compile time
         self.images_dir = os.path.join(outdir, images_dir)
         os.makedirs(self.images_dir, exist_ok=True)
+        self._box_counter = 0
 
-        if twoColumn:
+        if two_column:
             self.doc = Document(
                 documentclass="article",
                 document_options=["10pt", "twocolumn"],
-                lmodern=True
+                lmodern=True,
             )
         else:
-            self.doc = Document(
-                documentclass="article",
-                lmodern=True
-            )
+            self.doc = Document(documentclass="article", lmodern=True)
 
-        # ========= PAQUETES =========
+        # ========= PACKAGES =========
         pkgs = [
             "geometry", "float", "caption", "xcolor",
             "graphicx", "multicol", "listings",
-            "tikz", "pgfplots", "tcolorbox"
+            "tikz", "pgfplots", "tcolorbox",
         ]
         for p in pkgs:
             self.doc.packages.append(Command("usepackage", p))
@@ -51,121 +81,145 @@ class Report:
             commentstyle=\color{green!50!black},
         }
         """))
-        self.doc.packages.append(Command("usepackage", "graphicx"))
         self.doc.preamble.append(
             NoEscape(rf"\graphicspath{{{{{images_dir}/}}}}")
         )
-
-
         self.doc.append(NoEscape(r"\pgfplotsset{compat=1.18}"))
 
-        # ========= METADATOS =========
+        # ========= METADATA =========
         self.doc.preamble.append(Command("title", escape_latex(title)))
         self.doc.preamble.append(Command("author", escape_latex(author)))
         self.doc.preamble.append(Command("date", NoEscape(r"\today")))
         self.doc.append(NoEscape(r"\maketitle"))
 
-    # ================== TEXTO ==================
-    def add_text(self, text, bold=False):
+    # ================== SECTIONS (context managers) ==================
+    @contextmanager
+    def section(self, title: str):
+        """Open a section; everything added inside the ``with`` block nests in it.
+
+        >>> with r.section("Results"):
+        ...     r.text("...")
+        """
+        with self.doc.create(Section(escape_latex(title))):
+            yield self
+
+    @contextmanager
+    def subsection(self, title: str):
+        with self.doc.create(Subsection(escape_latex(title))):
+            yield self
+
+    # Low-level builders kept for advanced use (return pylatex containers)
+    def add_section(self, title: str) -> Section:
+        return Section(escape_latex(title))
+
+    def add_subsection(self, title: str) -> Subsection:
+        return Subsection(escape_latex(title))
+
+    # ================== TEXT ==================
+    def add_text(self, text: str, bold: bool = False) -> "Report":
         t = escape_latex(text)
         if bold:
             t = NoEscape(r"\textbf{" + t + "}")
         self.doc.append(t)
+        return self
 
-    # ================== SECCIONES ==================
-    def add_section(self, title):
-        return Section(escape_latex(title))
+    text = add_text
 
-    def add_subsection(self, title):
-        return Subsection(escape_latex(title))
-
-    # ================== IMÁGENES ==================
+    # ================== IMAGES ==================
     def add_image(
         self,
-        filename,
-        caption=None,
-        width="0.6\\textwidth",
-        placement="H"
-    ):
-        # 📂 Ruta destino (output/images)
-        target_path = os.path.join(self.images_dir, filename)
+        filename: str,
+        caption: Optional[str] = None,
+        width: Union[float, str] = 0.6,
+        placement: str = "H",
+    ) -> "Report":
+        """Insert an image. ``width`` is a fraction of the line width (0-1)
+        or a raw LaTeX length string for advanced use."""
+        if isinstance(width, (int, float)):
+            width_tex = rf"{width}\linewidth"
+        else:
+            width_tex = width
 
-        # 1️⃣ Caso ideal: ya existe en output/images
+        target_path = os.path.join(self.images_dir, os.path.basename(filename))
+
         if not os.path.exists(target_path):
-
-            # 2️⃣ Buscar en directorio actual
             local_path = os.path.abspath(filename)
-
             if os.path.exists(local_path):
-                # 🚚 Copiar automáticamente
                 shutil.copy(local_path, target_path)
-                print(f"[ViewX] 📸 Imagen copiada a images/: {filename}")
-
             else:
-                # ❌ No existe en ningún lado
                 raise FileNotFoundError(
-                    f"[ViewX] ❌ Imagen '{filename}' no encontrada "
-                    f"ni en output/images ni en el directorio actual."
+                    f"[ViewX] Image '{filename}' not found in "
+                    f"'{self.images_dir}' nor in the current directory."
                 )
 
-        # 3️⃣ Insertar imagen (LaTeX solo ve el nombre)
         with self.doc.create(Figure(position=placement)) as fig:
-            fig.add_image(
-                filename,
-                width=NoEscape(width)
-            )
+            fig.add_image(os.path.basename(filename), width=NoEscape(width_tex))
             if caption:
                 fig.add_caption(escape_latex(caption))
+        return self
 
-
-
-
-    # ================== TABLAS ==================
-    def add_table(self, headers, rows, caption=""):
+    # ================== TABLES ==================
+    def add_table(
+        self,
+        headers: Sequence[str],
+        rows: Iterable[Sequence],
+        caption: str = "",
+    ) -> "Report":
         cols = " | ".join(["l"] * len(headers))
         table_tex = r"\begin{table}[H]\centering" + "\n"
         table_tex += rf"\caption{{{escape_latex(caption)}}}" + "\n"
         table_tex += rf"\begin{{tabular}}{{{cols}}}\hline" + "\n"
-        table_tex += " & ".join(escape_latex(h) for h in headers) + r"\\ \hline" + "\n"
+        table_tex += " & ".join(escape_latex(str(h)) for h in headers) + r"\\ \hline" + "\n"
 
         for row in rows:
             table_tex += " & ".join(escape_latex(str(c)) for c in row) + r"\\ \hline" + "\n"
 
         table_tex += r"\end{tabular}\end{table}"
         self.doc.append(NoEscape(table_tex))
+        return self
 
-    # ================== LISTAS ==================
-    def add_itemize(self, items):
+    # ================== LISTS ==================
+    def add_itemize(self, items: Iterable[str]) -> "Report":
         with self.doc.create(Itemize()) as it:
             for i in items:
-                it.add_item(escape_latex(i))
+                it.add_item(escape_latex(str(i)))
+        return self
 
-    def add_enumerate(self, items):
+    def add_enumerate(self, items: Iterable[str]) -> "Report":
         with self.doc.create(Enumerate()) as it:
             for i in items:
-                it.add_item(escape_latex(i))
+                it.add_item(escape_latex(str(i)))
+        return self
 
-    # ================== CÓDIGO ==================
-    def add_code(self, code, language="python"):
+    bullets = add_itemize
+    numbered = add_enumerate
+
+    # ================== CODE ==================
+    def add_code(self, code: str, language: str = "python") -> "Report":
         self.doc.append(NoEscape(rf"""
     \begin{{lstlisting}}[language={language}]
     {code}
     \end{{lstlisting}}
     """))
+        return self
 
-
-    # ================== MULTICOLUMNAS ==================
-    def begin_multicols(self, n=2):
+    # ================== MULTI-COLUMN ==================
+    def begin_multicols(self, n: int = 2) -> "Report":
         self.doc.append(NoEscape(rf"\begin{{multicols}}{{{n}}}"))
+        return self
 
-    def end_multicols(self):
+    def end_multicols(self) -> "Report":
         self.doc.append(NoEscape(r"\end{multicols}"))
+        return self
 
-    # ================== CAJAS ==================
-    def add_box(self, title, content, color="blue!15"):
+    # ================== BOXES ==================
+    def add_box(self, title: str, content: str, color: str = "#DBEAFE") -> "Report":
+        """Colored callout box. ``color`` accepts a CSS hex value ("#DBEAFE"),
+        a basic color name ("green"), or a raw LaTeX color spec ("green!20")."""
+        colback = self._resolve_box_color(color)
         box = rf"""
 \begin{{tcolorbox}}[
-    colback={color},
+    colback={colback},
     colframe=black,
     title={escape_latex(title)}
 ]
@@ -173,9 +227,26 @@ class Report:
 \end{{tcolorbox}}
 """
         self.doc.append(NoEscape(box))
+        return self
 
-    # ================== GRÁFICO ==================
-    def add_plot(self, x, y, caption=""):
+    def _resolve_box_color(self, color: str) -> str:
+        if color.startswith("#") and len(color) == 7:
+            self._box_counter += 1
+            name = f"vxbox{self._box_counter}"
+            self.doc.preamble.append(
+                NoEscape(rf"\definecolor{{{name}}}{{HTML}}{{{color[1:].upper()}}}")
+            )
+            return name
+        return _CSS_BOX_COLORS.get(color.lower(), color)
+
+    # ================== PLOTS (static, TikZ) ==================
+    def add_line_plot(
+        self,
+        x: Sequence[float],
+        y: Sequence[float],
+        caption: str = "",
+    ) -> "Report":
+        """Simple static line plot rendered natively in LaTeX (pgfplots)."""
         coords = " ".join(f"({xi},{yi})" for xi, yi in zip(x, y))
         plot = rf"""
 \begin{{figure}}[H]
@@ -193,9 +264,21 @@ class Report:
 \end{{figure}}
 """
         self.doc.append(NoEscape(plot))
+        return self
 
-    # ================== MULTIPLOT ==================
-    def add_multiplot(self, plots, caption=""):
+    def add_plot(self, x, y, caption: str = "") -> "Report":
+        """Deprecated: use ``add_line_plot()`` instead."""
+        warnings.warn(
+            "Report.add_plot() is deprecated; use add_line_plot().",
+            DeprecationWarning, stacklevel=2,
+        )
+        return self.add_line_plot(x, y, caption=caption)
+
+    def add_multiplot(
+        self,
+        plots: Sequence[Tuple[Sequence[float], Sequence[float]]],
+        caption: str = "",
+    ) -> "Report":
         body = ""
         for x, y in plots:
             coords = " ".join(f"({xi},{yi})" for xi, yi in zip(x, y))
@@ -217,33 +300,95 @@ class Report:
 \end{{figure}}
 """
         self.doc.append(NoEscape(tex))
+        return self
 
-    # ================== SALTO DE PÁGINA ==================
-    def new_page(self):
+    # ================== PAGE BREAK ==================
+    def new_page(self) -> "Report":
         self.doc.append(NoEscape(r"\newpage"))
+        return self
 
-    # ================== BUILD ==================
-    def build(self, filename="reporte_final"):
-        path = os.path.join(self.outdir, filename)
+    # ================== SAVE ==================
+    def save(self, path: str = "reporte.pdf") -> str:
+        """Compile the report to PDF. ``path`` may include a directory;
+        otherwise the report's ``outdir`` is used. Returns the PDF path."""
+        if shutil.which("pdflatex") is None:
+            raise RuntimeError(
+                "pdflatex was not found on PATH. Install a LaTeX distribution "
+                "(TeX Live / MiKTeX) to build PDF reports."
+            )
+
+        stem = os.path.splitext(os.path.basename(path))[0]
+        directory = os.path.dirname(path) or self.outdir
+        os.makedirs(directory, exist_ok=True)
+
+        # Keep relative image references valid when compiling somewhere else
+        if os.path.abspath(directory) != os.path.abspath(self.outdir) and os.listdir(self.images_dir):
+            dest_images = os.path.join(directory, os.path.basename(self.images_dir))
+            shutil.copytree(self.images_dir, dest_images, dirs_exist_ok=True)
+
+        filepath = os.path.join(directory, stem)
         try:
             self.doc.generate_pdf(
-                filepath=path,
+                filepath=filepath,
                 clean_tex=False,
-                compiler="pdflatex"
+                compiler="pdflatex",
             )
-            print(f"[ViewX] ✅ PDF generado: {path}.pdf")
-
         except Exception as e:
-            print("[ViewX] ❌ Error LaTeX")
-            print(f"👉 Revisa {path}.log")
-
-            # Evita crash por Unicode
-            if hasattr(e, "output"):
+            print(f"[ViewX] LaTeX build failed. Check {filepath}.log")
+            output = getattr(e, "output", None)
+            if output:
                 try:
-                    print(e.output.decode("latin-1"))
-                except:
+                    print(output.decode("latin-1"))
+                except (AttributeError, UnicodeDecodeError):
                     pass
             raise
+        return f"{filepath}.pdf"
+
+    def show(self, path: str = "reporte.pdf") -> str:
+        """Compile the report and open the resulting PDF."""
+        pdf_path = self.save(path)
+        import webbrowser
+        webbrowser.open("file://" + os.path.abspath(pdf_path))
+        return pdf_path
+
+    def build(self, filename: str = "reporte_final") -> str:
+        """Deprecated: use ``save(path)`` instead."""
+        warnings.warn(
+            "Report.build() is deprecated; use save(path).",
+            DeprecationWarning, stacklevel=2,
+        )
+        return self.save(os.path.join(self.outdir, f"{filename}.pdf"))
+
+    # ================== AUTO ==================
+    @classmethod
+    def auto(
+        cls,
+        df,
+        title: str = "Dataset Quality Report",
+        author: str = "ViewX",
+        outdir: str = "output",
+        columns: Optional[List[str]] = None,
+        include_plots: bool = True,
+        show_warnings: bool = True,
+        show_highlights: bool = True,
+    ) -> "Report":
+        """Build an automatic quality report from a DataFrame.
+
+        Returns the Report; call ``.save(path)`` on it to compile the PDF.
+        """
+        from .auto_builder import build_auto_report
+
+        return build_auto_report(
+            df,
+            cls,
+            title=title,
+            author=author,
+            outdir=outdir,
+            columns=columns,
+            include_plots=include_plots,
+            show_warnings=show_warnings,
+            show_highlights=show_highlights,
+        )
 
     @classmethod
     def auto_generate(
@@ -258,18 +403,14 @@ class Report:
         show_warnings: bool = True,
         show_highlights: bool = True,
     ) -> str:
-        """Build an automatic PDF quality report from a DataFrame."""
-        from .auto_builder import build_auto_report
-
-        return build_auto_report(
-            df,
-            cls,
-            title=title,
-            author=author,
-            filename=filename,
-            outdir=outdir,
-            columns=columns,
-            include_plots=include_plots,
-            show_warnings=show_warnings,
+        """Deprecated: use ``Report.auto(df, ...).save(path)`` instead."""
+        warnings.warn(
+            "Report.auto_generate() is deprecated; use Report.auto(df).save(path).",
+            DeprecationWarning, stacklevel=2,
+        )
+        rpt = cls.auto(
+            df, title=title, author=author, outdir=outdir, columns=columns,
+            include_plots=include_plots, show_warnings=show_warnings,
             show_highlights=show_highlights,
         )
+        return rpt.save(os.path.join(outdir, f"{filename}.pdf"))

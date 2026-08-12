@@ -148,7 +148,7 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;text-align:center;ba
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/datamatrix.html">DataMatrix</a>
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/report.html">Report</a>
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/HTML.html">HTML</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/slides.html">Slides</a>
+      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/slides.html">Presentation</a>
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/datasets.html">Datasets</a>
     </div>
     <button class="nav-pip" onclick="copyText('pip install viewx')">pip install viewx</button>
@@ -162,7 +162,7 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;text-align:center;ba
     <div class="shape shape-2"></div>
   </div>
   <div class="hero-content">
-    <div class="hero-badge">Python &middot; Visualizacion &middot; v0.2.4</div>
+    <div class="hero-badge">Python &middot; Visualizacion &middot; v0.3.0</div>
     <h1>Crea reportes <span class="gradient">visuales</span> desde Python</h1>
     <p class="hero-sub">Dashboards interactivos, presentaciones HTML, reportes PDF y analisis exploratorio automatico. Todo con una API simple y elegante.</p>
     <div class="pip-block" onclick="copyText('pip install viewx')">
@@ -203,12 +203,12 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;text-align:center;ba
   <div class="bento-grid">
     <div class="bento-card bento-hero">
       <div class="card-icon indigo">&#9632;</div>
-      <h3>HTML Dashboard</h3>
-      <p>Constructor de dashboards con Plotly. 6 temas integrados, grid responsive, valueboxes, infoboxes y graficos interactivos.</p>
+      <h3>Dashboard</h3>
+      <p>Constructor de dashboards con Plotly. 6 temas integrados, grid responsive, valueboxes, infoboxes y graficos interactivos. Modo auto con <code>Dashboard.auto(df)</code>.</p>
       <div class="card-tags">
         <span class="tag">add_valuebox()</span>
         <span class="tag">add_chart()</span>
-        <span class="tag">generate()</span>
+        <span class="tag">save()</span>
       </div>
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/HTML.html" class="card-link">Ver documentacion &rarr;</a>
     </div>
@@ -218,9 +218,9 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;text-align:center;ba
       <h3>Report</h3>
       <p>Genera documentos PDF profesionales con LaTeX. Secciones, tablas, imagenes, codigo, graficos TikZ y cajas destacadas.</p>
       <div class="card-tags">
-        <span class="tag">add_section()</span>
-        <span class="tag">add_plot()</span>
-        <span class="tag">build()</span>
+        <span class="tag">section()</span>
+        <span class="tag">add_line_plot()</span>
+        <span class="tag">save()</span>
       </div>
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/report.html" class="card-link">Ver documentacion &rarr;</a>
     </div>
@@ -230,21 +230,21 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;text-align:center;ba
       <h3>DataMatrix</h3>
       <p>Analisis exploratorio automatico con reportes HTML interactivos. Detecta tipos de datos, valores nulos, duplicados, y genera visualizaciones para cada variable. Incluye analisis bibliometrico opcional.</p>
       <div class="card-tags">
-        <span class="tag">generate_report()</span>
+        <span class="tag">analyze()</span>
         <span class="tag">clean_data()</span>
-        <span class="tag">_analyze_columns()</span>
+        <span class="tag">save()</span>
       </div>
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/datamatrix.html" class="card-link">Ver documentacion &rarr;</a>
     </div>
 
     <div class="bento-card bento-side">
       <div class="card-icon orange">&#9654;</div>
-      <h3>Slides</h3>
+      <h3>Presentation + Slide</h3>
       <p>Presentaciones HTML programaticas con 6 temas, 20+ animaciones y graficos Plotly integrados.</p>
       <div class="card-tags">
         <span class="tag">Slide()</span>
         <span class="tag">Grid()</span>
-        <span class="tag">export()</span>
+        <span class="tag">save()</span>
       </div>
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/slides.html" class="card-link">Ver documentacion &rarr;</a>
     </div>
@@ -262,11 +262,11 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;text-align:center;ba
 
     <div class="bento-card bento-third">
       <div class="card-icon indigo">&#128638;</div>
-      <h3>Todo la visualizacion en un solo lugar</h3>
-      <p>ViewX es una herramienta integral para la visualizacion de datos.</p>
+      <h3>Graficas en una linea</h3>
+      <p><code>vx.plot(df, x=..., y=...)</code>: 14 tipos de grafica interactiva o estatica, con inferencia automatica de tipo y downsampling para datasets grandes.</p>
       <div class="card-tags">
-        <span class="tag">generate()</span>
-        <span class="tag">viewx</span>
+        <span class="tag">vx.plot()</span>
+        <span class="tag">Chart.save()</span>
       </div>
       <a href="https://github.com/GhostAnalyst30/ViewX" class="card-link">Repositorio &rarr;</a>
     </div>
@@ -301,30 +301,31 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;text-align:center;ba
         <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
         <button class="code-copy" onclick="copyCode('example-code')">Copiar</button>
       </div>
-      <pre><code class="language-python" id="example-code">from viewx import DataMatrix, HTML, Report, Presentation
-from viewx.Slides import Slides
-from viewx.datasets import load_iris
+      <pre><code class="language-python" id="example-code">import viewx as vx
 
-df = load_iris()
+df = vx.load_dataset("iris.csv")
+
+# Grafica en 1 linea
+vx.plot(df, x="sepal_length", y="petal_length")
 
 # EDA interactivo
-DataMatrix(df).analyze().generate_report("report.html")
+vx.DataMatrix(df).analyze().save("eda.html")
 
 # Dashboard auto
-HTML.auto_generate(df, title="Dashboard")
+vx.Dashboard.auto(df, title="Dashboard").save("dash.html")
 
 # Slides auto
-Slides(df, auto=True, title="Overview")
+vx.Presentation.auto(df, title="Overview").save("slides.html")
 
 # PDF auto (requiere pdflatex)
-Report.auto_generate(df, filename="quality_report")</code></pre>
+vx.Report.auto(df).save("quality_report.pdf")</code></pre>
     </div>
   </div>
 </section>
 
 <footer>
   <div class="footer-logo">ViewX</div>
-  <div class="footer-meta">Desarrollado por Emmanuel Ascendra &middot; v0.2.4</div>
+  <div class="footer-meta">Desarrollado por Emmanuel Ascendra &middot; v0.3.0</div>
   <div class="footer-links">
     <a href="https://github.com/GhostAnalyst30/ViewX" target="_blank">GitHub</a>
     <a href="https://pypi.org/project/viewx/" target="_blank">PyPI</a>

@@ -27,6 +27,28 @@ class PlotlyChart(Component):
         self.styles.setdefault("left", "52%")
         self.styles.setdefault("top", "28%")
 
+    @classmethod
+    def from_figure(cls, fig: Any, **styles: Any) -> "PlotlyChart":
+        """Embed a Plotly figure or a ``vx.plot`` Chart inside a slide."""
+        try:
+            from viewx.plot import Chart as _VxChart
+            if isinstance(fig, _VxChart):
+                if not fig.interactive:
+                    raise ValueError(
+                        "Static (matplotlib) charts cannot be embedded in slides. "
+                        "Build the chart with static=False."
+                    )
+                fig = fig.fig
+        except ImportError:
+            pass
+        import plotly.io as pio
+        fig_dict = json.loads(pio.to_json(fig))
+        return cls(
+            data=fig_dict.get("data", []),
+            layout=fig_dict.get("layout", {}),
+            **styles,
+        )
+
     def _merged_layout(self) -> Dict[str, Any]:
         base = {
             "paper_bgcolor": "rgba(0,0,0,0)",

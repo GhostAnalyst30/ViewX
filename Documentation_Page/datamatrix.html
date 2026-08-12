@@ -107,7 +107,7 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;backgro
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/datamatrix.html" class="active">DataMatrix</a>
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/report.html">Report</a>
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/HTML.html">HTML</a>
-      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/slides.html">Slides</a>
+      <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/slides.html">Presentation</a>
       <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/datasets.html">Datasets</a>
     </div>
     <button class="nav-pip" onclick="copyText('pip install viewx')">pip install viewx</button>
@@ -129,7 +129,7 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;backgro
       <a href="datamatrix.html#summary">summary() / alerts() / highlights()</a>
       <a href="datamatrix.html#clean_data">clean_data()</a>
       <a href="datamatrix.html#filter_rows">filter_rows() / select_columns()</a>
-      <a href="datamatrix.html#generate_report">generate_report() / render_html()</a>
+      <a href="datamatrix.html#generate_report">save() / show()</a>
       <a href="datamatrix.html#explore">Explore tab</a>
     </div>
   </aside>
@@ -181,7 +181,7 @@ dm.analyze()
 print(dm.summary(detailed=True))
 print("Alerts:", dm.alerts())
 print("Highlights:", dm.highlights())
-dm.generate_report("mi_reporte.html", title="Analisis Iris", theme="dark")</code></pre>
+dm.save("mi_reporte.html", title="Analisis Iris", theme="dark_enterprise")</code></pre>
       </div>
     </section>
 
@@ -268,19 +268,19 @@ dm.clean_data(drop_duplicates=True, fill_na=True)</code></pre>
     </section>
 
     <section class="section" id="generate_report">
-      <h2>generate_report()</h2>
+      <h2>save() / show()</h2>
       <div class="method-card">
-        <div class="method-name">generate_report(output_path, title, theme="dark", show=True, explorer_max_rows=5000)</div>
-        <div class="method-desc">Genera el reporte HTML completo y opcionalmente lo abre en el navegador.</div>
+        <div class="method-name">save(path, title, theme=None, sample_rows=200, explorer_max_rows=5000)</div>
+        <div class="method-desc">Genera el reporte HTML completo. <code>show()</code> lo genera y abre en el navegador. En datasets grandes la pestana Sample embebe solo <code>sample_rows</code> filas y el explorador usa muestreo estratificado.</div>
         <div class="param-list">
-          <div class="param"><span class="param-name">output_path</span> <span class="param-type">str</span></div>
+          <div class="param"><span class="param-name">path</span> <span class="param-type">str</span></div>
           <div class="param"><span class="param-name">title</span> <span class="param-type">str</span></div>
-          <div class="param"><span class="param-name">theme</span> <span class="param-type">str</span> — "dark" o "light"</div>
-          <div class="param"><span class="param-name">show</span> <span class="param-type">bool</span></div>
+          <div class="param"><span class="param-name">theme</span> <span class="param-type">str</span> — cualquier tema canonico de ViewX (por defecto, el tema global)</div>
+          <div class="param"><span class="param-name">sample_rows</span> <span class="param-type">int, default=200</span> — filas embebidas en la pestana Sample</div>
         </div>
       </div>
       <div class="method-card">
-        <div class="method-name">render_html(title, theme="dark", explorer_max_rows=5000) &rarr; str</div>
+        <div class="method-name">render_html(title, theme=None, sample_rows=200, explorer_max_rows=5000) &rarr; str</div>
         <div class="method-desc">Retorna el HTML como string sin escribir archivo.</div>
       </div>
       <div class="code-block">
@@ -290,8 +290,8 @@ dm.clean_data(drop_duplicates=True, fill_na=True)</code></pre>
           <button class="code-copy" onclick="copyCode('report-code')">Copiar</button>
         </div>
         <pre><code class="language-python" id="report-code">dm = DataMatrix(df)
-path = dm.generate_report(
-    output_path="analisis_ventas.html",
+path = dm.analyze().save(
+    "analisis_ventas.html",
     title="Reporte de Ventas Q4 2024"
 )
 print(f"Reporte generado: {path}")</code></pre>
@@ -307,13 +307,13 @@ print(f"Reporte generado: {path}")</code></pre>
         <li>Tabla paginada con datos filtrados</li>
         <li>Descarga CSV del subset activo</li>
       </ul>
-      <p>Los datos se serializan en JSON (hasta <code>explorer_max_rows</code> filas, default 5000).</p>
+      <p>Los datos se serializan en JSON (hasta <code>explorer_max_rows</code> filas, default 5000). Si el dataset es mayor, se toma una muestra <strong>estratificada</strong> por la mejor columna categorica y los floats se redondean para reducir el peso del archivo.</p>
     </section>
   </main>
 </div>
 
 <footer>
-  <div class="footer-meta">ViewX &middot; Documentacion &middot; v0.2.4</div>
+  <div class="footer-meta">ViewX &middot; Documentacion &middot; v0.3.0</div>
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
